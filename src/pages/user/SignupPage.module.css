@@ -1,0 +1,270 @@
+:root {
+  --main-blue: #4b94d0;
+  --main-bg: #f8f5ed;
+  --main-dark: #3d3833;
+  --main-accent: #ef770c;
+  --card-bg: #fff;
+  --border-radius: 18px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.07);
+}
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--main-bg);
+  color: var(--main-dark);
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.signupContainer {
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  padding: 40px 32px 32px 32px;
+  max-width: 480px;
+  width: 100%;
+  margin: 48px 16px;
+}
+
+.logoWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+
+.logoText {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.logoText span {
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: -1px;
+}
+
+.logoText span:first-child {
+  color: var(--main-blue);
+}
+
+.logoText span:last-child {
+  color: var(--main-dark);
+}
+
+.logoImage {
+  margin-left: 8px;
+  width: 54px;
+  height: 54px;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.signupTitle {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--main-blue);
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.signupForm {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.formGroup label {
+  font-weight: 700;
+  color: var(--main-dark);
+}
+
+.formGroup input {
+  padding: 12px 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  outline: none;
+  transition: border 0.2s;
+}
+
+.formGroup input:focus {
+  border: 1.5px solid var(--main-blue);
+}
+
+.formRow {
+  display: flex;
+  gap: 12px;
+}
+
+.formRow .formGroup {
+  flex: 1;
+}
+
+.signupBtn {
+  background: var(--main-blue);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 0;
+  font-size: 1.1rem;
+  font-weight: 900;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: background 0.2s;
+}
+
+.signupBtn:hover {
+  background: var(--main-accent);
+}
+
+.loginLink {
+  margin-top: 18px;
+  text-align: center;
+  font-size: 1rem;
+}
+
+.loginLink a {
+  color: var(--main-blue);
+  font-weight: 900;
+  text-decoration: none;
+  margin-left: 4px;
+}
+
+.loginLink a:hover {
+  text-decoration: underline;
+}
+
+.termsGroup {
+  margin: 16px 0;
+  padding: 16px;
+  background: #f8f8f8;
+  border-radius: 8px;
+}
+
+.termsGroup label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95rem;
+  color: #555;
+}
+
+.termsGroup input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+}
+
+.termsSubGroup {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin: 32px 0 16px 0;
+}
+
+.divider hr {
+  flex: 1;
+  border: none;
+  border-top: 1.5px solid #eee;
+  margin: 0 12px 0 0;
+}
+
+.divider hr:last-child {
+  margin: 0 0 0 12px;
+}
+
+.divider span {
+  color: #222;
+  font-weight: 700;
+  font-size: 1rem;
+  white-space: nowrap;
+}
+
+.socialSignup {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  margin: 18px 0 10px 0;
+}
+
+.socialBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 0;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.socialBtn.google {
+  background: #fff;
+  color: #3d3833;
+  border: 1px solid #ddd;
+}
+
+.socialBtn.google:hover {
+  background: #f1f1f1;
+}
+
+.socialBtn.naver {
+  background: #03C75A;
+  color: #fff;
+  border: 1px solid #03C75A;
+}
+
+.socialBtn.kakao {
+  background: #fee500;
+  color: #3c1e1e;
+  border: 1px solid #e6c200;
+}
+
+.socialBtn.kakao:hover {
+  background: #ffe14a;
+}
+
+.socialBtn.faceio {
+  background: #fff;
+  color: #1877F2;
+  border: 1.5px solid #1877F2;
+}
+
+.socialIcon {
+  height: 24px;
+}
+
+@media (max-width: 500px) {
+  .signupContainer {
+    padding: 24px 16px;
+    margin: 24px 16px;
+  }
+  .formRow {
+    flex-direction: column;
+    gap: 16px;
+  }
+}
