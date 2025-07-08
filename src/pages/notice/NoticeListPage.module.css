@@ -1,0 +1,142 @@
+:root {
+  --main-blue: #4b94d0;
+  --main-bg: #f8f5ed;
+  --main-dark: #3d3833;
+  --main-accent: #ef770c;
+  --card-bg: #fff;
+  --border-radius: 18px;
+  --shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
+}
+body {
+  font-family: "Noto Sans KR", sans-serif;
+  background: var(--main-bg);
+  color: var(--main-dark);
+  margin: 0;
+  min-height: 100vh;
+}
+.header {
+  background: #fff;
+  box-shadow: var(--shadow);
+  padding: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 999;
+}
+
+.headerInner {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 24px;
+  height: 80px;
+}
+
+.logo-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.logo-text span {
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: -1px;
+}
+.logo-text span:first-child {
+  color: var(--main-blue);
+}
+.logo-text span:last-child {
+  color: var(--main-dark);
+}
+.nav {
+  display: flex;
+  gap: 18px;
+}
+.nav a {
+  color: var(--main-dark);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 6px 14px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+.nav a:hover {
+  background: var(--main-blue);
+  color: #fff;
+}
+.main {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 32px 16px;
+}
+.pageTitle {
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: var(--main-blue);
+  margin-bottom: 24px;
+}
+
+.button {
+  background: var(--main-blue);
+  color: #fff;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-left: 8px;
+}
+.button:hover {
+  background: var(--main-accent);
+}
+.noticeList {
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  list-style: none;
+  overflow: hidden;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+.noticeList th,
+.noticeList td {
+  padding: 20px 8px;
+  border-bottom: 1px solid #ddd;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+}
+
+.noticeTitle {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--main-blue);
+  margin-bottom: 2px;
+}
+
+.tableHeaderRow {
+  font-weight: bold;
+  color: var(--main-blue);
+}
+
+.noticeItem:hover {
+  background: #f0f7fd;
+  border-bottom: 1px solid transparent;
+}
+.noticeImportant {
+  color: var(--main-accent);
+  font-weight: 900;
+  margin-right: 8px;
+}

@@ -1,1 +1,230 @@
-<h1>안녕 나는 노티드야</h1>;
+// src/pages/notice/NoticeList.js  : 공지글 목록 출력 페이지
+import React, { useState, useEffect, useContext } from "react";
+import { useNavigate } from "react-router-dom"; // page 에서 page 바꾸기할 때 사용
+import apiClient from "../../utils/axios"; // 공지 목록 조회용
+import { AuthContext } from "../../AuthProvider"; //공유자원 가져오기 위함
+import styles from "./NoticeListPage.module.css"; // css 사용
+import logoSeems from "../../assets/images/logo_seems.png"; // 로고이미지
+
+function NoticeListPage({ searchResults }) {
+  // 나중에 로그인기능 완료되면 주석 풀기
+  //   // 글쓰기 버튼 표시를 위해 로그인상태와 role 정보 가져오기
+  //   const { isLoggedIn, role } = useContext(AuthContext); //AuthProvider 에서 가져오기
+
+  // 이 페이지에서 사용할 로컬 상태변수 준비
+  const [notices, setNotices] = useState([]); // 서버로 부터 받은 공지 목록 데이터 저장할 상태
+  // notices = []; 초기화 선언함
+  const [pagingInfo, setPagingInfo] = useState({
+    currentPage: 1,
+    maxPage: 1,
+    startPage: 1,
+    endPage: 1,
+  }); // 서버로 부터 받은 페이징(paging) 정보 저장용 상태
+
+  //현재 동작 상태 관리 변수
+  const [loading, setLoading] = useState(false); //로딩 상태 확인용
+  const [error, setError] = useState(null); //에러 메세지 저장용
+  const [isSearchMode, setIsSearchMode] = useState(false); //검색 모드인지 아닌지 확인용
+
+  const navigate = useNavigate(); // 페이지 이동을 위함
+
+  //서버로 공지목록 조회용 함수 (기본 1페이지)
+  const fetchNotices = async (page) => {
+    try {
+      setLoading(true); //로딩 상태 시작
+
+      const response = await apiClient.get(`/notice?page=${page}`);
+      setNotices(response.data.list);
+      setPagingInfo(response.data.paging);
+      console.log(response.data.list);
+      console.log(response.data.paging);
+
+      //일반 목록 조회 모드로 지정
+      setIsSearchMode(false);
+    } catch (err) {
+      setError("공지 목록 조회 실패!");
+    } finally {
+      setLoading(false); //로딩 상태 종료
+    }
+  };
+
+  useEffect(() => {
+    if (searchResults) {
+      //검색 결과가 전달되면 검색 모드로 전환 처리함
+      setIsSearchMode(true); //검색 모드로 설정
+      setNotices(searchResults.list || []);
+      setPagingInfo(searchResults.paging || {});
+      setLoading(false); //로딩 완료
+    } else {
+      // 초기 로드 및 일반 조회
+      fetchNotices(1);
+    }
+  }, [searchResults]);
+
+  const handleWriteClick = () => {
+    navigate("/noticew"); //글쓰기 페이지로 이동 처리 (라우터로 등록해야 함)
+  };
+
+  // 목록 버튼 클릭시 작동할 핸들러
+  const handleListButtonClick = () => {
+    setIsSearchMode(false); // 검색 모드에서 일반 모드로 바꿈
+    fetchNotices(1); // 목록 버튼 클릭시 1페이지 목록 조회 출력 처리함
+  };
+
+  const handleTitleClick = (noticeNo) => {
+    //상세보기 페이지로 이동 처리 라우터 지정함
+    // url path 와 ${변수명} 사용시 반드시 빽틱 사용해야 함
+    navigate(`/noticed/${noticeNo}`);
+  };
+
+  //페이징뷰에서 페이지 숫자 클릭시 클릭한 페이지에 대한 목록 요청 처리용 핸들러 함수
+  // 일반 조회 또는 검색 조회로 페이지 요청 구분 필요함
+  const handlePageChange = async (page) => {
+    try {
+      setLoading(true); //로딩 시작
+      if (isSearchMode) {
+        //검색 목록 페이지 요청
+        const response = await apiClient.get(`/notice/search/title`, {
+          params: {
+            action: searchResults.action,
+            keyword: searchResults.keyword,
+            page,
+          },
+        });
+        setNotices(response.data.list || []);
+        setPagingInfo(response.data.paging || {});
+      } else {
+        fetchNotices(page); // 일반 목록 조회 요청
+      }
+    } catch (error) {
+      setError("페이징 요청 실패");
+    } finally {
+      setLoading(false); // 로딩 완료
+    }
+  };
+
+  if (loading) {
+    return <div className={styles.loading}>로딩 중....</div>; //로딩 출력
+  }
+
+  if (error) {
+    return <div className={styles.error}>{error}</div>; //에러 메세지 출력
+  }
+
+  return (
+    <div className={styles.noticeContainer}>
+      <header className={styles.header}>
+        <div className={styles.headerInner}>
+          <div className={styles.logoWrap}>
+            <span className={styles.logoText}>
+              <span
+                style={{
+                  color: "#4b94d0",
+                  fontWeight: 900,
+                  fontSize: "2rem",
+                  letterSpacing: "-1px",
+                }}
+              >
+                SEE
+              </span>
+              <span
+                style={{
+                  color: "#3d3833",
+                  fontWeight: 900,
+                  fontSize: "2rem",
+                  letterSpacing: "-1px",
+                }}
+              >
+                MS
+              </span>
+            </span>
+            <img
+              src={logoSeems}
+              alt="SEE MS 로고"
+              className={styles.logoImg}
+              style={{ marginLeft: -5, width: 54, height: 54 }}
+            />
+          </div>
+          <nav className={styles.nav}>
+            <a href="/">홈</a>
+            <a href="/counseling">상담</a>
+            <a href="/record">기록</a>
+            <a href="/test">심리 검사</a>
+            <a href="/analysis">분석</a>
+            <a href="/activity">활동</a>
+            <a href="/simulation">시뮬레이션</a>
+            <a href="/faq">FAQ</a>
+            <a href="/mypage">마이페이지</a>
+            <a
+              href="/login"
+              style={{ color: "var(--main-accent)", fontWeight: 900 }}
+            >
+              로그인/회원가입
+            </a>
+          </nav>
+        </div>
+      </header>
+      <main className={styles.main}>
+        <h1 className={styles.pageTitle}>공지사항</h1>
+        {/* 글쓰기 버튼 : role 이 'ADMIN' 일 때만 보여지게 함 */}
+        <div className={styles.buttonGroup}>
+          {/* {isLoggedIn && role === "ADMIN" && ( */}
+          <button className={styles.button} onClick={handleWriteClick}>
+            글쓰기
+          </button>
+          {/* )} */}
+          <button className={styles.button} onClick={handleListButtonClick}>
+            목록
+          </button>
+        </div>
+        <br></br>
+
+        <table className={styles.noticeList}>
+          <colgroup>
+            <col style={{ width: "10%" }} />
+            <col style={{ width: "50%" }} />
+            <col style={{ width: "20%" }} />
+            <col style={{ width: "20%" }} />
+          </colgroup>
+          <thead>
+            <tr className={styles.tableHeaderRow}>
+              <th>번호</th>
+              <th>제목</th>
+              <th>날짜</th>
+              <th>조회수</th>
+            </tr>
+          </thead>
+          <tbody>
+            {notices.map((notice) => (
+              <tr
+                key={notice.noticeNo}
+                className={styles.noticeItem}
+                onClick={() => handleTitleClick(notice.noticeNo)}
+              >
+                <td className={styles.noticeNo}>{notice.noticeNo}</td>
+                <td className={styles.title}>
+                  {notice.importance && (
+                    <span className={styles.noticeImportant}>[긴급] </span>
+                  )}
+                  {notice.title}
+                </td>
+                <td className={styles.noticeDate}>{notice.noticeDate}</td>
+                <td className={styles.readCount}>{notice.readCount}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </main>
+
+      {/* <PagingView
+        currentPage={pagingInfo.currentPage || 1}
+        totalPage={pagingInfo.maxPage || 1}
+        startPage={pagingInfo.startPage || 1}
+        endPage={pagingInfo.endPage || 1}
+        onPageChange={(page) => handlePageChange(page)}
+      /> */}
+    </div>
+  );
+}
+
+export default NoticeListPage;
