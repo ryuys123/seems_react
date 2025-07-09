@@ -1,0 +1,125 @@
+/* src/pages/notice/NoticeWritePage.module.css */
+:root {
+  --main-blue: #4b94d0;
+  --main-bg: #f8f5ed;
+  --main-dark: #3d3833;
+  --main-accent: #ef770c;
+  --card-bg: #fff;
+  --border-radius: 18px;
+  --shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
+}
+body {
+  font-family: "Noto Sans KR", sans-serif;
+  background: var(--main-bg);
+  color: var(--main-dark);
+  margin: 0;
+  min-height: 100vh;
+}
+
+.header {
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: var(--main-blue);
+  margin-bottom: 24px;
+  text-align: center;
+  padding: 20px;
+}
+
+/* 폼 스타일 */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* 테이블 스타일 */
+table {
+  width: 100%;
+  max-width: 800px;
+  margin: 50px auto;
+  padding: 20px;
+  border: 1px solid #ddd;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: var(--border-radius);
+  background-color: #fff;
+  font-family: Arial, sans-serif;
+  border-collapse: collapse;
+  overflow: hidden;
+}
+
+th,
+td {
+  padding: 10px 30px;
+}
+
+th {
+  text-align: left;
+  background-color: #fff;
+  font-weight: bold;
+  color: #333;
+}
+
+/* 입력 필드와 텍스트 에어리어 스타일 */
+input[type="text"],
+input[type="file"],
+textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  font-size: 16px;
+}
+
+textarea {
+  resize: none;
+  height: 120px;
+}
+
+/* 버튼 스타일 */
+input[type="submit"],
+input[type="reset"],
+input[type="button"] {
+  background: var(--main-blue);
+  color: #fff;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-left: 8px;
+}
+
+input[type="submit"]:hover,
+input[type="reset"]:hover,
+input[type="button"]:hover {
+  background: var(--main-accent);
+}
+
+.buttons {
+  text-align: center;
+}
+
+/* 반응형 스타일 
+	반응형 웹 디자인(responsive design) 을 위한 미디어 쿼리(Media Query) 를 사용하여, 
+	브라우저 창 너비가 768픽셀 이하일 때만 내부 스타일이 적용됨
+	주로 태블릿이나 모바일 환경에서 보기 좋게 UI를 조정하기 위한 설정임
+*/
+@media screen and (max-width: 768px) {
+  .container {
+    margin: 20px;
+    padding: 15px;
+  }
+
+  .header {
+    font-size: 24px;
+  }
+
+  input[type="submit"],
+  input[type="reset"],
+  input[type="button"] {
+    font-size: 14px;
+  }
+}

@@ -1,0 +1,47 @@
+.pagingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin-top: 32px;
+  margin-bottom: 16px;
+}
+
+.pagingContainer button {
+  min-width: 25px;
+  height: 25px;
+  padding: 0 10px;
+  border: 1.5px solid #4b94d0;
+  background: #fff;
+  color: #222;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background 0.18s,
+    color 0.18s,
+    border 0.18s;
+  outline: none;
+}
+
+.pagingContainer button:disabled {
+  background: #e5e8ec;
+  color: #b0b0b0;
+  border: 1.5px solid #c5c3c3;
+  cursor: not-allowed;
+}
+
+.pagingContainer button.activePage,
+.pagingContainer button.activePage:focus {
+  background: #4b94d0;
+  color: #fff;
+  border: 1.5px solid #4b94d0;
+  font-weight: 700;
+}
+
+.pagingContainer button:not(:disabled):hover {
+  background: #eaf4fb;
+  color: #1976d2;
+  border: 1.5px solid #1976d2;
+}
