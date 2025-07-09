@@ -1,4 +1,3 @@
-// src/AuthProvider.js
 // 전역 상태 관리자 : 로그인 여부 상태, accessToken 과 refreshToken 상태 관리가 목적임
 // 비동기 요청시 토큰 상태 확인 작업도 전역으로 관리할 것임
 // 1. 로그인 상태 관리 : accessToken, refreshToken 으로 로그인 상태 설정
@@ -67,7 +66,7 @@ export const AuthProvider = ({ children }) => {
         setAuthInfo({
           isLoggedIn: true,
           role: parsedToken.role,
-          username: parsedToken.userName,
+          username: parsedToken.userName, // ✅ 서버 필드명과 일치
         });
       } else {
         // 토큰 파싱이 실패한 경우 로그아웃 처리
@@ -96,7 +95,7 @@ export const AuthProvider = ({ children }) => {
         setAuthInfo({
           isLoggedIn: true,
           role: parsedToken.role,
-          username: parsedToken.name,
+          username: parsedToken.userName, // ✅ 서버 필드명과 일치
         });
         console.log('authInfo : ', authInfo);
       } else {
