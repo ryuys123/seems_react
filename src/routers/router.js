@@ -8,6 +8,7 @@ import Login from "../pages/Login";
 import userRoutes from "./userRoutes";
 import NoticeListPage from "../pages/notice/NoticeListPage";
 import adminRoutes from "./adminRoutes";
+import testRoutes from "./testRoutes";
 
 const AppRouter = () => {
   return (
@@ -22,6 +23,10 @@ const AppRouter = () => {
       {adminRoutes.map((route) => (
         <Route key={route.path} path={route.path} element={route.element} />
       ))}
+      {/* {testRoutes} */}
+      {/* {testRoutes.map((route) => (
+        <Route key={route.path} path={route.path} element={route.element} />
+      ))} */}
     </Routes>
   );
 };
