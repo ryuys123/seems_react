@@ -4,7 +4,8 @@ import { useNavigate } from "react-router-dom"; // page 에서 page 바꾸기할
 import apiClient from "../../utils/axios"; // 공지 목록 조회용
 import { AuthContext } from "../../AuthProvider"; //공유자원 가져오기 위함
 import styles from "./NoticeListPage.module.css"; // css 사용
-import logoSeems from "../../assets/images/logo_seems.png"; // 로고이미지
+import UserHeader from "../../components/common/UserHeader"; // 헤더
+import PagingView from "../../components/common/PagingView"; //목록 아래 페이징 출력 처리용
 
 function NoticeListPage({ searchResults }) {
   // 나중에 로그인기능 완료되면 주석 풀기
@@ -113,57 +114,7 @@ function NoticeListPage({ searchResults }) {
 
   return (
     <div className={styles.noticeContainer}>
-      <header className={styles.header}>
-        <div className={styles.headerInner}>
-          <div className={styles.logoWrap}>
-            <span className={styles.logoText}>
-              <span
-                style={{
-                  color: "#4b94d0",
-                  fontWeight: 900,
-                  fontSize: "2rem",
-                  letterSpacing: "-1px",
-                }}
-              >
-                SEE
-              </span>
-              <span
-                style={{
-                  color: "#3d3833",
-                  fontWeight: 900,
-                  fontSize: "2rem",
-                  letterSpacing: "-1px",
-                }}
-              >
-                MS
-              </span>
-            </span>
-            <img
-              src={logoSeems}
-              alt="SEE MS 로고"
-              className={styles.logoImg}
-              style={{ marginLeft: -5, width: 54, height: 54 }}
-            />
-          </div>
-          <nav className={styles.nav}>
-            <a href="/">홈</a>
-            <a href="/counseling">상담</a>
-            <a href="/record">기록</a>
-            <a href="/test">심리 검사</a>
-            <a href="/analysis">분석</a>
-            <a href="/activity">활동</a>
-            <a href="/simulation">시뮬레이션</a>
-            <a href="/faq">FAQ</a>
-            <a href="/mypage">마이페이지</a>
-            <a
-              href="/login"
-              style={{ color: "var(--main-accent)", fontWeight: 900 }}
-            >
-              로그인/회원가입
-            </a>
-          </nav>
-        </div>
-      </header>
+      <UserHeader />
       <main className={styles.main}>
         <h1 className={styles.pageTitle}>공지사항</h1>
         {/* 글쓰기 버튼 : role 이 'ADMIN' 일 때만 보여지게 함 */}
@@ -203,8 +154,8 @@ function NoticeListPage({ searchResults }) {
               >
                 <td className={styles.noticeNo}>{notice.noticeNo}</td>
                 <td className={styles.title}>
-                  {notice.importance && (
-                    <span className={styles.noticeImportant}>[긴급] </span>
+                  {notice.importance === "Y" && (
+                    <span className={styles.important}>[긴급] </span>
                   )}
                   {notice.title}
                 </td>
@@ -216,13 +167,13 @@ function NoticeListPage({ searchResults }) {
         </table>
       </main>
 
-      {/* <PagingView
+      <PagingView
         currentPage={pagingInfo.currentPage || 1}
         totalPage={pagingInfo.maxPage || 1}
         startPage={pagingInfo.startPage || 1}
         endPage={pagingInfo.endPage || 1}
         onPageChange={(page) => handlePageChange(page)}
-      /> */}
+      />
     </div>
   );
 }
