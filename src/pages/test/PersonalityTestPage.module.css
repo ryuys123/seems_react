@@ -1,0 +1,196 @@
+/* src/pages/test/PersonalityTestPage.module.css */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start; /* 헤더 때문에 상단 정렬 */
+  min-height: 100vh;
+  background-color: #f8f5f0; /* 화면 배경색 (따뜻한 베이지 톤) */
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  padding-top: 80px; /* UserHeader 높이만큼 여백 주기 */
+  box-sizing: border-box; /* 패딩이 너비/높이에 포함되도록 */
+  color: #333;
+}
+
+/* UserHeader가 Fixed 포지션일 경우를 대비하여 body에 마진 제거 */
+body {
+  margin-top: 0;
+  background-color: #f8f5f0; /* body 배경도 맞춰줍니다. */
+}
+
+.testCard {
+  background-color: #ffffff; /* 카드 배경 흰색 */
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08); /* 그림자 강화 */
+  width: 90%;
+  max-width: 800px;
+  text-align: center;
+  margin-top: 20px;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border: 1px solid #eee; /* 아주 옅은 테두리 추가 */
+}
+
+.questionCounter {
+  font-size: 1.1em;
+  color: #888; /* 조금 더 어두운 회색 */
+  margin-bottom: 20px;
+  font-weight: 500;
+}
+
+.questionText {
+  font-size: 2.2em; /* 질문 텍스트 크기 키움 */
+  font-weight: 700; /* 글씨 두껍게 */
+  color: #2c3e50; /* 진한 글씨색 */
+  margin-bottom: 40px;
+  line-height: 1.6;
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.answerOptions {
+  display: flex;
+  justify-content: center;
+  gap: 10px; /* <<-- 간격 더 줄임 */
+  margin-bottom: 40px;
+  flex-wrap: nowrap; /* <<-- 줄바꿈 방지 */
+  /* overflow-x: auto; /* 만약 너무 길어져서 넘치면 스크롤되도록 (선택 사항) */
+  /* padding-bottom: 5px; /* 스크롤바가 생길 경우 내용을 가리지 않도록 */
+}
+
+.answerOption {
+  display: flex;
+  align-items: center; /* 라디오 버튼과 텍스트를 수직 중앙 정렬 */
+  justify-content: center;
+  cursor: pointer;
+  padding: 12px 15px; /* <<-- 패딩을 좌우로 줄임 */
+  border: 2px solid #dcdcdc;
+  border-radius: 25px;
+  transition: all 0.3s ease;
+  font-size: 1em; /* <<-- 폰트 크기 살짝 줄임 */
+  color: #555;
+  user-select: none;
+  background-color: #fdfdfd;
+  min-width: auto; /* <<-- 최소 너비 제거하여 내용 길이에 맞게 */
+  white-space: nowrap; /* <<-- 텍스트가 줄바꿈되지 않도록 (중요!) */
+  box-sizing: border-box;
+}
+
+.answerOption:hover {
+  background-color: #e6f7ff;
+  border-color: #4b94d0;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.answerOption input[type="radio"] {
+  margin-right: 10px; /* 라디오 버튼과 텍스트 사이 간격 */
+  transform: scale(1.4);
+  accent-color: #4b94d0;
+}
+
+/* 체크된 라디오 버튼의 텍스트 스타일 */
+.answerOption input[type="radio"]:checked + span {
+  /* input 바로 뒤에 오는 span에 스타일 적용 */
+  font-weight: bold;
+  color: #4b94d0;
+}
+
+.answerOption input[type="radio"]:checked {
+  /* 라디오 버튼 자체의 checked 스타일은 accent-color로 제어될 수 있음 */
+  outline: none; /* 클릭 시 생기는 아웃라인 제거 */
+}
+
+.navigationButtons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 30px;
+}
+
+.navButton {
+  background-color: #4b94d0;
+  color: white;
+  padding: 12px 28px;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 1.1em;
+  font-weight: bold;
+  transition:
+    background-color 0.3s ease,
+    transform 0.2s ease;
+  min-width: 140px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.navButton:hover {
+  background-color: #3a7ab5;
+  transform: translateY(-2px);
+}
+
+.navButton:disabled {
+  background-color: #b0c4de;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.errorText {
+  color: #e74c3c;
+  font-weight: bold;
+  text-align: center;
+  margin-top: 20px;
+}
+
+/* UserHeader의 스타일과 겹치지 않도록 조정 */
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  background-color: white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+/* 푸터 공간 확보 (하단 고정 푸터가 있을 경우) */
+footer {
+  margin-top: auto; /* 하단으로 밀어냄 */
+  padding-top: 50px;
+  padding-bottom: 20px;
+  background-color: transparent; /* 배경색 없음 */
+  color: #888;
+  font-size: 0.9em;
+}
+
+/* 미디어 쿼리 - 작은 화면 대응 */
+@media (max-width: 768px) {
+  .testCard {
+    padding: 25px;
+  }
+  .questionText {
+    font-size: 1.5em;
+  }
+  .answerOptions {
+    /* 작은 화면에서는 다시 줄바꿈 허용 또는 가로 스크롤 허용을 고려 */
+    flex-wrap: wrap; /* 작은 화면에서 옵션이 너무 길면 줄바꿈 되도록 */
+    /* justify-content: center; */ /* 줄바꿈 시 중앙 정렬 */
+    gap: 8px; /* 간격 더 줄임 */
+  }
+  .answerOption {
+    padding: 8px 12px;
+    font-size: 0.9em;
+    min-width: auto;
+  }
+  .navButton {
+    padding: 10px 20px;
+    font-size: 1em;
+    min-width: 100px;
+  }
+}
