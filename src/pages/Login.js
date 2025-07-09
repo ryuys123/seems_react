@@ -89,9 +89,15 @@ function Login({onLoginSuccess}) {
         console.log('로컬스토리지 저장 성공.');
         console.log('AuthContext 에 로그인 상태 정보 업데이트 성공.');
         
-        // ✅ 로그인 성공 후 네비게이션 추가
-        console.log('로그인 성공, 대시보드로 이동');
-        navigate('/userdashboard');
+        // ✅ 역할에 따른 페이지 이동 로직 추가
+        console.log('사용자 역할:', role);
+          if (role === 'ADMIN') {
+            console.log('관리자로 로그인, 관리자 대시보드로 이동');
+            navigate('/admindashboard');
+          } else {
+            console.log('일반 사용자로 로그인, 사용자 대시보드로 이동');
+            navigate('/userdashboard');
+          }
         
       } catch (storageError) {
         console.error(
@@ -265,7 +271,7 @@ function Login({onLoginSuccess}) {
       </div>
       
       {/* API 연동 테스트 컴포넌트 */}
-      <ApiTest />
+      {/* <ApiTest /> */}
     </div>
   );
 };
