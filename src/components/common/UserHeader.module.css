@@ -5,16 +5,18 @@
   --main-accent: #ef770c;
   --card-bg: #fff;
   --border-radius: 18px;
-  --shadow: 0 4px 24px rgba(0,0,0,0.07);
+  --shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
 }
 
 .header {
   background: #fff;
   box-shadow: var(--shadow);
   padding: 0;
-  position: sticky;
+  position: fixed;
   top: 0;
-  z-index: 10;
+  left: 0;
+  width: 100%;
+  z-index: 999;
 }
 
 .headerInner {
@@ -86,10 +88,9 @@
     flex-direction: column;
     gap: 16px;
   }
-  
+
   .nav {
     flex-wrap: wrap;
     justify-content: center;
   }
 }
-
