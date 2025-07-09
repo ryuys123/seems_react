@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './Login.module.css';
 import logoSeems from '../assets/images/logo_seems.png';
@@ -6,29 +6,127 @@ import naverIcon from '../assets/images/naver.png';
 import kakaoIcon from '../assets/images/kakao.png';
 import faceioIcon from '../assets/images/faceio.png';
 import ApiTest from '../components/common/ApiTest';
+import { AuthContext } from '../AuthProvider';
+import apiClient from '../utils/axios';
 
 
-const Login = () => {
+function Login({onLoginSuccess}) {
   const navigate = useNavigate(); // 페이지 이동을 위한 useNavigate 훅 사용
 
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  });
+  const [userId, setUserid] = useState('');
+  const [userPwd, setUserpwd] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+  // AutoProvider 에서 가져온 updateTokens 함수 사용 선언함
+  const { updateTokens } = useContext(AuthContext);
+
+  // 이미 로그인 상태라면 메인 페이지로 리다이렉트
+  useEffect(() => {
+    const accessToken = localStorage.getItem('accessToken');
+    if (accessToken) {
+      console.log('이미 로그인된 상태, 대시보드로 이동');
+      navigate('/userdashboard'); // ✅ 올바른 경로로 수정
+    }
+  }, [navigate]);
+
+  // Base64 디코딩 함수 추가
+  const base64DecodeUnicode = (base64Url) => {
+    try {
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map((c) => `%${('00' + c.charCodeAt(0).toString(16)).slice(-2)}`)
+          // 빽틱 (`) 사용할 것
+          .join('')
+      );
+      return JSON.parse(jsonPayload); // 페이로드 문자열을 json 객체로 파싱해서 리턴함
+    } catch (error) {
+      console.error('JWT 디코딩 실패 : ', error);
+      return null;
+    }
+  };
+
+  // enter 키 누르면 로그인 실행 처리 함수 추가
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      handleLogin();
+    }
+  };
+
+    // 로그인 처리 함수 추가
+  const handleLogin = async () => {
+
+    console.log('handleLogin 함수 시작');  // 추가
+    console.log('요청 데이터:', { userId, userPwd });  // 추가
+
+    // 중복 요청 방지
+    if (isLoggedIn) return;
+
+    setIsLoggedIn(true);
+    try {
+      const response = await apiClient.post('/login', {
+        userId: userId,
+        userPwd: userPwd,
+      });
+
+      console.log('서버 응답 데이터 : ', response);
+
+      // response body 에 있는 정보 추출 (서버측에서 저장한 이름(key)과 일치시킴)
+      const { accessToken, refreshToken, userId: serverUserId, userName, role } = response.data;
+
+      // JWT accessToken 디코딩
+      const tokenPayload = base64DecodeUnicode(accessToken.split('.')[1]);
+      if (!tokenPayload) {
+        console.error('JWT 페이로드 디코딩 실패.');
+        throw new Error('JWT 페이로드 디코딩 실패'); //catch 로 넘어가게 함
+      }
+
+      console.log('JWT 페이로드 : ', tokenPayload);
+
+      try {
+        updateTokens(accessToken, refreshToken); // 전역 상태 관리 업데이트
+        console.log('로컬스토리지 저장 성공.');
+        console.log('AuthContext 에 로그인 상태 정보 업데이트 성공.');
+        
+        // ✅ 로그인 성공 후 네비게이션 추가
+        console.log('로그인 성공, 대시보드로 이동');
+        navigate('/userdashboard');
+        
+      } catch (storageError) {
+        console.error(
+          '로컬 스토리지 저장 실패 또는 전역 상태 업데이트 실패.',
+          storageError
+        );
+        throw storageError; // 바깥 catch 로 넘김
+      }
+
+      //alert('로그인 성공.');
+      //로그인 성공시 부모 컴포넌트로 알림
+      if (onLoginSuccess) onLoginSuccess();
+    } catch (error) {
+      console.error('로그인 실패 : ', error);
+
+      if (error.response) {
+        console.error('서버측 에러 응답 데이터 : ', error.response.data);
+        alert(error.response.data.error || '서버 오류로 인해 로그인 실패!');
+      } else if (error instanceof Error) {
+        console.error('에러 메세지 :', error.message);
+        alert(error.message);
+      } else {
+        console.error('예상치 못한 오류 : ', error);
+        alert('알 수 없는 오류 발생.');
+      }
+    } finally {
+      setIsLoggedIn(false);
+    }
   };
 
   const handleSubmit = (e) => {
-    e.preventDefault();
-    // 로그인 로직 구현
-    console.log('로그인 시도:', formData);
+  e.preventDefault(); // 기본 폼 제출 동작 방지
+  handleLogin();
   };
+
 
   const handleSocialLogin = (provider) => {
     // 소셜 로그인 로직 구현
@@ -64,25 +162,26 @@ const Login = () => {
       <div className={styles.loginTitle}>로그인</div>
       
       <form className={styles.loginForm} onSubmit={handleSubmit}>
-        <label htmlFor="email">이메일</label>
+        <label htmlFor="userId">아이디</label>
         <input
-          type="email"
-          id="email"
-          name="email"
-          placeholder="이메일을 입력하세요"
-          value={formData.email}
-          onChange={handleChange}
+          type="text"
+          id="id"
+          name="id"
+          placeholder="아이디를 입력하세요"
+          value={userId}
+          onChange={(e) => setUserid(e.target.value)}
           required
         />
         
-        <label htmlFor="password">비밀번호</label>
+        <label htmlFor="userPwd">비밀번호</label>
         <input
           type="password"
           id="password"
           name="password"
           placeholder="비밀번호를 입력하세요"
-          value={formData.password}
-          onChange={handleChange}
+          value={userPwd}
+          onChange={(e) => setUserpwd(e.target.value)}
+          onKeyDown={handleKeyDown}
           required
         />
         
@@ -171,4 +270,4 @@ const Login = () => {
   );
 };
 
-export default Login; 
+export default Login;

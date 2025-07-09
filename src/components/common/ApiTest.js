@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import api from '../../utils/axios';
+import apiClient from '../../utils/axios';
 
 const ApiTest = () => {
   const [data, setData] = useState(null);
@@ -13,7 +13,7 @@ const ApiTest = () => {
     
     try {
       // Spring Boot 서버가 실행 중인지 확인하는 간단한 테스트
-      const response = await api.get('/test');
+      const response = await apiClient.get('/test');
       setData(response.data);
     } catch (err) {
       setError(err.response?.data?.message || err.message);
@@ -25,7 +25,7 @@ const ApiTest = () => {
   // POST 요청 예시 (로그인)
   const login = async (credentials) => {
     try {
-      const response = await api.post('/login', credentials);
+      const response = await apiClient.post('/login', credentials);
       
       // 토큰 저장
       if (response.data.accessToken) {
@@ -42,7 +42,7 @@ const ApiTest = () => {
   // PUT 요청 예시
   const updateData = async (id, updateData) => {
     try {
-      const response = await api.put(`/notice/update/${id}`, updateData);
+      const response = await apiClient.put(`/notice/update/${id}`, updateData);
       return response.data;
     } catch (err) {
       throw new Error(err.response?.data?.message || '업데이트에 실패했습니다.');
@@ -52,7 +52,7 @@ const ApiTest = () => {
   // DELETE 요청 예시
   const deleteData = async (id) => {
     try {
-      const response = await api.delete(`/notice/delete/${id}`);
+      const response = await apiClient.delete(`/notice/delete/${id}`);
       return response.data;
     } catch (err) {
       throw new Error(err.response?.data?.message || '삭제에 실패했습니다.');
