@@ -5,6 +5,7 @@ import { Route } from 'react-router-dom';
 import SignupPage from '../pages/user/SignupPage';
 import PwFindPage from '../pages/user/PwFindPage';
 import UserProfilePage from '../pages/user/UserProfilePage';
+import UserDashboard from '../pages/user/UserDashboard';
 
 const userRoutes = [
   {
@@ -18,6 +19,10 @@ const userRoutes = [
   {
     path: '/userprofile',
     element: <UserProfilePage />
+  },
+  {
+    path: '/userdashboard',
+    element: <UserDashboard />
   }
 ];
 
