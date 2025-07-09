@@ -1,63 +1,49 @@
+// src/utils/axios.js
 import axios from 'axios';
-import { getApiConfig, TOKEN_CONFIG } from '../config/config';
 
-// Spring Boot 서버 기본 URL 설정
-const API_BASE_URL = getApiConfig().baseURL;
-
-// axios 인스턴스 생성
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  timeout: 10000,
+// 페이지에서 공통으로 사용할 axios 객체 생성함
+const apiClient = axios.create({
+  baseURL: process.env.REACT_APP_API_BASE_URL || 'http://localhost:8888/seems',
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // 쿠키 포함 여부
 });
 
-// 요청 인터셉터 (토큰 추가)
-api.interceptors.request.use(
+// 요청 인터셉터 (토큰 처리)
+apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem(TOKEN_CONFIG.accessTokenKey);
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    // axios 로 요청시 같이 전송보낼 토큰 지정 처리
+    // 로그인 성공시 저장해 놓은 localStorage 에서 토큰을 꺼냄
+    const accessToken = localStorage.getItem('accessToken');
+    const refreshToken = localStorage.getItem('refreshToken');
+
+    if (accessToken && refreshToken) {
+      config.headers['Authorization'] = `Bearer ${accessToken}`; //빽틱 사용해야 함
+      config.headers['RefreshToken'] = `Bearer ${refreshToken}`; //빽틱 사용해야 함
     }
+
+    console.log('Axios 요청 설정 : ', config);
     return config;
   },
   (error) => {
+    console.error('Axios 요청 에러 : ', error);
     return Promise.reject(error);
   }
 );
 
-// 응답 인터셉터 (토큰 만료 처리)
-api.interceptors.response.use(
+// 응답 인터셉터 (에러 처리)
+apiClient.interceptors.response.use(
   (response) => {
+    // 요청이 성공해서, ok 가 전송왔을 때 공통 처리 내용 작성함
+    console.log('Axios 응답 성공 : ', response);
     return response;
   },
-  async (error) => {
-    if (error.response?.status === 401) {
-      // 토큰이 만료된 경우 refresh token으로 갱신 시도
-      const refreshToken = localStorage.getItem(TOKEN_CONFIG.refreshTokenKey);
-      if (refreshToken) {
-        try {
-          const response = await axios.post(`${API_BASE_URL}/reissue`, {
-            refreshToken: refreshToken
-          });
-          
-          if (response.data.accessToken) {
-            localStorage.setItem(TOKEN_CONFIG.accessTokenKey, response.data.accessToken);
-            // 원래 요청 재시도
-            error.config.headers.Authorization = `Bearer ${response.data.accessToken}`;
-            return api.request(error.config);
-          }
-        } catch (refreshError) {
-          // refresh token도 만료된 경우 로그아웃
-          localStorage.removeItem(TOKEN_CONFIG.accessTokenKey);
-          localStorage.removeItem(TOKEN_CONFIG.refreshTokenKey);
-          window.location.href = '/login';
-        }
-      }
-    }
+  (error) => {
+    // 요청이 실패해서, fail 코드가 전송왔을 때 공통 처리 내용 작성함
+    console.error('Axios 응답 에러 : ', error);
     return Promise.reject(error);
   }
 );
 
-export default api;
+export default apiClient;

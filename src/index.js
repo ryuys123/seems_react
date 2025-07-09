@@ -6,14 +6,14 @@ import reportWebVitals from './reportWebVitals';
 
 // 라우터 사용을 위한 추가
 import { BrowserRouter } from 'react-router-dom';
-// import { AuthProvider } from './AuthProvider';
+import { AuthProvider } from './AuthProvider';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    {/* <AuthProvider> */}
+    <AuthProvider>
     <App />
-    {/* </AuthProvider> */}
+    </AuthProvider>
   </React.StrictMode>
 );
 
