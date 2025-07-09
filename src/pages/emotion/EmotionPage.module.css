@@ -1,0 +1,304 @@
+
+/* 변수 및 기본 스타일 (상담 페이지와 공유 가능) */
+:root {
+  --main-blue: #4b94d0;
+  --main-bg: #f8f5ed;
+  --main-dark: #3d3833;
+  --main-accent: #ef770c;
+  --card-bg: #fff;
+  --border-radius: 18px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.07);
+}
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--main-bg);
+  color: var(--main-dark);
+  margin: 0;
+}
+
+/* 헤더 (상담 페이지와 동일) */
+.header { background: #fff; box-shadow: var(--shadow); position: sticky; top: 0; z-index: 10; }
+.headerInner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; }
+.logoLink { text-decoration: none; }
+.logoWrap { display: flex; align-items: center; gap: 12px; }
+.logoText { font-size: 2rem; font-weight: 900; letter-spacing: -1px; }
+.logoTextBlue { color: var(--main-blue); }
+.logoTextDark { color: var(--main-dark); }
+.logoImg { margin-left: -5px; width: 54px; height: 54px; }
+.nav { display: flex; gap: 18px; }
+.nav a { color: var(--main-dark); text-decoration: none; font-weight: 700; font-size: 1rem; padding: 6px 14px; border-radius: 8px; transition: background 0.2s, color 0.2s; }
+.nav a:hover { background: var(--main-blue); color: #fff; }
+.loginLink { color: var(--main-accent) !important; font-weight: 900 !important; }
+
+/* 메인 콘텐츠 */
+.main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 16px;
+}
+
+.pageTitle {
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: var(--main-blue);
+  margin-bottom: 24px;
+}
+
+.recordGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.recordCard {
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  padding: 24px;
+}
+
+.recordCard h3 {
+  font-size: 1.2rem;
+  color: var(--main-blue);
+  margin: 0 0 16px 0;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
+.emotionGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.emotionItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 12px;
+  border-radius: 12px;
+  transition: background 0.2s;
+}
+
+.emotionItem:hover {
+  background: #f0f7ff;
+}
+
+.emotionItem.selected {
+  background: #e0efff;
+  border: 1px solid var(--main-blue);
+}
+
+.emotionEmoji {
+  font-size: 2rem;
+}
+
+.emotionLabel {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.recordForm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+}
+
+.formGroup label {
+  font-weight: 700;
+  color: var(--main-dark);
+}
+
+.formGroup textarea {
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 100px;
+  outline: none;
+  transition: border 0.2s;
+}
+
+.formGroup textarea:focus {
+  border-color: var(--main-blue);
+}
+
+.submitBtn {
+  background: var(--main-blue);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.submitBtn:hover {
+  background: var(--main-accent);
+}
+
+.historySection {
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  padding: 24px;
+}
+
+.historySection h3 {
+  font-size: 1.2rem;
+  color: var(--main-blue);
+  margin: 0 0 16px 0;
+}
+
+.historyList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.historyItem {
+  padding: 16px;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.historyEmoji {
+  font-size: 2rem;
+}
+
+.historyContent {
+  flex: 1;
+}
+
+.historyDate {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.historyText {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.voiceBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #f0f7ff;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  color: var(--main-blue);
+}
+
+.voiceBtn:hover {
+  background: var(--main-blue);
+  color: #fff;
+}
+
+.voiceBtn img {
+  width: 18px;
+  height: auto;
+  display: block;
+}
+
+.cameraBtn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #f0f7ff;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  color: var(--main-blue);
+}
+
+.cameraBtn:hover {
+  background: var(--main-blue);
+  color: #fff;
+}
+
+.cameraBtn img {
+  width: 22px;
+  height: auto;
+  display: block;
+}
+
+.cameraInput {
+  display: none;
+}
+
+.chartPlaceholder {
+  height: 200px;
+  background: #f8f8f8;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  color: #aaa;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.statItem {
+  background: #f0f7ff;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.statLabel {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.statValue {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--main-blue);
+}
+
+@media (max-width: 768px) {
+  .emotionGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
