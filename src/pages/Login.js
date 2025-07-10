@@ -145,10 +145,16 @@ function Login({onLoginSuccess}) {
     navigate('/signup');
   };
 
+  const handleIdFindClick = () => {
+    // 아이디 찾기 페이지 이동
+    console.log('아이디 찾기 페이지로 이동');
+    navigate('/idfindselect');
+  };
+
   const handlePwFindClick = () => {
     // 비밀번호 찾기 페이지 이동
     console.log('비밀번호 찾기 페이지로 이동');
-    navigate('/pwfind');
+    navigate('/pwfindselect');
   };
 
   return (
@@ -193,9 +199,18 @@ function Login({onLoginSuccess}) {
         
         <div className={styles.forgotPassword}>
           <span 
+          onClick={() => handleIdFindClick()} 
+          style={{ cursor: 'pointer', color: '#4b94d0', fontWeight: '900', textDecoration: 'none' }}
+          >아이디 찾기
+          </span>
+          <span 
+          style={{ cursor: 'pointer', color: '#4b94d0', fontWeight: '900', textDecoration: 'none' }}
+          >  / 
+          </span>
+          <span 
           onClick={() => handlePwFindClick()} 
           style={{ cursor: 'pointer', color: '#4b94d0', fontWeight: '900', textDecoration: 'none' }}
-          >비밀번호를 잊으셨나요?
+          >  비밀번호 찾기
           </span>
         </div>
         
