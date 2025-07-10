@@ -28,6 +28,7 @@ const IdFindSelectPage = () => {
         />
       </div>
       <div className={styles.forgotTitle}>아이디 찾기</div>
+
       <div className={styles.buttonContainer}>
         <button 
           onClick={handlePhoneVerification} 

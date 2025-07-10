@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logoImage from '../../assets/images/logo_2.png';
-import styles from './IdFindEmail.module.css';
+import styles from './IdFindEmailPage.module.css';
 
 const IdFindEmail = () => {
   const navigate = useNavigate();

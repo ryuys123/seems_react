@@ -3,7 +3,7 @@ import React, { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import logoSeems from "../../assets/images/logo_seems.png";
 import styles from "./UserHeader.module.css";
-import { AuthContext } from "../../AuthProvider";
+import { AuthContext } from '../../AuthProvider';
 
 function UserHeader() {
   const [showSideMenu, setShowSideMenu] = useState(false);
@@ -12,6 +12,8 @@ function UserHeader() {
   // 전역 상태 관리자 AuthProvider 에서 필요한 정보 가져오기
   const { isLoggedIn, username, role, logoutAndRedirect } =
     useContext(AuthContext);
+
+  // console.log("UserHeader username:", username);  
 
   const handleLogout = () => {
     // 로그아웃 처리
@@ -52,6 +54,12 @@ function UserHeader() {
             />
           </div>
         </Link>
+    
+
+        <span className={styles.userGreeting}>
+          {username ? `${username}님, 안녕하세요` : "안녕하세요"}
+        </span>
+
 
         <nav className={styles.nav}>
           <Link to="/counseling">상담</Link>
