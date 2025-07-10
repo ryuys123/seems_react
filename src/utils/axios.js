@@ -5,7 +5,7 @@ import axios from "axios";
 const apiClient = axios.create({
   baseURL: process.env.REACT_APP_API_BASE_URL || "http://localhost:8888/seems",
   headers: {
-    // 'Content-Type': 'application/json', //새 공지사항 등록 시 데이터 타입 문제로 등록이 안돼서 주석처리함
+    'Content-Type': 'application/json', //새 공지사항 등록 시 데이터 타입 문제로 등록이 안돼서 주석처리함
   },
   withCredentials: true, // 쿠키 포함 여부
 });
