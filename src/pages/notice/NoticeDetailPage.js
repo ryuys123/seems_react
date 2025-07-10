@@ -139,7 +139,9 @@ function NoticeDetailPage() {
           <tr>
             <th>첨부파일</th>
             <td>
-              {notice.originalFilePath ? (
+              {notice.originalFilePath &&
+              notice.originalFilePath !== "null" &&
+              notice.originalFilePath !== "" ? (
                 <button
                   onClick={() =>
                     handleFileDownload(

@@ -11,7 +11,7 @@ function NoticeUpdatePage() {
   const { secureApiRequest } = useContext(AuthContext);
 
   // 라우터 url 에서 no 파라미터를 추출함
-  const { no } = useParams();
+  const { noticeNo } = useParams();
 
   // 폼 데이터 (첨부파일이 있기 때문임) 상태 변수 준비
   const [formData, setFormData] = useState({
@@ -40,11 +40,11 @@ function NoticeUpdatePage() {
   useEffect(() => {
     //서버측에 요청해서 해당 공지글 가져오는 비동기 통신 처리 함수 작성
     const fetchNoticeDetail = async () => {
-      console.log("no : ", no);
+      console.log("no : ", noticeNo);
 
       try {
         // url path 와 ${변수명} 을 같이 사용시에는 반드시 빽틱(``)을 사용해야 함 (작은 따옴표 아님 : 주의할 것)
-        const response = await apiClient.get(`/notice/detail/${no}`);
+        const response = await apiClient.get(`/notice/detail/${noticeNo}`);
         console.log(response.data);
 
         //서버로 부터 받은 정보로 form 에 출력할 초기값 지정
@@ -55,6 +55,7 @@ function NoticeUpdatePage() {
           noticeDate: response.data.noticeDate,
           importance: response.data.importance,
           impEndDate: response.data.impEndDate,
+          content: response.data.content,
           originalFilePath: response.data.originalFilePath,
           renameFilePath: response.data.renameFilePath,
           readCount: response.data.readCount,
@@ -67,7 +68,7 @@ function NoticeUpdatePage() {
 
     //공지글 조회 요청 함수 실행
     fetchNoticeDetail();
-  }, [no]);
+  }, [noticeNo]);
 
   //전송 버튼 눌렀을 때 작동할 핸들러
   const handleSubmit = async (e) => {
@@ -96,13 +97,13 @@ function NoticeUpdatePage() {
     }
 
     try {
-      await secureApiRequest(`/admin/notice/${no}`, {
+      await secureApiRequest(`/admin/notice/${noticeNo}`, {
         method: "PUT",
         body: data,
       });
 
       alert("공지글 수정 성공");
-      navigate(`/noticed/${no}`); //목록 페이지로 이동
+      navigate(`/noticed/${noticeNo}`); //목록 페이지로 이동
     } catch (error) {
       console.error("공지글 수정 실패 : ", error);
       alert("공지글 수정 실패");
@@ -126,7 +127,7 @@ function NoticeUpdatePage() {
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>{no} 공지글 수정 페이지</h1>
+      <h1 className={styles.title}>{noticeNo} 공지글 수정 페이지</h1>
       <form className={styles.form} onSubmit={handleSubmit}>
         <table className={styles.table}>
           <tbody>
@@ -244,7 +245,7 @@ function NoticeUpdatePage() {
             type="button"
             value="취소"
             className={styles.button}
-            onClick={() => navigate(`/noticed/${no}`)}
+            onClick={() => navigate(`/noticed/${noticeNo}`)}
           />
         </div>
       </form>

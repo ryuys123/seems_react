@@ -26,7 +26,12 @@ function NoticeListPage({ searchResults }) {
   const [loading, setLoading] = useState(false); //로딩 상태 확인용
   const [error, setError] = useState(null); //에러 메세지 저장용
   const [isSearchMode, setIsSearchMode] = useState(false); //검색 모드인지 아닌지 확인용
-
+  // 검색 타입과 검색어 상태 분리
+  const [searchType, setSearchType] = useState("title");
+  const [searchTerm, setSearchTerm] = useState("");
+  // 날짜 검색용 상태 추가
+  const [begin, setbegin] = useState("");
+  const [end, setend] = useState("");
   const navigate = useNavigate(); // 페이지 이동을 위함
 
   //서버로 공지목록 조회용 함수 (기본 1페이지)
@@ -46,6 +51,33 @@ function NoticeListPage({ searchResults }) {
       setError("공지 목록 조회 실패!");
     } finally {
       setLoading(false); //로딩 상태 종료
+    }
+  };
+
+  // 검색 버튼 클릭하면 핸들러 추가 : 서버로 검색 요청을 함
+  const handleSearch = async () => {
+    try {
+      setLoading(true);
+      let response;
+      if (searchType === "date") {
+        response = await apiClient.get(`/notice/search/date`, {
+          params: { action: searchType, begin, end },
+        });
+      } else {
+        response = await apiClient.get(`/notice/search/${searchType}`, {
+          params: { action: searchType, keyword: searchTerm },
+        });
+      }
+      setNotices(response.data.list || []);
+      setPagingInfo(response.data.paging || {});
+      setIsSearchMode(true);
+    } catch (error) {
+      console.error("검색 요청 실패 : ", error);
+      setNotices([]); // 에러가 나도 테이블 렌더링을 위해 빈 배열로 설정
+      setPagingInfo({}); // 페이징 정보도 초기화
+      setIsSearchMode(true); // 검색모드 유지
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -84,14 +116,25 @@ function NoticeListPage({ searchResults }) {
     try {
       setLoading(true); //로딩 시작
       if (isSearchMode) {
-        //검색 목록 페이지 요청
-        const response = await apiClient.get(`/notice/search/title`, {
-          params: {
-            action: searchResults.action,
-            keyword: searchResults.keyword,
-            page,
-          },
-        });
+        let response;
+        if (searchType === "date") {
+          response = await apiClient.get(`/notice/search/date`, {
+            params: {
+              action: searchType,
+              begin,
+              end,
+              page,
+            },
+          });
+        } else {
+          response = await apiClient.get(`/notice/search/${searchType}`, {
+            params: {
+              action: searchType,
+              keyword: searchTerm,
+              page,
+            },
+          });
+        }
         setNotices(response.data.list || []);
         setPagingInfo(response.data.paging || {});
       } else {
@@ -117,6 +160,54 @@ function NoticeListPage({ searchResults }) {
       <UserHeader />
       <main className={styles.main}>
         <h1 className={styles.pageTitle}>공지사항</h1>
+
+        {/* 검색 영역 */}
+        <div className={styles.searchContainer}>
+          <div className={styles.searchForm}>
+            <select
+              className={styles.searchSelect}
+              value={searchType}
+              onChange={(e) => setSearchType(e.target.value)}
+            >
+              <option value="title">제목</option>
+              <option value="content">내용</option>
+              <option value="date">등록날짜</option>
+            </select>
+
+            {searchType === "date" ? (
+              <>
+                <input
+                  type="date"
+                  className={styles.searchInput}
+                  value={begin}
+                  onChange={(e) => setbegin(e.target.value)}
+                  placeholder="시작 날짜"
+                />
+                <span style={{ margin: "0 8px" }}>~</span>
+                <input
+                  type="date"
+                  className={styles.searchInput}
+                  value={end}
+                  onChange={(e) => setend(e.target.value)}
+                  placeholder="끝나는 날짜"
+                />
+              </>
+            ) : (
+              <input
+                type="text"
+                className={styles.searchInput}
+                placeholder={`${searchType === "title" ? "제목" : "내용"}을 입력하세요`}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            )}
+
+            <button className={styles.searchButton} onClick={handleSearch}>
+              검색
+            </button>
+          </div>
+        </div>
+
         {/* 글쓰기 버튼 : role 이 'ADMIN' 일 때만 보여지게 함 */}
         <div className={styles.buttonGroup}>
           {/* {isLoggedIn && role === "ADMIN" && ( */}
@@ -146,23 +237,31 @@ function NoticeListPage({ searchResults }) {
             </tr>
           </thead>
           <tbody>
-            {notices.map((notice) => (
-              <tr
-                key={notice.noticeNo}
-                className={styles.noticeItem}
-                onClick={() => handleTitleClick(notice.noticeNo)}
-              >
-                <td className={styles.noticeNo}>{notice.noticeNo}</td>
-                <td className={styles.title}>
-                  {notice.importance === "Y" && (
-                    <span className={styles.important}>[긴급] </span>
-                  )}
-                  {notice.title}
+            {notices.length > 0 ? (
+              notices.map((notice) => (
+                <tr
+                  key={notice.noticeNo}
+                  className={styles.noticeItem}
+                  onClick={() => handleTitleClick(notice.noticeNo)}
+                >
+                  <td className={styles.noticeNo}>{notice.noticeNo}</td>
+                  <td className={styles.title}>
+                    {notice.importance === "Y" && (
+                      <span className={styles.important}>[긴급] </span>
+                    )}
+                    {notice.title}
+                  </td>
+                  <td className={styles.noticeDate}>{notice.noticeDate}</td>
+                  <td className={styles.readCount}>{notice.readCount}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="4" className={styles.noData}>
+                  해당 공지사항 없음!
                 </td>
-                <td className={styles.noticeDate}>{notice.noticeDate}</td>
-                <td className={styles.readCount}>{notice.readCount}</td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </main>
