@@ -22,6 +22,10 @@ const AppRouter = () => {
         <Route key={route.path} path={route.path} element={route.element} />
       ))}
       {noticeRoutes}
+      {adminRoutes.map((route) => (
+        <Route key={route.path} path={route.path} element={route.element} />
+      ))}
+
       {/* {testRoutes} */}
       {/* {testRoutes.map((route) => (
         <Route key={route.path} path={route.path} element={route.element} />
