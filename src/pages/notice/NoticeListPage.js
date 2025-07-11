@@ -1,4 +1,4 @@
-// src/pages/notice/NoticeList.js  : 공지글 목록 출력 페이지
+// src/pages/notice/NoticeListPage.js  : 공지글 목록 출력 페이지
 import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom"; // page 에서 page 바꾸기할 때 사용
 import apiClient from "../../utils/axios"; // 공지 목록 조회용
