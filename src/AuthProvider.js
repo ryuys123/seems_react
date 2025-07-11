@@ -56,25 +56,37 @@ export const AuthProvider = ({ children }) => {
     // 초기화 시 토큰 확인 및 상태 설정
     const accessToken = localStorage.getItem("accessToken");
     const refreshToken = localStorage.getItem("refreshToken");
+    const parsedToken = parseAccessToken(accessToken);
+    console.log("useEffect에서 파싱된 토큰:", parsedToken);
     console.log("useEffect : ", accessToken, refreshToken);
-    if (accessToken && refreshToken) {
-      const parsedToken = parseAccessToken(accessToken);
+
+    if (accessToken && refreshToken && parsedToken) {
       console.log("useEffect 실행 : ", parsedToken);
       console.log("-----------------------------");
 
-      if (parsedToken) {
+      // if (parsedToken) {
         setAuthInfo({
           isLoggedIn: true,
           role: parsedToken.role,
           userid: parsedToken.sub,
-          username: parsedToken.userName, // ✅ 서버 필드명과 일치
-        });
-      } else {
+          username: parsedToken.name, // ✅ 서버 필드명과 일치
+        // });
+      // } else {
         // 토큰 파싱이 실패한 경우 로그아웃 처리
-        logoutAndRedirect();
-      }
+        // logoutAndRedirect();
+      // }
+
+        });
+    } else {
+      setAuthInfo({isLoggedIn: false, role: "", username: ""});
     }
+
   }, []); //useEffect
+
+  useEffect(() => {
+    // authInfo가 바뀔 때마다 로그
+    console.log("authInfo 변경됨:", authInfo);
+  }, [authInfo]);
 
   // 로그아웃 함수
   const logoutAndRedirect = () => {
@@ -89,6 +101,9 @@ export const AuthProvider = ({ children }) => {
   const updateTokens = (accessToken, refreshToken) => {
     if (accessToken) {
       localStorage.setItem("accessToken", accessToken);
+      localStorage.setItem("refreshToken", refreshToken);
+      console.log("localStorage 저장 직후 accessToken:", localStorage.getItem("accessToken"));
+
       const parsedToken = parseAccessToken(accessToken);
       console.log("AuthProvider updateTokens : ", parsedToken);
 
@@ -96,9 +111,10 @@ export const AuthProvider = ({ children }) => {
         setAuthInfo({
           isLoggedIn: true,
           role: parsedToken.role,
-          username: parsedToken.userName, // ✅ 서버 필드명과 일치
+          username: parsedToken.name, // ✅ 서버 필드명과 일치
         });
-        console.log("authInfo : ", authInfo);
+        // console.log("authInfo : ", authInfo);
+        console.log("로그인 성공");
       } else {
         // 파싱 실패시 로그아웃 처리
         logoutAndRedirect();
