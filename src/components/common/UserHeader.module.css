@@ -88,9 +88,9 @@
   font-weight: 600;
   font-size: 0.95rem;
   padding: 6px 14px;
-  border-radius: 8px;
+  /* border-radius: 8px; */
   background: var(--main-bg);
-  border: 1px solid var(--main-blue);
+  /* border: 1px solid var(--main-blue); */
   margin-right: 8px;
 }
 
