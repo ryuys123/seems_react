@@ -1,5 +1,5 @@
 // src/pages/notice/NoticeDetailPage.js : 공지글 상세보기 페이지
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 // useParams : 이전 페이지에서 전달온 파라메타 값을 꺼내서 사용하기 위함
 // useNavigete : 버튼 클릭시 다른 페이지로 이동 처리하기 위함 (location.href 역할을 하는 훅임)
@@ -28,23 +28,27 @@ function NoticeDetailPage() {
   const [notice, setNotice] = useState(null); //공지 데이터 저장할 상태 변수임
   const [error, setError] = useState(null); //에러 메세지 저장용 상태 변수임
 
+  const hasFetched = useRef(false); //  요청 중복 방지용 ref (개발모드에서 2번 실행으로 인해 조회수 2씩 증가 방지)
+
+  //*********************************************** */
   useEffect(() => {
+    if (hasFetched.current) return; // 이미 실행됐으면 아무것도 안함 (개발모드 2번실행 방지)
+    hasFetched.current = true; // 최초 실행에서만 true로 바꿈
+
     // 서버측에 해당 번호에 대한 공지글 비동기 요청하고, 결과 받아서 notice 업데이트하는 함수 작성함
     const fetchNoticeDetail = async () => {
       console.log("noticeNo : ", noticeNo);
 
       try {
-        // url path 와 ${변수명} 을 같이 사용시에는 반드시 빽틱(``)을 사용해야 함 (작은 따옴표 아님 : 주의할 것)
         const response = await apiClient.get(`/notice/detail/${noticeNo}`);
-        setNotice(response.data); //서버측에서 받은 데이터 저장 처리
+        setNotice(response.data);
         console.log(response.data);
       } catch (error) {
         setError("공지글 상세 조회 실패!");
         console.error(error);
       }
-    }; //fetchNoticeDetail()
+    };
 
-    //작성된 함수 실행
     fetchNoticeDetail();
   }, [noticeNo]); // useEffect()
 
@@ -142,18 +146,24 @@ function NoticeDetailPage() {
               {notice.originalFilePath &&
               notice.originalFilePath !== "null" &&
               notice.originalFilePath !== "" ? (
-                <button
-                  onClick={() =>
-                    handleFileDownload(
-                      notice.originalFilePath,
-                      notice.renameFilePath
-                    )
-                  }
-                >
-                  {notice.originalFilePath}
-                </button>
+                <div className={styles.attachmentContainer}>
+                  <button
+                    className={styles.attachmentButton}
+                    onClick={() =>
+                      handleFileDownload(
+                        notice.originalFilePath,
+                        notice.renameFilePath
+                      )
+                    }
+                  >
+                    <svg className={styles.attachmentIcon} viewBox="0 0 24 24">
+                      <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />{" "}
+                    </svg>
+                    {notice.originalFilePath}
+                  </button>
+                </div>
               ) : (
-                "첨부파일 없음"
+                <span className={styles.attachmentText}>첨부파일 없음</span>
               )}
             </td>
           </tr>

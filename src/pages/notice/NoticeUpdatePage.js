@@ -43,8 +43,10 @@ function NoticeUpdatePage() {
       console.log("no : ", noticeNo);
 
       try {
-        // url path 와 ${변수명} 을 같이 사용시에는 반드시 빽틱(``)을 사용해야 함 (작은 따옴표 아님 : 주의할 것)
-        const response = await apiClient.get(`/notice/detail/${noticeNo}`);
+        // 수정페이지에서 notice/detail/${noticeNo}는 조회수 증가 안함
+        const response = await apiClient.get(
+          `/notice/detail/${noticeNo}?increase=false`
+        );
         console.log(response.data);
 
         //서버로 부터 받은 정보로 form 에 출력할 초기값 지정

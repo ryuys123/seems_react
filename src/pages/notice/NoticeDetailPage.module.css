@@ -58,6 +58,51 @@ body {
   margin-right: 8px;
 }
 
+/* 첨부파일 관련 스타일 */
+.attachmentContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.attachmentButton {
+  background: #f5f5f5;
+  color: #666;
+  border: 1px solid #ddd;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+}
+
+.attachmentButton:hover {
+  background: #e8e8e8;
+  border-color: #ccc;
+  color: #333;
+}
+
+.attachmentButton:active {
+  background: #ddd;
+}
+
+.attachmentIcon {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+}
+
+.attachmentText {
+  color: #999;
+  font-style: italic;
+  font-size: 0.85rem;
+}
+
 .buttonGroup {
   display: flex;
   justify-content: center;
