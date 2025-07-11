@@ -21,10 +21,12 @@ body {
   padding: 32px 16px;
 }
 .pageTitle {
-  font-size: 1.8rem;
+  font-size: 2rem;
   font-weight: 900;
   color: var(--main-blue);
+  margin-top: 50px;
   margin-bottom: 24px;
+  text-align: center;
 }
 
 .button {
