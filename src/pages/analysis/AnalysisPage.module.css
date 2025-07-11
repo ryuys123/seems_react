@@ -1,0 +1,167 @@
+/* src/pages/AnalysisPage.module.css */
+
+/* 전체 페이지 컨테이너: 따뜻하고 부드러운 배경 */
+.container {
+  max-width: 960px; /* 너비 확장 */
+  margin: 60px auto;
+  padding: 50px;
+  background-color: #f8f8f8; /* 아주 연한 회색 */
+  border-radius: 25px; /* 더 부드러운 모서리 */
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+  font-family: "Segoe UI", "Malgun Gothic", Arial, sans-serif;
+  color: #444;
+}
+
+/* 제목: 차분하고 모던한 타이포그래피 */
+.title {
+  text-align: center;
+  font-size: 3rem;
+  color: #2c3e50; /* 진한 남색 계열 */
+  margin-bottom: 50px;
+  font-weight: 700;
+}
+
+/* 결과 카드 섹션: 깔끔한 흰색 카드 */
+.resultCard {
+  background-color: #ffffff;
+  border-radius: 15px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+  padding: 40px;
+  margin-bottom: 40px;
+}
+
+/* AI 통찰 요약 텍스트: 힐링 테마 강조 */
+.analysisText {
+  line-height: 1.8;
+  font-size: 1.15rem;
+  color: #333;
+  background-color: #f7fff7; /* 아주 연한 녹색 배경 */
+  padding: 25px;
+  border-radius: 10px;
+  border-left: 6px solid #4caf50; /* 힐링을 상징하는 녹색 강조 */
+  margin-bottom: 35px;
+  font-weight: 500;
+}
+
+/* 분석 점수 시각화 섹션 */
+.gaugeContainer {
+  padding: 30px;
+  background-color: #e8f4f8; /* 부드러운 파란색 배경 */
+  border-radius: 15px;
+  margin-bottom: 40px;
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.gaugeContainer h3 {
+  width: 100%;
+  text-align: center;
+  font-size: 1.8rem;
+  color: #2980b9; /* 시원한 파란색 */
+  margin-bottom: 30px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #c8e0f0;
+}
+
+/* 개별 게이지 아이템 */
+.gaugeItem {
+  text-align: center;
+  padding: 20px;
+  flex-basis: 45%; /* 게이지 아이템 너비 */
+}
+
+.gaugeItem h4 {
+  font-size: 1.4rem;
+  color: #555;
+  margin-bottom: 15px;
+}
+
+/* 감정 점수 텍스트 스타일 */
+.gaugeItem p {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-top: 15px;
+}
+
+/* 상세 분석 및 제안 섹션 */
+.additionalInfo {
+  margin-top: 40px;
+  padding-top: 30px;
+  border-top: 1px dashed #ccc;
+}
+
+.additionalInfo h3 {
+  font-size: 1.6rem;
+  color: #354f52;
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+.additionalInfo p {
+  font-size: 1rem;
+  line-height: 1.8;
+  color: #666;
+  margin-bottom: 15px;
+}
+
+/* 로그인 정보 없음 등 상태 표시 컨테이너 */
+/* AnalysisPage.js의 loading, error, !latestResult 반환 시 사용 */
+/* 이 스타일은 UserHeader와 함께 사용되도록 조정했습니다. */
+.loadingContainer,
+.errorContainer {
+  /* UserHeader가 상단에 있기 때문에 겹치지 않도록 마진 추가 */
+  margin-top: 80px;
+  padding: 20px;
+  text-align: center;
+  color: #555;
+  font-size: 1.2rem;
+}
+/* 상세 분석 및 제안 섹션 항목들을 위한 스타일 */
+.additionalInfo {
+  /* ... 기존 additionalInfo 스타일 유지 ... */
+  margin-top: 40px;
+  padding-top: 30px;
+  border-top: 1px dashed #ccc;
+}
+
+/* ⭐️ AI 제안 스타일: 강조된 박스 */
+.aiSuggestion {
+  background-color: #f0f8ff; /* 아주 연한 파란색 배경 */
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #b3e0ff; /* 연한 테두리 */
+  line-height: 1.7;
+  margin-top: 15px;
+  margin-bottom: 25px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  color: #354f52;
+}
+
+/* ⭐️ 핵심 키워드 스타일: 구분을 위한 배경색 및 패딩 */
+.keywords {
+  font-weight: 600;
+  color: #333;
+  background-color: #f5f5f5; /* 연한 회색 배경 */
+  padding: 10px 15px;
+  border-radius: 8px;
+  display: inline-block; /* 내용이 길어져도 박스 형태로 유지 */
+  margin-bottom: 20px;
+}
+
+/* ⭐️ 테스트 일시 스타일: 차분한 색상과 크기 */
+.testDate {
+  font-size: 0.9rem;
+  color: #999;
+  margin-top: 20px;
+  font-weight: 500;
+}
+
+/* 추가 정보 섹션의 p 태그 스타일 재조정 */
+.additionalInfo p {
+  font-size: 1rem;
+  line-height: 1.8;
+  color: #666;
+  margin-bottom: 15px;
+}

@@ -5,7 +5,7 @@ import React from "react";
 import SelectTestPage from "../pages/test/SelectTestPage";
 import PersonalityTestPage from "../pages/test/PersonalityTestPage";
 import PsychologyTestPage from "../pages/test/PsychologyTestPage";
-
+import PsychologyResultPage from "../pages/test/PsychologyResultPage";
 const testRoutes = [
   {
     path: "/SelectTestPage", // 검사 선택 페이지 경로
@@ -16,8 +16,12 @@ const testRoutes = [
     element: <PersonalityTestPage />,
   },
   {
-    path: "/PsychologyTestPage", // 심리 검사 페이지 경로
+    path: "/psychologyTestPage", // 심리 검사 페이지 경로
     element: <PsychologyTestPage />,
+  },
+  {
+    path: "/psychological-test/result/:resultId", // :resultId는 동적 파라미터
+    element: <PsychologyResultPage />,
   },
 ];
 

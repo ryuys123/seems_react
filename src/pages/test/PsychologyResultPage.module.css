@@ -1,0 +1,89 @@
+/* src/pages/PsychologyResultPage.module.css */
+
+.container {
+  max-width: 800px;
+  margin: 50px auto;
+  padding: 40px;
+  background-color: #f8f5f1;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  font-family: "Malgun Gothic", "Segoe UI", sans-serif;
+  color: #4a4a4a;
+}
+
+.title {
+  text-align: center;
+  margin-bottom: 40px;
+  color: #5a5a5a;
+  font-size: 2.8rem;
+  font-weight: bold;
+}
+
+.resultCard {
+  background-color: #ffffff;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  padding: 30px;
+  margin-bottom: 30px;
+}
+
+.resultCard h2 {
+  font-size: 1.6rem;
+  color: #354f52;
+  border-bottom: 2px solid #b3e0cf;
+  padding-bottom: 15px;
+  margin-bottom: 25px;
+  font-weight: 600;
+}
+
+.analysisText {
+  line-height: 1.7;
+  font-size: 17px;
+  background-color: #e8f5e9;
+  padding: 25px;
+  border-radius: 10px;
+  border-left: 6px solid #4caf50;
+  color: #4a4a4a;
+}
+
+.additionalInfo {
+  margin-top: 30px;
+  padding-top: 30px;
+  border-top: 1px dashed #cccccc;
+}
+
+.additionalInfo h3 {
+  color: #4a6c6c;
+  font-size: 1.3rem;
+  margin-bottom: 15px;
+  font-weight: 600;
+}
+
+.additionalInfo p {
+  font-size: 15px;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.backButton {
+  display: block;
+  width: 250px;
+  margin: 40px auto 0;
+  padding: 12px 20px;
+  background-color: #81c784;
+  color: white;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  transition:
+    background-color 0.3s ease,
+    transform 0.2s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.backButton:hover {
+  background-color: #66bb6a;
+  transform: translateY(-3px);
+}
