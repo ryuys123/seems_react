@@ -1,5 +1,8 @@
-import React, { useState, useEffect, useRef, useContext } from 'react';
+import React, { useState, useEffect, useRef, useContext, useCallback } from 'react';
 import { AuthContext } from '../../AuthProvider';
+import UserHeader from '../../components/common/UserHeader';
+import Footer from '../../components/common/Footer';
+
 import styles from './CounselingPage.module.css';
 
 // 이미지 경로를 정의합니다. public 폴더를 기준으로 합니다.
@@ -37,6 +40,7 @@ const CounselingPage = () => {
   const { secureApiRequest } = useContext(AuthContext);
   // 상태 관리
   const [messages, setMessages] = useState([]);
+  const messagesRef = useRef(messages); // Add this line
   const [inputValue, setInputValue] = useState('');
   const [history, setHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -46,6 +50,8 @@ const CounselingPage = () => {
   const [currentCoreQuestionIndex, setCurrentCoreQuestionIndex] = useState(0);
   const [showEndOptions, setShowEndOptions] = useState(false);
   const [isConsultationEnded, setIsConsultationEnded] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef(null);
 
   // 컴포넌트 마운트 시 초기 메시지 요청
   useEffect(() => {
@@ -56,6 +62,7 @@ const CounselingPage = () => {
         const data = await getLlamaResponse(secureApiRequest, [], 0); 
         setMessages([{ type: 'ai', text: data.response }]);
         setCurrentCoreQuestionIndex(data.next_core_question_index);
+        console.log("✅ 초기 AI 메시지 설정 완료. 현재 messages 상태:", [{ type: 'ai', text: data.response }]);
       } catch (error) {
         console.error("초기 메시지 로드 중 오류 발생:", error);
         setMessages([{ type: 'ai', text: '죄송해요, 초기 메시지를 불러오는 데 문제가 생겼어요.' }]);
@@ -85,6 +92,80 @@ const CounselingPage = () => {
     }
   }, [messages, isLoading]);
 
+  // messagesRef를 항상 최신 messages 상태로 업데이트
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
+
+  useEffect(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      console.error("이 브라우저에서는 음성 인식을 지원하지 않습니다.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'ko-KR';
+    recognition.continuous = true; // 연속적으로 음성을 인식
+    recognition.interimResults = true; // 중간 결과를 반환
+
+    recognitionRef.current = recognition;
+
+    recognition.onstart = () => {
+      console.groupCollapsed("🎤 음성 인식 활성화됨");
+      console.log("상태: 듣는 중...");
+      console.groupEnd();
+    };
+
+    recognition.onresult = (event) => {
+      console.groupCollapsed("📢 음성 인식 결과 수신");
+
+      let interimTranscript = "";
+      let finalTranscript = "";
+
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        if (event.results[i].isFinal) {
+          finalTranscript += event.results[i][0].transcript;
+        } else {
+          interimTranscript += event.results[i][0].transcript;
+        }
+      }
+      
+      console.log("중간 결과: %c%s", "color: gray;", interimTranscript);
+      console.log("최종 결과: %c%s", "color: green; font-weight: bold;", finalTranscript);
+      console.groupEnd();
+
+      setInputValue(finalTranscript || interimTranscript);
+
+      // 최종 결과가 나왔을 때만 자동으로 메시지 전송
+      if (finalTranscript) {
+        handleSendMessage(finalTranscript); // 메시지를 전송합니다.
+      }
+    };
+
+    recognition.onerror = (event) => {
+      console.groupCollapsed("❌ 음성 인식 오류");
+      console.error("오류 코드:", event.error);
+      console.groupEnd();
+
+      if (event.error === "no-speech") {
+        // 소리가 감지되지 않은 것은 흔한 경우이므로, 사용자에게 알리지 않음
+      } else if (event.error === 'audio-capture') {
+        alert("마이크를 찾을 수 없거나 접근 권한이 없습니다. 브라우저의 마이크 설정을 확인해주세요.");
+      } else {
+        alert(`음성 인식 오류가 발생했습니다: ${event.error}`);
+      }
+    };
+
+    recognition.onend = () => {
+      console.groupCollapsed("🎤 음성 인식 비활성화됨");
+      console.log("상태: 종료됨");
+      console.groupEnd();
+      setIsListening(false);
+    };
+
+  }, []);
+
   // 상담 기록 저장 함수
   const handleSaveHistory = () => {
     if (messages.length <= 1) { // AI의 첫 메시지만 있는 경우 제외
@@ -111,13 +192,16 @@ const CounselingPage = () => {
   };
 
   // 메시지 전송 함수 (API 연동)
-  const handleSendMessage = async () => {
-    const trimmedInput = inputValue.trim();
-    if (trimmedInput === '' || isLoading || isConsultationEnded) return;
+  const handleSendMessage = useCallback(async (voiceText = null) => {
+    const messageToSend = (voiceText !== null ? voiceText : inputValue).trim();
+    if (messageToSend === '' || isLoading || isConsultationEnded) return;
 
     // 사용자 메시지를 현재 메시지 목록에 추가
-    const newUserMessage = { type: 'user', text: trimmedInput };
-    const updatedMessages = [...messages, newUserMessage];
+    const newUserMessage = { type: 'user', text: messageToSend };
+    const currentMessages = messagesRef.current; // Get the latest messages from ref
+    console.log("➡️ 사용자 메시지 추가 전 messages 상태 (ref):", currentMessages);
+    const updatedMessages = [...currentMessages, newUserMessage];
+    console.log("➡️ 사용자 메시지 추가 후 updatedMessages:", updatedMessages);
     setMessages(updatedMessages);
     setInputValue('');
     setIsLoading(true);
@@ -129,11 +213,21 @@ const CounselingPage = () => {
         content: msg.text
       }));
 
+      console.groupCollapsed("➡️ AI에게 메시지 전송");
+      console.log("전체 대화 기록 (AI 형식):", messagesForAI);
+      console.log("현재 핵심 질문 인덱스:", currentCoreQuestionIndex);
+      console.groupEnd();
+
       // currentCoreQuestionIndex를 함께 보냄
       const data = await getLlamaResponse(secureApiRequest, messagesForAI, currentCoreQuestionIndex);
       const aiResponse = data.response;
       const nextCoreQIndex = data.next_core_question_index;
       
+      console.groupCollapsed("⬅️ AI 응답 수신");
+      console.log("AI 응답 데이터:", data);
+      console.log("다음 핵심 질문 인덱스:", nextCoreQIndex);
+      console.groupEnd();
+
       let displayResponse = aiResponse;
       if (aiResponse.includes('[END_OF_CONSULTATION_CHOICE]')) {
         displayResponse = aiResponse.replace('[END_OF_CONSULTATION_CHOICE]', '').trim();
@@ -151,7 +245,7 @@ const CounselingPage = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [inputValue, isLoading, isConsultationEnded, secureApiRequest, currentCoreQuestionIndex]);
 
   // 상담 종료 또는 계속 버튼 핸들러
   const handleEndConsultation = () => {
@@ -180,33 +274,19 @@ const CounselingPage = () => {
     }
   };
 
+  const handleVoiceInput = () => {
+    if (isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    } else {
+      recognitionRef.current.start();
+      setIsListening(true);
+    }
+  };
+
   return (
     <>
-      {/* 헤더 */}
-      <header className={styles.header}>
-        <div className={styles.headerInner}>
-          <a href="/" className={styles.logoLink}>
-            <div className={styles.logoWrap}>
-              <span className={styles.logoText}>
-                <span className={styles.logoTextBlue}>SEE</span>
-                <span className={styles.logoTextDark}>MS</span>
-              </span>
-              <img src={images.logo} alt="SEE MS 로고" className={styles.logoImg} />
-            </div>
-          </a>
-          <nav className={styles.nav}>
-            <a href="/">홈</a>
-            <a href="/counseling">상담</a>
-            <a href="/record">기록</a>
-            <a href="/test">심리 검사</a>
-            <a href="/analysis">분석</a>
-            <a href="/activity">활동</a>
-            <a href="/simulation">시뮬레이션</a>
-            <a href="/mypage">마이페이지</a>
-            <a href="/login" className={styles.loginLink}>로그인/회원가입</a>
-          </nav>
-        </div>
-      </header>
+      <UserHeader />
 
       {/* 메인 콘텐츠 */}
       <main className={styles.main}>
@@ -235,10 +315,6 @@ const CounselingPage = () => {
               </>
             ) : (
               <>
-                <button className={styles.suggestionChip}>스트레스 해소 방법</button>
-                <button className={styles.suggestionChip}>불안감 극복하기</button>
-                <button className={styles.suggestionChip}>수면 개선하기</button>
-                <button className={styles.suggestionChip}>대인관계 개선</button>
               </>
             )}
           </div>
@@ -251,10 +327,10 @@ const CounselingPage = () => {
               onKeyPress={handleKeyPress}
               disabled={isLoading || isConsultationEnded}
             />
-            <button className={styles.voiceBtn} title="음성 입력" disabled={isLoading || isConsultationEnded}>
+            <button className={`${styles.voiceBtn} ${isListening ? styles.voiceBtnActive : ''}`} title={isListening ? "듣는 중... 클릭하여 중지" : "음성 입력"} onClick={handleVoiceInput} disabled={isLoading || isConsultationEnded}>
               <img src={images.mic} alt="음성 입력" />
             </button>
-            <button onClick={handleSendMessage} disabled={isLoading || isConsultationEnded}>
+            <button onClick={() => handleSendMessage()} disabled={isLoading || isConsultationEnded}>
               {isLoading ? '전송중' : '전송'}
             </button>
           </div>
@@ -279,6 +355,7 @@ const CounselingPage = () => {
           </button>
         </aside>
       </main>
+      <Footer />
     </>
   );
 };
