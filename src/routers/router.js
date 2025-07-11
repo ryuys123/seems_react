@@ -3,7 +3,9 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 
 import Login from "../pages/Login";
-
+import PsychologyTestPage from "../pages/test/PsychologyTestPage";
+import PsychologyTestResultPage from "../pages/test/PsychologyResultPage";
+import AnalysisPage from "../pages/analysis/AnalysisPage"; // ⭐️ AnalysisPage 임포트
 // 기능별로 작성한 라우터를 불러오기
 import userRoutes from "./userRoutes";
 import NoticeListPage from "./noticeRoutes";
@@ -12,9 +14,9 @@ import testRoutes from "./testRoutes";
 import noticeRoutes from "./noticeRoutes";
 import questRoutes from "./questRoutes";
 import contentRoutes from "./contentRoutes";
-import EmotionRecordPage from '../pages/emotion/EmotionPage'; // 감정 기록 페이지 추가
-import CounselingRoutes from './counselingRoutes'; // 상담 라우터 추가
-
+import EmotionRecordPage from "../pages/emotion/EmotionPage"; // 감정 기록 페이지 추가
+import CounselingRoutes from "./counselingRoutes"; // 상담 라우터 추가
+import analysisRoutes from "./analysisRoutes"; // ⭐️ analysisRoutes 임포트
 const AppRouter = () => {
   return (
     <Routes>
@@ -30,14 +32,19 @@ const AppRouter = () => {
 
       {/* 상담 관련 라우트 */}
       <Route path="/counseling/*" element={<CounselingRoutes />} />
-      
+
       {/* 감정 기록 페이지 라우트 */}
       <Route path="/record" element={<EmotionRecordPage />} />
 
-      {/* {testRoutes} */}
-      {/* {testRoutes.map((route) => (
+      {/* ⭐️ analysisRoutes 매핑 */}
+      {analysisRoutes.map((route) => (
         <Route key={route.path} path={route.path} element={route.element} />
-      ))} */}
+      ))}
+
+      {/* {testRoutes} */}
+      {testRoutes.map((route) => (
+        <Route key={route.path} path={route.path} element={route.element} />
+      ))}
       {/* Quest Routes
       {questRoutes.map((route) => (
         <Route key={route.path} path={route.path} element={route.element} />
