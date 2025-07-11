@@ -6,7 +6,7 @@ import Footer from "./components/common/Footer";
 
 // 별도로 작성된 라우터 등록 설정 파일을 불러오기함
 import AppRouter from "./routers/router";
-import NoticeListPage from "./pages/notice/NoticeListPage";
+
 
 function App() {
   return (
