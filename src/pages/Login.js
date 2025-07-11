@@ -91,6 +91,7 @@ function Login({onLoginSuccess}) {
         
         // ✅ 역할에 따른 페이지 이동 로직 추가
         console.log('사용자 역할:', role);
+        setTimeout(() => {
           if (role === 'ADMIN') {
             console.log('관리자로 로그인, 관리자 대시보드로 이동');
             navigate('/admindashboard');
@@ -98,6 +99,8 @@ function Login({onLoginSuccess}) {
             console.log('일반 사용자로 로그인, 사용자 대시보드로 이동');
             navigate('/userdashboard');
           }
+          // window.location.reload(); // 페이지 강제 새로고침
+        }, 100);
         
       } catch (storageError) {
         console.error(
