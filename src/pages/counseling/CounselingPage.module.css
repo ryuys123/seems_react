@@ -93,7 +93,7 @@ body {
 .main {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 32px 16px;
+  padding: 100px 16px 32px;
   display: flex;
   gap: 32px;
 }
@@ -242,6 +242,30 @@ body {
 .voiceBtn:hover {
   background: var(--main-blue);
   color: #fff;
+}
+
+.voiceBtnActive {
+  background: #e74c3c; /* 더 강렬한 빨간색 */
+  color: #fff;
+  box-shadow: 0 0 20px rgba(231, 76, 60, 0.8); /* 더 강한 그림자 효과 */
+  animation: pulse 1.5s infinite;
+  transform: scale(1.1); /* 활성화 시 약간 커지게 */
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 15px rgba(231, 76, 60, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(231, 76, 60, 0);
+  }
+}
+
+.voiceBtnActive img {
+  filter: brightness(0) invert(1); /* 아이콘 색상을 흰색으로 변경 */
 }
 
 .voiceBtn img {
