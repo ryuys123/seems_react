@@ -22,16 +22,17 @@ const SelectTestPage = () => {
     <div className={styles.selectTestContainer}>
       <UserHeader />
 
-      <h1>심리 검사 페이지</h1>
+      <h1>심심하면 검사나 갈기시죠들</h1>
 
       {/* 심리 검사 섹션 */}
       <div className={styles.testSection}>
-        <h2>심리 검사</h2>
+        <h2>AI 이미지 심리 검사</h2>
         <p>
-          자신의 심리 상태를 깊이 이해하고 싶으신가요? 다양한 심리 검사를 통해
-          내면을 탐색해 보세요.
+          당신의 눈이 멈춘 곳에서 숨겨진 마음을 읽어드립니다. <br />
+          AI가 분석하는 이미지 기반 심리 검사를 통해 내면의 이야기를 발견해
+          보세요.
         </p>
-        <button onClick={handleStartPsychologyTest}>심리 검사 시작하기</button>
+        <button onClick={handleStartPsychologyTest}>내면 탐색 시작하기</button>
       </div>
 
       {/* 성격 검사 섹션 */}
