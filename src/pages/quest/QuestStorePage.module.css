@@ -6,19 +6,26 @@
   --card-bg: #fff;
   --border-radius: 18px;
   --shadow: 0 4px 24px rgba(0,0,0,0.07);
+  --shadow-hover: 0 8px 32px rgba(0,0,0,0.12);
   --rare-blue: #2196f3;
   --epic-purple: #9c27b0;
   --unique-yellow: #ffc107;
   --legendary-green: #4caf50;
+  --gradient-blue: linear-gradient(135deg, #4b94d0, #3d7ab0);
+  --gradient-purple: linear-gradient(135deg, #9c27b0, #7b1fa2);
+  --gradient-gold: linear-gradient(135deg, #ffc107, #ff9800);
+  --gradient-green: linear-gradient(135deg, #4caf50, #388e3c);
 }
 
 .header {
-  background: #fff;
-  box-shadow: var(--shadow);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 20px rgba(0,0,0,0.08);
   padding: 0;
   position: sticky;
   top: 0;
   z-index: 10;
+  border-bottom: 1px solid rgba(75, 148, 208, 0.1);
 }
 
 .headerInner {
@@ -66,302 +73,508 @@
   text-decoration: none;
   font-weight: 700;
   font-size: 1rem;
-  padding: 6px 14px;
-  border-radius: 8px;
-  transition: background 0.2s;
+  padding: 8px 16px;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 .nav a:hover {
-  background: var(--main-blue);
+  background: var(--gradient-blue);
   color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(75, 148, 208, 0.3);
 }
 
 .main {
   max-width: 1200px;
   margin: 0 auto;
   padding: 32px 16px;
+  background: var(--main-bg);
+  min-height: 100vh;
 }
 
 .pageTitle {
-  font-size: 1.8rem;
+  font-size: 2.5rem;
   font-weight: 900;
-  color: var(--main-blue);
-  margin-bottom: 24px;
+  background: var(--gradient-blue);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 32px;
+  text-align: center;
+  letter-spacing: -1px;
 }
 
 .userStats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-  margin-bottom: 32px;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 40px;
 }
 
 .statCard {
   background: var(--card-bg);
   border-radius: var(--border-radius);
   box-shadow: var(--shadow);
-  padding: 20px;
+  padding: 24px;
   text-align: center;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(75, 148, 208, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.statCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--gradient-blue);
+}
+
+.statCard:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-hover);
 }
 
 .statValue {
-  font-size: 2rem;
+  font-size: 2.5rem;
   font-weight: 900;
-  color: var(--main-blue);
-  margin: 8px 0;
+  background: var(--gradient-blue);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 12px 0;
 }
 
 .statLabel {
   color: #666;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
+  font-weight: 600;
 }
 
 .pointsDisplay {
-  background: linear-gradient(135deg, var(--main-blue), #3d7ab0);
+  background: var(--gradient-blue);
   color: white;
   border-radius: var(--border-radius);
-  padding: 24px;
-  margin-bottom: 32px;
+  padding: 32px;
+  margin-bottom: 40px;
   text-align: center;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
 }
-
+.pointsDisplay::after {
+  content: '';
+  position: absolute;
+  top: -40%;
+  left: -40%;
+  width: 180%;
+  height: 180%;
+  background: linear-gradient(120deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.05) 60%, transparent 100%);
+  filter: blur(8px);
+  animation: points-glossy 3.5s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+@keyframes points-glossy {
+  0% { transform: rotate(0deg) scale(1); opacity: 1; }
+  50% { transform: rotate(8deg) scale(1.05); opacity: 0.8; }
+  100% { transform: rotate(0deg) scale(1); opacity: 1; }
+}
 .pointsValue {
-  font-size: 3rem;
+  font-size: 3.5rem;
   font-weight: 900;
-  margin: 8px 0;
+  margin: 12px 0;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  position: relative;
+  z-index: 1;
+  animation: points-shine 2.5s infinite;
+  background: linear-gradient(90deg, #fff 30%, #e3f0fd 50%, #fff 70%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+@keyframes points-shine {
+  0% { filter: drop-shadow(0 0 0px #fff); }
+  50% { filter: drop-shadow(0 0 8px #fff); }
+  100% { filter: drop-shadow(0 0 0px #fff); }
 }
 
 .pointsLabel {
-  font-size: 1.1rem;
-  opacity: 0.9;
+  font-size: 1.2rem;
+  opacity: 0.95;
+  font-weight: 600;
+}
+
+.pointsQuestBtn {
+  position: absolute;
+  right: 32px;
+  bottom: 24px;
+  background: linear-gradient(90deg, #ff9800 0%, #ef770c 100%);
+  color: #fff;
+  font-weight: 800;
+  font-size: 1.05rem;
+  padding: 14px 28px;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px 0 #ef770c33, 0 2px 8px rgba(239, 119, 12, 0.10);
+  text-decoration: none;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  overflow: hidden;
+}
+.pointsQuestBtn::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(120deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.05) 60%, transparent 100%);
+  opacity: 0.5;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+.pointsQuestBtn:hover {
+  background: linear-gradient(90deg, #ffb347 0%, #ef770c 100%);
+  box-shadow: 0 8px 32px 0 #ef770c55, 0 2px 8px #ef770c33;
+  transform: scale(1.04) translateY(-2px);
+}
+.pointsQuestBtn:active {
+  transform: scale(0.97);
+  box-shadow: 0 2px 8px #ef770c33;
+}
+
+@media (max-width: 600px) {
+  .pointsQuestBtn {
+    right: 50%;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 12px;
+    width: 90%;
+    font-size: 1rem;
+    padding: 12px 0;
+  }
 }
 
 .storeSection {
   background: var(--card-bg);
   border-radius: var(--border-radius);
   box-shadow: var(--shadow);
-  padding: 24px;
+  padding: 32px;
   margin-bottom: 32px;
+  border: 1px solid rgba(75, 148, 208, 0.1);
 }
 
 .storeHeader {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.questLinkBtn {
+  background: var(--main-blue);
+  color: #fff;
+  font-weight: 800;
+  font-size: 1.05rem;
+  padding: 10px 24px;
+  border-radius: 999px;
+  box-shadow: 0 2px 8px #4b94d033;
+  text-decoration: none;
+  transition: background 0.18s, box-shadow 0.18s, transform 0.18s;
+  border: none;
+  outline: none;
+  cursor: pointer;
+}
+.questLinkBtn:hover {
+  background: var(--main-accent);
+  color: #fff;
+  box-shadow: 0 4px 16px #ef770c33;
+  transform: translateY(-2px) scale(1.04);
 }
 
 .storeTitle {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: var(--main-blue);
+  font-size: 1.5rem;
+  font-weight: 800;
+  background: var(--gradient-blue);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   margin: 0;
 }
 
 .filterTabs {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
 }
 
 .filterTab {
-  background: #f0f0f0;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 20px;
+  background: #f5f6fa;
+  color: #4b94d0;
+  border: 2px solid #e0e6ef;
+  padding: 10px 18px;
+  border-radius: 25px;
   cursor: pointer;
-  font-weight: 600;
-  transition: all 0.2s;
+  font-weight: 700;
+  transition: all 0.3s ease;
   font-size: 0.9rem;
+  position: relative;
+  overflow: hidden;
+}
+.filterTab.active {
+  background: #4b94d0;
+  color: #fff;
+  border: 2px solid #4b94d0;
+}
+
+.filterTab:hover {
+  background: rgba(75, 148, 208, 0.1);
+  border-color: var(--main-blue);
+  transform: translateY(-1px);
 }
 
 .filterTab.active {
-  background: var(--main-blue);
+  background: var(--gradient-blue);
   color: white;
+  box-shadow: 0 4px 12px rgba(75, 148, 208, 0.3);
 }
 
 .storeGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 24px;
 }
 
+/* 카드 */
 .storeItem {
-  background: #f8f9fa;
-  border-radius: 12px;
-  padding: 20px;
-  border: 2px solid transparent;
-  transition: all 0.2s;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 4px 24px 0 rgba(0,0,0,0.08);
+  padding: 28px 24px 24px 24px;
   position: relative;
-  overflow: hidden;
+  border: none;
+  transition: box-shadow 0.2s, transform 0.2s;
 }
-
 .storeItem:hover {
-  border-color: var(--main-blue);
-  transform: translateY(-2px);
+  box-shadow: 0 8px 32px 0 rgba(0,0,0,0.16);
+  transform: translateY(-4px) scale(1.03);
 }
 
-.storeItem.owned {
-  opacity: 0.7;
-  border-color: #4caf50;
-}
-
+/* 등급 pill */
 .itemRarity {
   position: absolute;
-  top: 12px;
-  right: 12px;
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: white;
+  top: 20px;
+  right: 20px;
+  padding: 6px 18px;
+  border-radius: 999px;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #fff;
+  background: #2196f3;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+  z-index: 2;
+  letter-spacing: 0.5px;
+  text-transform: none;
+}
+.rarityRare.itemRarity { background: #2196f3; }
+.rarityEpic.itemRarity { background: #9c27b0; }
+.rarityUnique.itemRarity { background: #ffc107; color: #222; }
+.rarityLegendary.itemRarity { background: #4caf50; }
+.rarityPlatinum.itemRarity {
+  background: linear-gradient(135deg, #e5e4e2, #b3b3b3 80%);
+  color: #222;
+  box-shadow: 0 2px 12px #b3b3b355;
 }
 
-.rarityRare {
-  background: var(--rare-blue);
+/* 등급 pill 반짝임 애니메이션 */
+.itemRarity::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -60%;
+  width: 60%; height: 100%;
+  background: linear-gradient(120deg, rgba(255,255,255,0.0) 0%, rgba(255,255,255,0.35) 50%, rgba(255,255,255,0.0) 100%);
+  transform: skewX(-20deg);
+  pointer-events: none;
+  animation: rarity-shine 3.5s infinite;
+}
+@keyframes rarity-shine {
+  0% { left: -60%; }
+  60% { left: 120%; }
+  100% { left: 120%; }
+}
+.rarityRare.itemRarity::after { animation-duration: 3.5s; }
+.rarityEpic.itemRarity::after { animation-duration: 2.5s; }
+.rarityUnique.itemRarity::after { animation-duration: 1.5s; }
+.rarityLegendary.itemRarity::after { animation-duration: 0.8s; }
+.rarityPlatinum.itemRarity::after {
+  animation-duration: 0.5s;
 }
 
-.rarityEpic {
-  background: var(--epic-purple);
-}
+/* 유니크 pill 글씨 흰색 */
+.rarityUnique.itemRarity { background: #ffc107; color: #fff; }
 
-.rarityUnique {
-  background: var(--unique-yellow);
-  color: #333;
-}
-
-.rarityLegendary {
-  background: var(--legendary-green);
-}
-
+/* 아이콘: 파란 원 + 노란 왕관 */
 .itemIcon {
-  width: 60px;
-  height: 60px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2rem;
-  margin-bottom: 16px;
-  background: var(--main-blue);
-  color: white;
-}
-
-.itemTitle {
-  font-size: 1.1rem;
-  font-weight: 700;
-  margin-bottom: 8px;
-  color: var(--main-dark);
-}
-
-.itemDescription {
-  color: #666;
-  font-size: 0.9rem;
-  margin-bottom: 16px;
-  line-height: 1.4;
-}
-
-.rewardInfo {
-  margin-bottom: 12px;
-}
-
-.titleReward, .pointsReward {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.rewardLabel {
-  font-size: 0.85rem;
-  color: #666;
-  font-weight: 600;
-}
-
-.rewardValue {
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--main-accent);
-}
-
-.itemPrice {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--main-accent);
-  margin-bottom: 16px;
-  text-align: center;
-}
-
-.purchaseBtn {
-  background: var(--main-blue);
-  color: white;
+  font-size: 1.7rem;
+  margin-bottom: 18px;
+  margin-top: 8px;
+  background: #fff;
+  color: #ffc107;
+  box-shadow: none;
   border: none;
-  padding: 10px 20px;
+}
+.rarityPlatinum.itemIcon {
+  background: #fff;
+  border: none;
+}
+
+/* 포인트 영역: 연파랑 배경, 파랑 텍스트, bold */
+.itemPrice {
+  font-size: 1.2rem;
+  font-weight: 800;
+  margin-bottom: 18px;
+  text-align: left;
+  background: #e3f0fd;
+  padding: 12px 0 12px 12px;
   border-radius: 8px;
-  font-weight: 700;
+  border: none;
+  color: #2196f3;
+}
+
+/* 버튼: 파란색 배경, 흰색 텍스트, bold, 라운드 */
+.purchaseBtn {
+  background: #4b94d0;
+  color: #fff;
+  border: none;
+  padding: 14px 0;
+  border-radius: 10px;
+  font-weight: 800;
   cursor: pointer;
-  transition: background 0.2s;
   width: 100%;
+  font-size: 1rem;
+  margin-top: 8px;
+  transition: background 0.2s, box-shadow 0.2s;
+  position: relative;
+  overflow: hidden;
 }
-
-.purchaseBtn:hover {
-  background: #3d7ab0;
+.purchaseBtn:hover:not(:disabled) {
+  background: #357ab8;
+  box-shadow: 0 4px 16px #4b94d055;
 }
-
-.purchaseBtn.owned {
-  background: #4caf50;
-  cursor: default;
-}
-
-.purchaseBtn.owned:hover {
-  background: #4caf50;
-}
-
-.purchaseBtn.insufficient {
-  background: #ccc;
+.purchaseBtn:disabled {
+  background: #bbb;
+  color: #fff;
   cursor: not-allowed;
+  opacity: 0.7;
 }
 
+/* 획득하기 버튼 반짝임 */
+.purchaseBtn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s;
+  pointer-events: none;
+  z-index: 1;
+  animation: btn-shine 3.5s infinite;
+}
+@keyframes btn-shine {
+  0% { left: -100%; }
+  60% { left: 100%; }
+  100% { left: 100%; }
+}
+.rarityRare .purchaseBtn::before { animation-duration: 3.5s; }
+.rarityEpic .purchaseBtn::before { animation-duration: 2.5s; }
+.rarityUnique .purchaseBtn::before { animation-duration: 1.5s; }
+.rarityLegendary .purchaseBtn::before { animation-duration: 0.8s; }
+.rarityPlatinum .purchaseBtn::before { animation-duration: 0.8s; }
+
+/* 토스트 메시지 개선 */
 .toast {
   position: fixed;
-  bottom: 20px;
+  top: 40px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(44, 62, 80, 0.97);
   color: white;
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  display: none;
-  z-index: 1000;
-}
-
-.loadingContainer {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 400px;
-  background: var(--main-bg);
-}
-
-.loadingSpinner {
+  padding: 20px 40px;
+  border-radius: 16px;
   font-size: 1.2rem;
-  color: var(--main-blue);
-  font-weight: 700;
+  font-weight: 800;
+  z-index: 2000;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+  opacity: 0;
+  pointer-events: none;
+  animation: toast-fade-in 0.3s forwards, toast-fade-out 0.3s 1.7s forwards;
+}
+@keyframes toast-fade-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+@keyframes toast-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
 }
 
-@media (max-width: 768px) {
-  .userStats {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .storeGrid {
-    grid-template-columns: 1fr;
-  }
-  .filterTabs {
-    flex-wrap: wrap;
-  }
-  .storeHeader {
-    flex-direction: column;
-    gap: 16px;
-    align-items: flex-start;
-  }
+/* 획득 완료 카드 스타일 */
+.storeItem.owned {
+  opacity: 0.6;
+  filter: grayscale(0.2);
+  position: relative;
+}
+.storeItem.owned::after {
+  content: '\2714';
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  font-size: 2rem;
+  color: #4caf50;
+  background: #fff;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px #4caf5033;
+  z-index: 2;
+}
+.purchaseBtn.owned {
+  background: #4caf50;
+  color: #fff;
+  cursor: default;
+  font-weight: 900;
+  border: none;
+  opacity: 1;
+}
+.purchaseBtn.owned:hover {
+  background: #4caf50;
+  box-shadow: none;
+}
+
+/* 버튼 클릭 애니메이션 */
+.purchaseBtn:active {
+  transform: scale(0.96);
+  transition: transform 0.1s;
 }

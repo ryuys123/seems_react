@@ -6,6 +6,12 @@
   --card-bg: #fff;
   --border-radius: 18px;
   --shadow: 0 4px 24px rgba(0,0,0,0.07);
+  --shadow-hover: 0 8px 32px rgba(0,0,0,0.12);
+  --gradient-blue: linear-gradient(135deg, #4b94d0, #3d7ab0);
+}
+
+body {
+  background: var(--main-bg);
 }
 
 .header {
@@ -73,27 +79,36 @@
 }
 
 .main {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 32px 16px;
+  background: var(--main-bg);
+  min-height: 100vh;
 }
 
 .pageTitle {
-  font-size: 1.8rem;
+  font-size: 2.5rem;
   font-weight: 900;
-  color: var(--main-blue);
-  margin-bottom: 24px;
+  background: var(--gradient-blue);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 32px;
+  text-align: center;
+  letter-spacing: -1px;
 }
 
-.summarySection {
+.summarySection, .contentSection {
   background: var(--card-bg);
   border-radius: var(--border-radius);
   box-shadow: var(--shadow);
-  padding: 28px 24px 20px 24px;
+  padding: 32px 28px 24px 28px;
   margin-bottom: 32px;
-  display: flex;
-  align-items: flex-start;
-  gap: 32px;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.summarySection:hover, .contentCard:hover {
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-4px) scale(1.03);
 }
 
 .emotionIcon {
@@ -108,7 +123,10 @@
 .summaryTitle {
   font-size: 1.2rem;
   font-weight: 700;
-  color: var(--main-blue);
+  background: var(--gradient-blue);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   margin-bottom: 8px;
 }
 
@@ -118,18 +136,15 @@
   margin-bottom: 0;
 }
 
-.contentSection {
-  background: var(--card-bg);
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow);
-  padding: 24px;
-}
-
 .contentHeader {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: var(--main-blue);
-  margin-bottom: 20px;
+  font-size: 1.5rem;
+  font-weight: 800;
+  background: var(--gradient-blue);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 28px;
+  text-align: left;
 }
 
 .contentList {
@@ -139,26 +154,33 @@
 }
 
 .contentCard {
-  background: #f8f9fa;
-  border-radius: 12px;
-  padding: 20px;
-  border: 1px solid #eee;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 4px 24px 0 rgba(0,0,0,0.08);
+  padding: 28px 24px 24px 24px;
+  border: 1px solid rgba(75, 148, 208, 0.1);
   display: flex;
   flex-direction: column;
   gap: 12px;
   min-height: 220px;
+  transition: box-shadow 0.2s, transform 0.2s;
 }
 
 .contentType {
-  font-size: 0.95rem;
-  color: #666;
-  font-weight: 700;
-  margin-bottom: 4px;
+  display: inline-block;
+  background: #e3f0fd;
+  color: #2196f3;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 1rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+  margin-right: 8px;
 }
 
 .contentTitle {
-  font-size: 1.1rem;
-  font-weight: 700;
+  font-size: 1.2rem;
+  font-weight: 800;
   color: var(--main-dark);
   margin-bottom: 4px;
 }
@@ -179,11 +201,113 @@
 
 .contentQuote {
   font-style: italic;
-  color: var(--main-accent);
+  color: #fff;
+  background: var(--main-accent);
   font-size: 1.05rem;
   margin: 12px 0 0 0;
-  padding-left: 12px;
-  border-left: 3px solid var(--main-accent);
+  padding-left: 16px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  border-left: 5px solid var(--main-accent);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px #ef770c33;
+}
+
+.youtubeGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+  margin-bottom: 24px;
+  justify-items: center;
+}
+
+.youtubeCard {
+  width: 320px;
+  min-height: 260px;
+  padding: 16px 12px 16px 12px;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 4px 24px 0 rgba(0,0,0,0.08);
+  border: 1px solid rgba(75, 148, 208, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: box-shadow 0.2s, transform 0.2s;
+  position: relative;
+  cursor: pointer;
+}
+.youtubeCard:hover {
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-4px) scale(1.03);
+}
+
+.youtubeThumbWrap {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: box-shadow 0.2s;
+}
+.youtubeThumb {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  display: block;
+  border-radius: 12px;
+  transition: filter 0.2s;
+}
+.youtubeThumbWrap:hover .youtubeThumb {
+  filter: brightness(0.8) blur(1px);
+}
+.youtubePlayBtn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(44,62,80,0.85);
+  color: #fff;
+  font-size: 2.5rem;
+  border-radius: 50%;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px #4b94d055;
+  transition: background 0.2s, box-shadow 0.2s;
+  pointer-events: none;
+}
+.youtubeThumbWrap:hover .youtubePlayBtn {
+  background: var(--main-accent);
+  box-shadow: 0 4px 16px #ef770c55;
+}
+.youtubePlayerWrap {
+  width: 100%;
+  height: 180px;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 10px;
+  background: #000;
+}
+
+@media (max-width: 1024px) {
+  .youtubeGrid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  }
+  .youtubeCard {
+    width: 100%;
+    min-width: 0;
+  }
+}
+@media (max-width: 600px) {
+  .youtubeGrid {
+    grid-template-columns: 1fr;
+  }
+  .youtubeCard {
+    width: 100%;
+  }
 }
 
 @media (max-width: 768px) {

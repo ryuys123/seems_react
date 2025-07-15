@@ -6,35 +6,35 @@ const QuestPage = () => {
   const [ongoingActivities, setOngoingActivities] = useState([
     {
       id: 1,
-      level: 'Level 1',
+      date: '2024-06-13',
       title: '마음의 평화 찾기',
       progress: 60,
       completed: 3,
       total: 5,
       steps: [
-        { id: 1, text: '아침 명상 10분', completed: true },
-        { id: 2, text: '감사 일기 작성', completed: true },
-        { id: 3, text: '스트레칭 15분', completed: false, current: true },
-        { id: 4, text: '심호흡 5분', completed: false },
-        { id: 5, text: '저녁 명상 10분', completed: false }
+        { id: 1, text: '아침 명상 10분', completed: true, point: 5 },
+        { id: 2, text: '감사 일기 작성', completed: true, point: 5 },
+        { id: 3, text: '스트레칭 15분', completed: false, current: true, point: 5 },
+        { id: 4, text: '심호흡 5분', completed: false, point: 5 },
+        { id: 5, text: '저녁 명상 10분', completed: false, point: 5 }
       ],
-      reward: '마음의 평화 +10'
+      reward: ''
     },
     {
       id: 2,
-      level: 'Level 2',
+      date: '2024-06-13',
       title: '건강한 습관 만들기',
       progress: 40,
       completed: 2,
       total: 5,
       steps: [
-        { id: 1, text: '물 2L 마시기', completed: true },
-        { id: 2, text: '30분 걷기', completed: true },
-        { id: 3, text: '과일 1개 먹기', completed: false, current: true },
-        { id: 4, text: '스트레칭 10분', completed: false },
-        { id: 5, text: '일찍 자기', completed: false }
+        { id: 1, text: '물 2L 마시기', completed: true, point: 5 },
+        { id: 2, text: '30분 걷기', completed: true, point: 5 },
+        { id: 3, text: '과일 1개 먹기', completed: false, current: true, point: 5 },
+        { id: 4, text: '스트레칭 10분', completed: false, point: 5 },
+        { id: 5, text: '일찍 자기', completed: false, point: 5 }
       ],
-      reward: '건강 +15'
+      reward: ''
     }
   ]);
 
@@ -43,7 +43,7 @@ const QuestPage = () => {
       id: 1,
       title: '스트레스 해소 명상',
       duration: '10분',
-      reward: '스트레스 -20',
+      reward: '포인트 +20',
       description: '오늘의 감정 기록을 분석한 결과, 스트레스 수준이 높습니다. 명상을 통해 마음의 평화를 찾아보세요.',
       added: false
     },
@@ -51,7 +51,7 @@ const QuestPage = () => {
       id: 2,
       title: '기분 전환 산책',
       duration: '20분',
-      reward: '기분 +15',
+      reward: '포인트 +15',
       description: '최근 우울감이 증가하는 추세입니다. 가벼운 산책을 통해 기분을 전환해보세요.',
       added: false
     },
@@ -59,7 +59,7 @@ const QuestPage = () => {
       id: 3,
       title: '감사 일기 작성',
       duration: '5분',
-      reward: '행복감 +10',
+      reward: '포인트 +10',
       description: '오늘 하루 감사한 일들을 기록하며 긍정적인 마인드를 키워보세요.',
       added: false
     }
@@ -77,7 +77,7 @@ const QuestPage = () => {
   const addActivity = (recommendation) => {
     const newActivity = {
       id: Date.now(),
-      level: 'New',
+      date: new Date().toISOString().slice(0, 10),
       title: recommendation.title,
       progress: 0,
       completed: 0,
@@ -87,10 +87,11 @@ const QuestPage = () => {
           id: 1,
           text: `${recommendation.title} (${recommendation.duration})`,
           completed: false,
-          current: true
+          current: true,
+          point: 5
         }
       ],
-      reward: `보상: ${recommendation.reward}`
+      reward: `${recommendation.reward}`
     };
 
     setOngoingActivities(prev => [newActivity, ...prev]);
@@ -152,7 +153,10 @@ const QuestPage = () => {
         };
       }
       return activity;
-    }));
+    })
+    // step이 0개인 activity는 제거
+    .filter(activity => activity.steps.length > 0)
+    );
   };
 
   const addStep = (activityId) => {
@@ -161,7 +165,8 @@ const QuestPage = () => {
         const newStep = {
           id: Date.now(),
           text: '새 항목',
-          completed: false
+          completed: false,
+          point: 5
         };
         const updatedSteps = [...activity.steps, newStep];
         return {
@@ -177,7 +182,7 @@ const QuestPage = () => {
   const addQuestCard = () => {
     const newCard = {
       id: Date.now(),
-      level: 'New',
+      date: new Date().toISOString().slice(0, 10),
       title: '새 활동',
       progress: 0,
       completed: 0,
@@ -186,7 +191,8 @@ const QuestPage = () => {
         {
           id: 1,
           text: '새 항목',
-          completed: false
+          completed: false,
+          point: 5
         }
       ],
       reward: '보상: 직접 입력'
@@ -202,6 +208,72 @@ const QuestPage = () => {
       return activity;
     }));
   };
+
+  // 1. 포인트 상태 추가
+  const [currentPoints, setCurrentPoints] = useState(2450); // 임시값, 실제로는 API 등에서 받아올 수 있음
+  const [displayedPoints, setDisplayedPoints] = useState(0);
+
+  // 2. 포인트 카운트업 애니메이션
+  useEffect(() => {
+    let start = displayedPoints;
+    let end = currentPoints;
+    if (start === end) return;
+    let duration = 800;
+    let startTime = null;
+    function animatePoints(ts) {
+      if (!startTime) startTime = ts;
+      const progress = Math.min((ts - startTime) / duration, 1);
+      const value = Math.floor(start + (end - start) * progress);
+      setDisplayedPoints(value);
+      if (progress < 1) {
+        requestAnimationFrame(animatePoints);
+      }
+    }
+    requestAnimationFrame(animatePoints);
+    // eslint-disable-next-line
+  }, [currentPoints]);
+
+  // 카운트업 애니메이션용 상태 추가
+  const [displayedLevel, setDisplayedLevel] = useState(0);
+  const [displayedCompleted, setDisplayedCompleted] = useState(0);
+
+  useEffect(() => {
+    let start = displayedLevel;
+    let end = 5;
+    if (start === end) return;
+    let duration = 800;
+    let startTime = null;
+    function animateLevel(ts) {
+      if (!startTime) startTime = ts;
+      const progress = Math.min((ts - startTime) / duration, 1);
+      const value = Math.floor(start + (end - start) * progress);
+      setDisplayedLevel(value);
+      if (progress < 1) {
+        requestAnimationFrame(animateLevel);
+      }
+    }
+    requestAnimationFrame(animateLevel);
+    // eslint-disable-next-line
+  }, []);
+
+  useEffect(() => {
+    let start = displayedCompleted;
+    let end = 12;
+    if (start === end) return;
+    let duration = 800;
+    let startTime = null;
+    function animateCompleted(ts) {
+      if (!startTime) startTime = ts;
+      const progress = Math.min((ts - startTime) / duration, 1);
+      const value = Math.floor(start + (end - start) * progress);
+      setDisplayedCompleted(value);
+      if (progress < 1) {
+        requestAnimationFrame(animateCompleted);
+      }
+    }
+    requestAnimationFrame(animateCompleted);
+    // eslint-disable-next-line
+  }, []);
 
   return (
     <div>
@@ -226,7 +298,7 @@ const QuestPage = () => {
             <Link to="/record">기록</Link>
             <Link to="/test">심리 검사</Link>
             <Link to="/analysis">분석</Link>
-            <Link to="/quest">활동</Link>
+            <Link to="/quest">퀘스트</Link>
             <Link to="/simulation">시뮬레이션</Link>
             <Link to="/faq">FAQ</Link>
             <Link to="/mypage">마이페이지</Link>
@@ -237,22 +309,22 @@ const QuestPage = () => {
 
       <main className={styles.main}>
         <div className={styles.pageHeader}>
-          <h1 className={styles.pageTitle}>활동</h1>
+          <h1 className={styles.pageTitle}>퀘스트</h1>
           <button className={styles.storeBtn} onClick={() => window.location.href = '/quest-store'}>
-            🏪 퀘스트 상점
+            뱃지 상점
           </button>
         </div>
 
         {/* 사용자 통계 */}
         <div className={styles.userStats}>
           <div className={styles.statCard}>
-            <div className={styles.statLabel}>현재 레벨</div>
-            <div className={styles.statValue}>5</div>
-            <div className={styles.statLabel}>다음 레벨까지 200XP</div>
+            <div className={styles.statLabel}>현재 포인트</div>
+            <div className={styles.statValue}>{displayedPoints.toLocaleString()}</div>
+            <div className={styles.statLabel}>퀘스트 완료로 포인트를 획득하세요!</div>
           </div>
           <div className={styles.statCard}>
             <div className={styles.statLabel}>완료한 퀘스트</div>
-            <div className={styles.statValue}>12</div>
+            <div className={styles.statValue}>{displayedCompleted}</div>
             <div className={styles.statLabel}>총 20개 중</div>
           </div>
           <div className={styles.statCard}>
@@ -262,10 +334,10 @@ const QuestPage = () => {
           </div>
         </div>
 
-        {/* 맞춤형 활동 추천 */}
+        {/* 맞춤형 퀘스트 추천 */}
         <div className={styles.recommendationSection}>
           <div className={styles.recommendationHeader}>
-            <h2 className={styles.recommendationTitle}>맞춤형 활동 추천</h2>
+            <h2 className={styles.recommendationTitle}>맞춤형 퀘스트 추천</h2>
           </div>
           <div className={styles.recommendationGrid}>
             {recommendations.map(recommendation => (
@@ -281,20 +353,20 @@ const QuestPage = () => {
                   onClick={() => addActivity(recommendation)}
                   disabled={recommendation.added}
                 >
-                  {recommendation.added ? '추가됨' : '시작하기'}
+                  {recommendation.added ? '추가됨' : '퀘스트 시작'}
                 </button>
               </div>
             ))}
           </div>
         </div>
 
-        {/* 진행 중인 활동 */}
+        {/* 진행 중인 퀘스트 */}
         <div className={styles.questSection}>
           <button className={styles.addCardBtn} onClick={addQuestCard}>
-            + 활동 추가
+            + 퀘스트 추가
           </button>
           <div className={styles.questHeader}>
-            <h2 className={styles.questTitle}>진행 중인 활동</h2>
+            <h2 className={styles.questTitle}>진행 중인 퀘스트</h2>
           </div>
           <div className={styles.questGrid}>
             {ongoingActivities.map(activity => (
@@ -305,7 +377,7 @@ const QuestPage = () => {
                 {activity.completed === activity.total && (
                   <div className={styles.completeBadge}>완료!</div>
                 )}
-                <span className={styles.questLevel}>{activity.level}</span>
+                <span className={styles.questDate}>{activity.date}</span>
                 <h3>{activity.title}</h3>
                 <div className={styles.questProgress}>
                   <div className={styles.progressBar}>
@@ -341,13 +413,16 @@ const QuestPage = () => {
                         }}
                       >
                         {step.text}
+                        <span className={styles.stepPoint}>+{step.point}P</span>
                       </span>
-                      <button 
-                        className={styles.deleteBtn} 
-                        onClick={() => deleteStep(activity.id, step.id)}
-                      >
-                        🗑️
-                      </button>
+                      {!step.completed && (
+                        <button 
+                          className={styles.deleteBtn} 
+                          onClick={() => deleteStep(activity.id, step.id)}
+                        >
+                          <img src="/images/bean.png" alt="삭제" style={{ width: 20, height: 20, objectFit: 'contain', verticalAlign: 'middle' }} />
+                        </button>
+                      )}
                     </div>
                   ))}
                   <button className={styles.addStepBtn} onClick={() => addStep(activity.id)}>
@@ -355,7 +430,11 @@ const QuestPage = () => {
                   </button>
                 </div>
                 <div className={styles.questRewards}>
-                  <span className={styles.reward}>{activity.reward}</span>
+                  {activity.completed === activity.total && (
+                    <span className={styles.bonusPoint}>
+                      보너스 포인트 +{activity.steps.length * 2}P
+                    </span>
+                  )}
                 </div>
               </div>
             ))}

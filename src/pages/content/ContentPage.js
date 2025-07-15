@@ -1,24 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import styles from './ContentPage.module.css';
 
 const ContentPage = () => {
+  const [playingVideoId, setPlayingVideoId] = useState(null);
+
   const contents = [
     {
       id: 1,
       type: '유튜브 영상',
       title: '마음이 편안해지는 명상 음악',
       description: '스트레스를 완화하고 집중력을 높여주는 1시간 명상 음악입니다.',
-      media: (
-        <iframe 
-          width="100%" 
-          height="120" 
-          src="https://www.youtube.com/embed/2OEL4P1Rz04" 
-          title="명상 음악" 
-          frameBorder="0" 
-          allowFullScreen
-        />
-      )
+      videoId: '2OEL4P1Rz04'
     },
     {
       id: 2,
@@ -44,18 +37,65 @@ const ContentPage = () => {
       type: '유튜브 영상',
       title: '긍정 에너지 충전 영상',
       description: '하루를 힘차게 시작할 수 있는 긍정 메시지 영상입니다.',
+      videoId: 'UPXUG8q4jKU'
+    },
+    {
+      id: 5,
+      type: '유튜브 영상',
+      title: '힐링 자연 풍경 영상',
+      description: '자연의 소리와 풍경으로 마음을 치유하세요.',
+      videoId: '5qap5aO4i9A'
+    },
+    {
+      id: 6,
+      type: '유튜브 영상',
+      title: '집중력 향상 브레인 뮤직',
+      description: '공부/업무에 도움되는 집중력 향상 음악.',
+      videoId: 'DWcJFNfaw9c'
+    },
+    {
+      id: 7,
+      type: '음악',
+      title: '기분 좋아지는 기타 연주',
+      description: '상쾌한 하루를 위한 기타 연주곡.',
       media: (
-        <iframe 
-          width="100%" 
-          height="120" 
-          src="https://www.youtube.com/embed/UPXUG8q4jKU" 
-          title="긍정 에너지 영상" 
-          frameBorder="0" 
-          allowFullScreen
-        />
+        <audio controls style={{ width: '100%' }}>
+          <source src="https://cdn.pixabay.com/audio/2022/11/16/audio_12b6fae5b7.mp3" type="audio/mp3" />
+          브라우저가 오디오 태그를 지원하지 않습니다.
+        </audio>
       )
+    },
+    {
+      id: 8,
+      type: '글귀',
+      title: '긍정의 한마디',
+      description: '하루를 밝게 시작하는 긍정의 메시지.',
+      quote: '"오늘도 충분히 잘하고 있어요!"'
+    },
+    {
+      id: 9,
+      type: '음악',
+      title: '마음 안정 ASMR',
+      description: '편안한 밤을 위한 ASMR 사운드.',
+      media: (
+        <audio controls style={{ width: '100%' }}>
+          <source src="https://cdn.pixabay.com/audio/2022/10/16/audio_12b6fae5b7.mp3" type="audio/mp3" />
+          브라우저가 오디오 태그를 지원하지 않습니다.
+        </audio>
+      )
+    },
+    {
+      id: 10,
+      type: '글귀',
+      title: '오늘의 다짐',
+      description: '스스로를 격려하는 다짐의 글.',
+      quote: '"내일의 나는 오늘의 나보다 더 성장할 거야."'
     }
   ];
+
+  // 유튜브 영상만 분리
+  const youtubeContents = contents.filter(c => c.type === '유튜브 영상');
+  const otherContents = contents.filter(c => c.type !== '유튜브 영상');
 
   return (
     <div>
@@ -105,11 +145,45 @@ const ContentPage = () => {
           </div>
         </div>
 
+        {/* 유튜브 영상 그리드 */}
+        <div className={styles.contentSection}>
+          <div className={styles.contentHeader}>유튜브 영상 추천</div>
+          <div className={styles.youtubeGrid}>
+            {youtubeContents.map(content => (
+              <div key={content.id} className={styles.youtubeCard}>
+                {playingVideoId === content.videoId ? (
+                  <div className={styles.youtubePlayerWrap}>
+                    <iframe
+                      width="100%"
+                      height="200"
+                      src={`https://www.youtube.com/embed/${content.videoId}?autoplay=1`}
+                      title={content.title}
+                      frameBorder="0"
+                      allowFullScreen
+                    />
+                  </div>
+                ) : (
+                  <div className={styles.youtubeThumbWrap} onClick={() => setPlayingVideoId(content.videoId)}>
+                    <img
+                      src={`https://img.youtube.com/vi/${content.videoId}/hqdefault.jpg`}
+                      alt={content.title}
+                      className={styles.youtubeThumb}
+                    />
+                    <div className={styles.youtubePlayBtn}>▶</div>
+                  </div>
+                )}
+                <div className={styles.contentTitle}>{content.title}</div>
+                <div className={styles.contentDesc}>{content.description}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* 콘텐츠 추천 리스트 */}
         <div className={styles.contentSection}>
           <div className={styles.contentHeader}>오늘의 추천 콘텐츠</div>
           <div className={styles.contentList}>
-            {contents.map(content => (
+            {otherContents.map(content => (
               <div key={content.id} className={styles.contentCard}>
                 <div className={styles.contentType}>{content.type}</div>
                 <div className={styles.contentTitle}>{content.title}</div>
