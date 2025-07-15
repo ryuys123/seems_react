@@ -66,14 +66,20 @@ export const AuthProvider = ({ children }) => {
       console.log("-----------------------------");
 
       // if (parsedToken) {
-              setAuthInfo({
-        isLoggedIn: true,
-        role: parsedToken.role,
-        userid: parsedToken.sub,
-        username: parsedToken.name, // ✅ 서버 필드명과 일치
-      });
+        setAuthInfo({
+          isLoggedIn: true,
+          role: parsedToken.role,
+          userid: parsedToken.sub,
+          username: parsedToken.name, // ✅ 서버 필드명과 일치
+        // });
+      // } else {
+        // 토큰 파싱이 실패한 경우 로그아웃 처리
+        // logoutAndRedirect();
+      // }
+
+        });
     } else {
-      setAuthInfo({isLoggedIn: false, role: "", userid: "", username: ""});
+      setAuthInfo({isLoggedIn: false, role: "", username: ""});
     }
 
   }, []); //useEffect
@@ -88,7 +94,7 @@ export const AuthProvider = ({ children }) => {
     if (!authInfo.isLoggedIn) return;
 
     localStorage.clear();
-    setAuthInfo({ isLoggedIn: false, role: "", userid: "", username: "" });
+    setAuthInfo({ isLoggedIn: false, role: "", username: "" });
     window.location.href = "/";
   }; // logoutAndRedirect
 
@@ -106,7 +112,6 @@ export const AuthProvider = ({ children }) => {
         setAuthInfo({
           isLoggedIn: true,
           role: parsedToken.role,
-          userid: parsedToken.sub, // ✅ userid 필드 추가
           username: parsedToken.name, // ✅ 서버 필드명과 일치
         });
         // console.log("authInfo : ", authInfo);

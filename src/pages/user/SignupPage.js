@@ -4,8 +4,8 @@ import styles from './SignupPage.module.css';
 import logoSeems from '../../assets/images/logo_seems.png';
 import naverIcon from '../../assets/images/naver.png';
 import kakaoIcon from '../../assets/images/kakao.png';
-import faceioIcon from '../../assets/images/faceio.png';
 import apiClient from '../../utils/axios';
+import FaceModal from '../../components/modal/FaceModal';
 
 // 회원가입 페이지 컴포넌트
   function SignupPage() {
@@ -24,6 +24,8 @@ import apiClient from '../../utils/axios';
   const [isIdAvailable, setIsIdAvailable] = useState(null);
   // 첨부 사진 미리보기 상태 관리 변수 추가함
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [showFaceModal, setShowFaceModal] = useState(false);
+  const [pendingFormData, setPendingFormData] = useState(null);
 
   const navigate = useNavigate();
 
@@ -110,9 +112,10 @@ import apiClient from '../../utils/axios';
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
+    e.preventDefault();
     //alert('가입하기 버튼 클릭');
-    e.preventDefault(); // submit 이벤트 취소함 (axios 로 따로 전송할 것이므로)
+    //e.preventDefault(); // submit 이벤트 취소함 (axios 로 따로 전송할 것이므로)
 
     if (isIdAvailable === false) {
       alert('이미 사용중인 아이디입니다. 아이디를 다시 작성하세요.');
@@ -142,8 +145,23 @@ import apiClient from '../../utils/axios';
       //'photofile'  서버측 Controller 메소드가 받을 parameter 이름임, 반드시 일치해야 함
     }
 
+    setPendingFormData({ ...formData }); // 회원정보 임시 저장
+    setShowFaceModal(true); // 모달 오픈
+  };
+
+  const handleFaceRegister = () => {
+    setShowFaceModal(false);
+    navigate('/user/facesignup', { state: pendingFormData });
+  };
+
+  const handleSkipFace = async () => {
+    setShowFaceModal(false);
     try {
-      // 서버측으로 회원가입 요청
+      const combinedFormData = new FormData();
+      Object.keys(formData).forEach((key) => {
+        combinedFormData.append(key, formData[key]);
+      });
+      // photoFile(얼굴 이미지) 없이 전송
       const response = await apiClient.post(
         '/user/signup',
         combinedFormData,
@@ -151,13 +169,11 @@ import apiClient from '../../utils/axios';
           headers: { 'Content-Type': 'multipart/form-data' },
         }
       );
-
       if (response.status === 200) {
         alert('회원가입이 완료되었습니다.');
-        navigate('/');
+        navigate('/userdashboard');
       }
     } catch (error) {
-      console.error('회원가입 실패 : ', error);
       alert('회원 가입에 실패했습니다. 다시 시도해 주세요');
     }
   };
@@ -365,6 +381,12 @@ import apiClient from '../../utils/axios';
         </button>
         
       </form>
+      <FaceModal
+        open={showFaceModal}
+        onRegister={handleFaceRegister}
+        onSkip={handleSkipFace}
+        onClose={() => setShowFaceModal(false)}
+      />
       
       <div className={styles.loginLink}>
         이미 계정이 있으신가요?
@@ -418,7 +440,7 @@ import apiClient from '../../utils/axios';
           카카오 회원가입
         </button>
         
-        <button 
+        {/* <button 
           className={`${styles.socialBtn} ${styles.faceio}`}
           onClick={() => handleSocialSignup('faceio')}
         >
@@ -428,7 +450,7 @@ import apiClient from '../../utils/axios';
             className={styles.socialIcon}
           />
           페이스 회원가입
-        </button>
+        </button> */}
       </div>
     </div>
   );

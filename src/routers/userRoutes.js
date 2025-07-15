@@ -15,6 +15,12 @@ import UserDeletePage from '../pages/user/UserDeletePage';
 import IdFindSelectPage from '../pages/user/IdFindSelectPage';
 import IdFindPhonePage from '../pages/user/IdFindPhonePage';
 import IdFindEmailPage from '../pages/user/IdFindEmailPage';
+import GoogleLoginPage from '../pages/user/GoogleLoginPage';
+import KakaoLoginPage from '../pages/user/KakaoLoginPage';
+import NaverLoginPage from '../pages/user/NaverLoginPage';
+import SocialLoginCallback from '../pages/user/SocialLoginCallback';
+import FaceLoginPage from '../pages/user/FaceLoginPage';
+import FaceSignupPage from '../pages/user/FaceSignupPage';
 
 const userRoutes = [
   {
@@ -69,6 +75,30 @@ const userRoutes = [
     path: '/user/delete',
     element: <UserDeletePage />,
   },
+  {
+    path: '/auth/google',
+    element: <GoogleLoginPage />,
+  },
+  {
+    path: '/auth/kakao',
+    element: <KakaoLoginPage />,
+  },
+  {
+    path: '/auth/naver',
+    element: <NaverLoginPage />,
+  },
+  {
+    path: '/auth/callback',
+    element: <SocialLoginCallback />,
+  },
+  {
+    path: '/user/facelogin',
+    element: <FaceLoginPage />,
+  },
+  {
+    path: '/user/facesignup',
+    element: <FaceSignupPage />,
+  }
 ];
 
 export default userRoutes;
