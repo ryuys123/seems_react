@@ -5,7 +5,6 @@ import logoSeems from '../assets/images/logo_seems.png';
 import naverIcon from '../assets/images/naver.png';
 import kakaoIcon from '../assets/images/kakao.png';
 import faceioIcon from '../assets/images/faceio.png';
-import ApiTest from '../components/common/ApiTest';
 import { AuthContext } from '../AuthProvider';
 import apiClient from '../utils/axios';
 
@@ -99,7 +98,6 @@ function Login({onLoginSuccess}) {
             console.log('일반 사용자로 로그인, 사용자 대시보드로 이동');
             navigate('/userdashboard');
           }
-          // window.location.reload(); // 페이지 강제 새로고침
         }, 100);
         
       } catch (storageError) {
@@ -138,8 +136,28 @@ function Login({onLoginSuccess}) {
 
 
   const handleSocialLogin = (provider) => {
-    // 소셜 로그인 로직 구현
-    console.log(`${provider} 로그인 시도`);
+  // 소셜 로그인 페이지로 이동
+    switch (provider) {
+      case 'google':
+        navigate('/auth/google');
+        break;
+      case 'kakao':
+        navigate('/auth/kakao');
+        break;
+      case 'naver':
+        navigate('/auth/naver');
+        break;
+      case 'faceio':
+        navigate('/facelogin');
+        break;
+      default:
+        console.log(`${provider} 로그인 시도`);
+    }
+  };
+
+  const handleFaceLogin = () => {
+    // 페이스 로그인 로직 구현
+    navigate('user/facelogin');
   };
 
   const handleSignupClick = () => {
@@ -277,7 +295,7 @@ function Login({onLoginSuccess}) {
         
         <button 
           className={`${styles.socialBtn} ${styles.faceio}`}
-          onClick={() => handleSocialLogin('faceio')}
+          onClick={() => handleFaceLogin()}
         >
           <img 
             src={faceioIcon} 
