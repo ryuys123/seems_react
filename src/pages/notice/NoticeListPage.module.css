@@ -111,10 +111,11 @@ body {
   gap: 12px;
   align-items: center;
   justify-content: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .searchSelect {
+  flex: 0.2;
   padding: 8px 12px;
   border: 1px solid #ddd;
   border-radius: 6px;
