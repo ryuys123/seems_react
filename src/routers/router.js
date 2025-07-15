@@ -17,6 +17,8 @@ import contentRoutes from "./contentRoutes";
 import EmotionRecordPage from "../pages/emotion/EmotionPage"; // 감정 기록 페이지 추가
 import CounselingRoutes from "./counselingRoutes"; // 상담 라우터 추가
 import analysisRoutes from "./analysisRoutes"; // ⭐️ analysisRoutes 임포트
+import faqRoutes from "./faqRoutes";
+
 const AppRouter = () => {
   return (
     <Routes>
@@ -25,7 +27,14 @@ const AppRouter = () => {
       {userRoutes.map((route) => (
         <Route key={route.path} path={route.path} element={route.element} />
       ))}
+
       {noticeRoutes}
+      {faqRoutes}
+      {/*FAQ 라우트 */}
+      {faqRoutes.map((route) => (
+        <Route key={route.path} path={route.path} element={route.element} />
+      ))}
+
       {adminRoutes.map((route) => (
         <Route key={route.path} path={route.path} element={route.element} />
       ))}

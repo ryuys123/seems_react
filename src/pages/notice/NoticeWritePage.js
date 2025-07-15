@@ -1,4 +1,4 @@
-// src/pages/notice/NoticeWrite.js : 공지글 등록 페이지
+// src/pages/notice/NoticeWritePage.js : 공지글 등록 페이지
 import React, { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../AuthProvider";
