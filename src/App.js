@@ -9,8 +9,11 @@ import Footer from "./components/common/Footer";
 import AppRouter from "./routers/router";
 import NoticeListPage from "./pages/notice/NoticeListPage";
 
+// Google OAuth Provider
+import { GoogleOAuthProvider } from '@react-oauth/google';
+
 // 소셜 로그인 SDK 초기화
-import { initializeSocialSDK } from './services/authService';
+import { initializeSocialSDK } from './services/AuthService';
 
 function App() {
   useEffect(() => {
@@ -38,10 +41,23 @@ function App() {
     initSDK();
   }, []);
 
+  // Google 클라이언트 ID가 유효한지 확인
+  const googleClientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
+  const isValidGoogleClientId = googleClientId && googleClientId !== 'your_google_client_id';
+
   return (
     <>
-      <AppRouter />
-      <Footer />
+      {isValidGoogleClientId ? (
+        <GoogleOAuthProvider clientId={googleClientId}>
+          <AppRouter />
+          <Footer />
+        </GoogleOAuthProvider>
+      ) : (
+        <>
+          <AppRouter />
+          <Footer />
+        </>
+      )}
     </>
   );
 }

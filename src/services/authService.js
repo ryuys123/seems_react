@@ -132,19 +132,11 @@ export const naverLogin = async () => {
 };
 
 // 구글 로그인
-export const googleLogin = async () => {
+export const googleLogin = async (credential) => {
   try {
-    if (!window.gapi || !window.gapi.auth2) {
-      throw new Error('구글 SDK가 로드되지 않았습니다.');
-    }
-
-    const auth2 = window.gapi.auth2.getAuthInstance();
-    const googleUser = await auth2.signIn();
-    const idToken = googleUser.getAuthResponse().id_token;
-
     // 서버에 구글 토큰 전송하여 로그인 처리
     const loginResponse = await apiClient.post('/auth/google/login', {
-      idToken: idToken
+      idToken: credential
     });
 
     if (loginResponse.data.success) {
