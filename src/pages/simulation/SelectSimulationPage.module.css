@@ -1,0 +1,62 @@
+.container {
+  padding: 32px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #6c63ff;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.cardsWrapper {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.card {
+  border: 2px solid #6c63ff;
+  border-radius: 18px;
+  padding: 36px 28px;
+  width: 260px;
+  cursor: pointer;
+  background: #f8f9ff;
+  box-shadow: 0 4px 16px rgba(108,99,255,0.08);
+  text-align: center;
+  transition: background 0.15s, box-shadow 0.15s, border 0.15s;
+}
+.card:hover {
+  background: #e0e7ff;
+  box-shadow: 0 8px 24px #d1d5fa;
+  border: 2.5px solid #554ee1;
+}
+
+.cardIcon {
+  font-size: 3rem;
+  margin-bottom: 10px;
+}
+
+.cardTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.cardTrait {
+  font-size: 0.98rem;
+  color: #6c63ff;
+  font-weight: 500;
+  margin-bottom: 8px;
+  letter-spacing: 0.01em;
+}
+
+.cardDesc {
+  font-size: 1rem;
+  color: #555;
+}
