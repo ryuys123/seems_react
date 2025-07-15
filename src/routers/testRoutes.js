@@ -6,6 +6,7 @@ import SelectTestPage from "../pages/test/SelectTestPage";
 import PersonalityTestPage from "../pages/test/PersonalityTestPage";
 import PsychologyTestPage from "../pages/test/PsychologyTestPage";
 import PsychologyResultPage from "../pages/test/PsychologyResultPage";
+import PersonalityResultPage from "../pages/test/PersonalityResultPage"; // ✨ 1. 결과 페이지 컴포넌트 임포트
 const testRoutes = [
   {
     path: "/SelectTestPage", // 검사 선택 페이지 경로
@@ -22,6 +23,10 @@ const testRoutes = [
   {
     path: "/psychological-test/result/:resultId", // :resultId는 동적 파라미터
     element: <PsychologyResultPage />,
+  },
+  {
+    path: "/personality-test/result/:userId", // :userId는 동적 파라미터입니다.
+    element: <PersonalityResultPage />,
   },
 ];
 

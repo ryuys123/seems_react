@@ -1,0 +1,72 @@
+/* PersonalityResultPage.module.css */
+.resultContainer {
+  background-color: white;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  max-width: 600px;
+  width: 90%;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.header h1 {
+  color: #2c3e50;
+  margin-bottom: 20px;
+}
+
+.resultBox {
+  margin-bottom: 30px;
+}
+
+.resultType {
+  color: #3498db;
+  font-size: 3em;
+  margin: 10px 0;
+}
+
+.resultDescription {
+  color: #34495e;
+  line-height: 1.6;
+  font-size: 1.1em;
+}
+
+.recommendationBox {
+  padding: 20px;
+  background-color: #ecf0f1;
+  border-radius: 8px;
+}
+
+.recommendedStyle {
+  font-weight: bold;
+  color: #e67e22;
+  font-size: 1.2em;
+}
+
+.homeButton {
+  margin-top: 30px;
+  padding: 12px 25px;
+  border: none;
+  background-color: #3498db;
+  color: white;
+  font-size: 1em;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  text-decoration: none;
+}
+
+.homeButton:hover {
+  background-color: #2980b9;
+}
