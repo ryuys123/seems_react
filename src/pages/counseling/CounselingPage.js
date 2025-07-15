@@ -10,9 +10,10 @@ const images = {
   logo: '/images/logo.png',
   counselor: '/images/counseling_1.png',
   mic: '/images/rec_1.png',
+  stop: '/images/stop_1.png', 
 };
 
-// Llama 4 API 연동을 위한 함수
+// Llama 3 API 연동을 위한 함수
 const getLlamaResponse = async (secureApiRequest, messages, currentCoreQuestionIndex) => {
   console.log("스프링부트 API 호출: ", messages, currentCoreQuestionIndex);
   try {
@@ -43,6 +44,7 @@ const CounselingPage = () => {
   const messagesRef = useRef(messages); // Add this line
   const [inputValue, setInputValue] = useState('');
   const [history, setHistory] = useState([]);
+  const [currentSessionId, setCurrentSessionId] = useState(null); // 현재 상담 세션 ID
   const [isLoading, setIsLoading] = useState(false);
   const chatMessagesRef = useRef(null);
 
@@ -53,37 +55,45 @@ const CounselingPage = () => {
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef(null);
 
+  // 초기 메시지 요청 함수
+  const fetchInitialMessage = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const data = await getLlamaResponse(secureApiRequest, [], 0); 
+      setMessages([{ type: 'ai', text: data.response }]);
+      setCurrentCoreQuestionIndex(data.next_core_question_index);
+      console.log("✅ 초기 AI 메시지 설정 완료. 현재 messages 상태:", [{ type: 'ai', text: data.response }]);
+    } catch (error) {
+      console.error("초기 메시지 로드 중 오류 발생:", error);
+      setMessages([{ type: 'ai', text: '죄송해요, 초기 메시지를 불러오는 데 문제가 생겼어요.' }]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [secureApiRequest]);
+
   // 컴포넌트 마운트 시 초기 메시지 요청
   useEffect(() => {
-    const fetchInitialMessage = async () => {
-      setIsLoading(true);
+    fetchInitialMessage();
+  }, [fetchInitialMessage]); // fetchInitialMessage를 의존성 배열에 추가
+
+  // 컴포넌트 마운트 시 DB에서 상담 기록 목록 불러오기
+  useEffect(() => {
+    const fetchHistory = async () => {
+      if (!secureApiRequest) { // secureApiRequest가 아직 준비되지 않았다면 (로그인 전 등)
+        return; 
+      }
       try {
-        // 초기 메시지 요청 시 currentCoreQuestionIndex도 함께 보냄
-        const data = await getLlamaResponse(secureApiRequest, [], 0); 
-        setMessages([{ type: 'ai', text: data.response }]);
-        setCurrentCoreQuestionIndex(data.next_core_question_index);
-        console.log("✅ 초기 AI 메시지 설정 완료. 현재 messages 상태:", [{ type: 'ai', text: data.response }]);
+        const response = await secureApiRequest('http://localhost:8888/seems/api/counseling/history');
+        console.log("상담 기록 목록 API 응답:", response.data); // 추가된 로그
+        setHistory(response.data || []);
       } catch (error) {
-        console.error("초기 메시지 로드 중 오류 발생:", error);
-        setMessages([{ type: 'ai', text: '죄송해요, 초기 메시지를 불러오는 데 문제가 생겼어요.' }]);
-      } finally {
-        setIsLoading(false);
+        console.error('상담 기록 목록을 불러오는 중 오류 발생:', error);
+        setHistory([]); 
       }
     };
 
-    fetchInitialMessage();
-  }, []); // 빈 배열을 넣어 컴포넌트 마운트 시 한 번만 실행
-
-  // 컴포넌트 마운트 시 로컬 스토리지에서 상담 기록 불러오기
-  useEffect(() => {
-    try {
-      const savedHistory = JSON.parse(localStorage.getItem('counselingHistory')) || [];
-      setHistory(savedHistory);
-    } catch (error) {
-      console.error("Failed to parse counseling history:", error);
-      setHistory([]);
-    }
-  }, []);
+    fetchHistory();
+  }, [secureApiRequest]);
 
   // 메시지 목록이 변경될 때마다 스크롤을 맨 아래로 이동
   useEffect(() => {
@@ -166,28 +176,89 @@ const CounselingPage = () => {
 
   }, []);
 
-  // 상담 기록 저장 함수
-  const handleSaveHistory = () => {
+  const handleSaveHistory = async () => {
     if (messages.length <= 1) { // AI의 첫 메시지만 있는 경우 제외
       alert('저장할 상담 내용이 없습니다.');
       return;
     }
+
+    // 사용자 첫 메시지를 기반으로 제목 생성
     const userFirstMessage = messages.find(m => m.type === 'user');
     const title = userFirstMessage ? userFirstMessage.text.substring(0, 40) + '...' : '새로운 상담';
-    const newSession = { id: Date.now(), title: title, messages: messages };
-    const newHistory = [newSession, ...history].slice(0, 30);
-    setHistory(newHistory);
-    localStorage.setItem('counselingHistory', JSON.stringify(newHistory));
-    alert(`상담 내용이 "${title}" 제목으로 저장되었습니다!`);
+
+    const requestBody = {
+      topic: title,
+      method: "TEXT",
+      messages: messages,
+    };
+
+    if (currentSessionId) {
+      requestBody.sessionId = currentSessionId; // 기존 세션 ID 추가
+    }
+
+    try {
+      // 백엔드에 저장 요청
+      const response = await secureApiRequest('http://localhost:8888/seems/api/counseling/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      // 성공적으로 저장되면, 새로운 기록을 history 상태에 추가
+      // 백엔드에서 저장된 객체(id 포함)를 반환한다고 가정
+      const newHistoryEntry = response.data; 
+      // 기존 세션 업데이트 시 history 목록에서도 해당 항목 업데이트
+      if (currentSessionId) {
+        setHistory(prevHistory => prevHistory.map(item => 
+          item.sessionId === currentSessionId ? newHistoryEntry : item
+        ));
+      } else {
+        setHistory(prevHistory => [newHistoryEntry, ...prevHistory]);
+      }
+
+      setCurrentSessionId(newHistoryEntry.sessionId); // 저장 후 현재 세션 ID 업데이트
+
+      alert(`상담 내용이 "${title}" 제목으로 저장되었습니다!`);
+
+    } catch (error) {
+      console.error('상담 기록 저장 중 오류 발생:', error);
+      alert('상담 내용을 저장하는 데 실패했습니다.');
+    }
   };
 
-  // 상담 기록 불러오기 함수
-  const handleLoadHistory = (sessionId) => {
+  // 새로운 상담 시작 함수
+  const handleStartNewConsultation = () => {
+    setMessages([]); // 메시지 초기화
+    setCurrentSessionId(null); // 현재 세션 ID 초기화
+    setInputValue(''); // 입력값 초기화
+    setCurrentCoreQuestionIndex(0); // 핵심 질문 인덱스 초기화
+    setShowEndOptions(false); // 종료 옵션 숨기기
+    setIsConsultationEnded(false); // 상담 종료 상태 해제
+    fetchInitialMessage(); // 초기 AI 메시지 다시 불러오기
+  };
+
+  // 상담 기록 불러오기 함수 (DB 연동)
+  const handleLoadHistory = async (sessionId) => {
     if (isLoading) return;
-    const sessionToLoad = history.find(h => h.id === sessionId);
-    if (sessionToLoad) {
-      setMessages(sessionToLoad.messages);
-      alert(`"${sessionToLoad.title}" 상담 기록을 불러왔습니다.`);
+    try {
+      // 백엔드에서 특정 상담 기록 요청
+      const response = await secureApiRequest(`http://localhost:8888/seems/api/counseling/history/${sessionId}`);
+      console.log("특정 상담 기록 상세 API 응답:", response.data); // 추가된 로그
+      const sessionToLoad = response.data;
+      if (sessionToLoad && sessionToLoad.messages) {
+        console.log("불러온 메시지:", sessionToLoad.messages); // 추가된 로그
+        setMessages(sessionToLoad.messages);
+        setCurrentSessionId(sessionId); // 현재 세션 ID 업데이트
+        alert(`"${sessionToLoad.topic}" 상담 기록을 불러왔습니다.`);
+      } else {
+        throw new Error('불러올 상담 기록 데이터가 올바르지 않습니다.');
+      }
+
+    } catch (error) {
+      console.error('상담 기록을 불러오는 중 오류 발생:', error);
+      alert('상담 기록을 불러오는 데 실패했습니다.');
     }
   };
 
@@ -321,14 +392,14 @@ const CounselingPage = () => {
           <div className={styles.chatInput}>
             <input
               type="text"
-              placeholder={isConsultationEnded ? "상담이 종료되었습니다." : "메시지를 입력하세요..."}
+              placeholder={isListening ? "음성 입력중입니다..." : (isConsultationEnded ? "상담이 종료되었습니다." : "메시지를 입력하세요...")}
               value={inputValue}
               onChange={handleInputChange}
               onKeyPress={handleKeyPress}
               disabled={isLoading || isConsultationEnded}
             />
             <button className={`${styles.voiceBtn} ${isListening ? styles.voiceBtnActive : ''}`} title={isListening ? "듣는 중... 클릭하여 중지" : "음성 입력"} onClick={handleVoiceInput} disabled={isLoading || isConsultationEnded}>
-              <img src={images.mic} alt="음성 입력" />
+              <img src={isListening ? images.stop : images.mic} alt={isListening ? "정지" : "음성 입력"} />
             </button>
             <button onClick={() => handleSendMessage()} disabled={isLoading || isConsultationEnded}>
               {isLoading ? '전송중' : '전송'}
@@ -342,8 +413,8 @@ const CounselingPage = () => {
           <ul className={styles.historyList}>
             {history.length > 0 ? (
               history.map((item) => (
-                <li key={item.id} onClick={() => handleLoadHistory(item.id)} title={item.title} className={styles.historyItem}>
-                  <span className={styles.historyTitle}>{item.title}</span>
+                <li key={item.sessionId} onClick={() => handleLoadHistory(item.sessionId)} title={item.topic} className={styles.historyItem}>
+                  <span className={styles.historyTitle}>{item.topic}</span>
                 </li>
               ))
             ) : (
@@ -353,9 +424,11 @@ const CounselingPage = () => {
           <button className={styles.saveHistoryBtn} onClick={handleSaveHistory} disabled={isLoading}>
             상담 내용 저장
           </button>
+          <button className={styles.newConsultationBtn} onClick={handleStartNewConsultation} disabled={isLoading}>
+            새로운 상담 시작
+          </button>
         </aside>
       </main>
-      <Footer />
     </>
   );
 };
