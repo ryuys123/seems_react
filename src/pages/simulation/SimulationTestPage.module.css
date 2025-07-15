@@ -1,0 +1,91 @@
+.container {
+  padding: 32px;
+  max-width: 600px;
+  margin: 0 auto;
+  background: #f8f9ff;
+  border-radius: 18px;
+  box-shadow: 0 4px 16px rgba(108,99,255,0.08);
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #6c63ff;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.description {
+  font-size: 1.15rem;
+  margin-bottom: 32px;
+  color: #333;
+  text-align: center;
+}
+
+.optionsWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.optionButton {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 24px;
+  font-size: 1.1rem;
+  border-radius: 12px;
+  border: 2px solid #6c63ff;
+  background: #fff;
+  color: #222;
+  cursor: pointer;
+  text-align: left;
+  font-weight: 500;
+  transition: background 0.15s, box-shadow 0.15s;
+  box-shadow: 0 2px 8px #eee;
+}
+.optionButton:hover {
+  background: #e0e7ff;
+  box-shadow: 0 4px 16px #d1d5fa;
+}
+
+.optionIcon {
+  font-size: 1.7rem;
+  margin-right: 6px;
+}
+
+.resultContainer {
+  padding: 40px 32px;
+  max-width: 600px;
+  margin: 40px auto 0 auto;
+  background: #f8f9ff;
+  border-radius: 18px;
+  box-shadow: 0 4px 16px rgba(108,99,255,0.08);
+  text-align: center;
+}
+
+.resultSummary {
+  margin: 32px 0 24px 0;
+  padding: 32px 16px;
+  background: #fff;
+  border-radius: 14px;
+  font-size: 1.15rem;
+  color: #333;
+  box-shadow: 0 2px 8px #eee;
+}
+
+.retryButton {
+  margin-top: 12px;
+  padding: 12px 32px;
+  background: #6c63ff;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.retryButton:hover {
+  background: #554ee1;
+}
