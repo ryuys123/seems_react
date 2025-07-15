@@ -3,7 +3,7 @@ import React, { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import logoSeems from "../../assets/images/logo_seems.png";
 import styles from "./UserHeader.module.css";
-import { AuthContext } from '../../AuthProvider';
+import { AuthContext } from "../../AuthProvider";
 
 function UserHeader() {
   const [showSideMenu, setShowSideMenu] = useState(false);
@@ -13,7 +13,7 @@ function UserHeader() {
   const { isLoggedIn, username, role, logoutAndRedirect } =
     useContext(AuthContext);
 
-  // console.log("UserHeader username:", username);  
+  // console.log("UserHeader username:", username);
 
   const handleLogout = () => {
     // 로그아웃 처리
@@ -54,18 +54,16 @@ function UserHeader() {
             />
           </div>
         </Link>
-    
 
         <span className={styles.userGreeting}>
           {username ? `${username}님, 안녕하세요` : "안녕하세요"}
         </span>
 
-
         <nav className={styles.nav}>
           <Link to="/counseling">상담</Link>
           <Link to="/record">기록</Link>
           <Link to="/SelectTestPage">심리 검사</Link>
-          <Link to="/analysis">분석</Link>
+          <Link to="/analysis-dashboard">분석</Link>
           <Link to="/activity">활동</Link>
           <Link to="/simulation">시뮬레이션</Link>
           <Link to="/faqlist">FAQ</Link>
