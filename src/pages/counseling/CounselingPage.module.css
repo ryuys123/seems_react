@@ -1,4 +1,3 @@
-
 /* 변수 정의 */
 :root {
   --main-blue: #4b94d0;
@@ -138,6 +137,7 @@ body {
   padding: 20px;
   display: flex;
   flex-direction: column;
+  align-items: flex-start; /* Default alignment for all messages */
   gap: 16px;
 }
 
@@ -223,6 +223,7 @@ body {
   background: var(--main-accent);
 }
 
+/* 음성 입력 버튼 */
 .voiceBtn {
   width: 44px;
   height: 44px;
@@ -237,6 +238,7 @@ body {
   margin-left: 4px;
   color: var(--main-blue);
   padding: 0;
+  position: relative; /* 가상 요소 위치 지정을 위해 추가 */
 }
 
 .voiceBtn:hover {
@@ -244,6 +246,7 @@ body {
   color: #fff;
 }
 
+/* 음성 입력 활성화 상태 */
 .voiceBtnActive {
   background: #e74c3c; /* 더 강렬한 빨간색 */
   color: #fff;
@@ -264,14 +267,30 @@ body {
   }
 }
 
-.voiceBtnActive img {
-  filter: brightness(0) invert(1); /* 아이콘 색상을 흰색으로 변경 */
+/* 활성화 시, 기존 마이크 아이콘 숨기기 */
+.voiceBtn.voiceBtnActive img {
+  visibility: hidden;
+}
+
+/* 활성화 시, ::after 가상 요소를 이용해 네모 아이콘 생성 */
+.voiceBtnActive::after {
+  content: '';
+  display: block;
+  width: 16px;
+  height: 16px;
+  background-color: #fff;
+  border-radius: 2px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .voiceBtn img {
   width: 22px;
   height: 22px;
   display: block;
+  object-fit: contain;
 }
 
 /* 사이드바 */
@@ -345,6 +364,22 @@ body {
 
 .saveHistoryBtn:hover {
   background-color: var(--main-accent);
+}
+
+.newConsultationBtn {
+  background: #6c757d; /* 회색 계열 */
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 0;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.newConsultationBtn:hover {
+  background-color: #5a6268;
 }
 
 /* 모달 */
