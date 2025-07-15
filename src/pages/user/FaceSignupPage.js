@@ -1,18 +1,21 @@
 import React, { useRef, useState } from "react";
-import styles from "./FaceLoginPage.module.css";
+import { useLocation } from "react-router-dom";
+import styles from "./FaceSignupPage.module.css";
 import axios from "axios";
 
-const FaceLoginPage = () => {
+const FaceSignupPage = () => {
+  const location = useLocation();
+  const signupInfo = location.state || {}; // 전달받은 회원정보
+
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const [step, setStep] = useState("idle"); // idle, camera, loading
   const [capturedImage, setCapturedImage] = useState(null);
-  const [loginResult, setLoginResult] = useState(null);
+  const [registerResult, setRegisterResult] = useState(null);
 
   // 버튼 클릭 핸들러
   const handleButtonClick = async () => {
     if (step === "idle") {
-      // 1. 웹캠 시작
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
         videoRef.current.srcObject = stream;
@@ -21,10 +24,8 @@ const FaceLoginPage = () => {
         alert("웹캠 접근이 불가합니다.");
       }
     } else if (step === "camera") {
-      // 2. 캡처 + 서버 전송
       setStep("loading");
-      setLoginResult(null);
-      // 캡처
+      setRegisterResult(null);
       const video = videoRef.current;
       const canvas = canvasRef.current;
       const context = canvas.getContext("2d");
@@ -34,15 +35,19 @@ const FaceLoginPage = () => {
 
       // 서버 전송
       try {
-        const response = await axios.post("http://localhost:5000/api/face-login", {
-          image: imageData,
+        // 전달받은 회원정보와 캡처 이미지를 함께 전송
+        const response = await axios.post("http://localhost:5000/api/face-signup", {
+          user_id: signupInfo.userId,
+          username: signupInfo.userName,
+          phone: signupInfo.phone,
+          password: signupInfo.userPwd,
+          image_data: imageData,
         });
-        setLoginResult(response.data);
+        setRegisterResult(response.data);
         if (response.data.success) {
-          alert("로그인 성공! " + response.data.username);
-          // ...추가 로그인 처리
+          alert("얼굴 등록 성공! 이제 페이스로그인을 사용할 수 있습니다.");
         } else {
-          alert("얼굴 인식 실패: " + (response.data.message || "다시 시도하세요."));
+          alert("얼굴 등록 실패: " + (response.data.message || "다시 시도하세요."));
         }
       } catch (error) {
         alert("서버 오류: " + error.message);
@@ -52,8 +57,8 @@ const FaceLoginPage = () => {
   };
 
   return (
-    <div className={styles.faceLoginContainer}>
-      <h2>페이스 로그인</h2>
+    <div className={styles.faceSignupContainer}>
+      <h2>얼굴 등록(회원가입)</h2>
       <video
         ref={videoRef}
         width={320}
@@ -77,16 +82,16 @@ const FaceLoginPage = () => {
         onClick={handleButtonClick}
         disabled={step === "loading"}
       >
-        {step === "idle" && "얼굴로 로그인"}
-        {step === "camera" && "캡처 및 로그인"}
-        {step === "loading" && "로그인 중..."}
+        {step === "idle" && "얼굴 등록"}
+        {step === "camera" && "캡처 및 등록"}
+        {step === "loading" && "등록 중..."}
       </button>
-      {loginResult && (
+      {registerResult && (
         <div>
-          {loginResult.success ? (
-            <p style={{ color: "green" }}>로그인 성공! {loginResult.username}님 환영합니다.</p>
+          {registerResult.success ? (
+            <p style={{ color: "green" }}>등록 성공! 이제 페이스로그인을 사용할 수 있습니다.</p>
           ) : (
-            <p style={{ color: "red" }}>로그인 실패: {loginResult.message}</p>
+            <p style={{ color: "red" }}>등록 실패: {registerResult.message}</p>
           )}
         </div>
       )}
@@ -94,4 +99,4 @@ const FaceLoginPage = () => {
   );
 };
 
-export default FaceLoginPage;
+export default FaceSignupPage;
