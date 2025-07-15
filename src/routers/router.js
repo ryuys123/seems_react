@@ -45,14 +45,14 @@ const AppRouter = () => {
       {testRoutes.map((route) => (
         <Route key={route.path} path={route.path} element={route.element} />
       ))}
-      {/* Quest Routes
+      Quest Routes
       {questRoutes.map((route) => (
         <Route key={route.path} path={route.path} element={route.element} />
-      ))} */}
-      {/* Content Routes
+      ))}
+      Content Routes
       {contentRoutes.map((route) => (
         <Route key={route.path} path={route.path} element={route.element} />
-      ))} */}
+      ))}
     </Routes>
   );
 };
