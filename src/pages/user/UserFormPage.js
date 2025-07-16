@@ -1,15 +1,15 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import UserHeader from '../../components/common/UserHeader';
 import logoSeems from '../../assets/images/logo_seems.png';
 import styles from './UserFormPage.module.css';
+import apiClient from '../../utils/axios';
 
 const initialForm = {
-  name: '김마음',
-  nickname: '마음이',
+  name: '',
+  email: '',
   phone: '',
   notification: true,
-  social: 'google', // 예시: google, kakao, naver
   currentPassword: '',
   newPassword: '',
   confirmPassword: '',
@@ -22,12 +22,40 @@ const UserFormPage = () => {
   const [profileImage, setProfileImage] = useState(logoSeems);
   const [errors, setErrors] = useState({});
   const [showPasswordFields, setShowPasswordFields] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // 사용자 정보 불러오기 (마운트 시)
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await apiClient.get('/user/info');
+        const user = res.data;
+        setFormData({
+          name: user.userName || '',
+          email: user.email || '',
+          phone: user.phone || '',
+          notification: true,
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: '',
+        });
+        setProfileImage(user.profileImage || logoSeems);
+      } catch (err) {
+        // 실패 시 기본값 유지
+        setFormData(initialForm);
+        setProfileImage(logoSeems);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUser();
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: type === 'checkbox' ? checked : value || '',
     }));
   };
 
@@ -37,6 +65,7 @@ const UserFormPage = () => {
       const reader = new FileReader();
       reader.onload = (evt) => {
         setProfileImage(evt.target.result);
+        setFormData((prev) => ({ ...prev, profileImage: evt.target.result }));
       };
       reader.readAsDataURL(file);
     }
@@ -45,7 +74,7 @@ const UserFormPage = () => {
   const validate = () => {
     const newErrors = {};
     if (!formData.name) newErrors.name = '이름을 입력하세요.';
-    if (!formData.nickname) newErrors.nickname = '닉네임을 입력하세요.';
+    if (!formData.email) newErrors.email = '이메일을 입력하세요.';
     if (formData.phone && !/^01[016789]-?\d{3,4}-?\d{4}$/.test(formData.phone)) newErrors.phone = '휴대폰 번호 형식이 올바르지 않습니다.';
     if (showPasswordFields && (formData.newPassword || formData.confirmPassword)) {
       if (!formData.currentPassword) newErrors.currentPassword = '현재 비밀번호를 입력하세요.';
@@ -55,19 +84,31 @@ const UserFormPage = () => {
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const validation = validate();
     setErrors(validation);
     if (Object.keys(validation).length > 0) return;
-    // 실제 저장 처리 로직
-    alert('프로필이 성공적으로 수정되었습니다.');
-    navigate('/userprofile');
+    try {
+      await apiClient.put('/user/info', {
+        userName: formData.name || '',
+        email: formData.email || '',
+        phone: formData.phone || '',
+        profileImage: formData.profileImage || '',
+        // notification: formData.notification, // 필요시 추가
+      });
+      alert('프로필이 성공적으로 수정되었습니다.');
+      navigate('/userprofile');
+    } catch (err) {
+      alert('프로필 수정에 실패했습니다.');
+    }
   };
 
   const handleCancel = () => {
     navigate('/userprofile');
   };
+
+  if (loading) return <div>로딩 중...</div>;
 
   return (
     <>
@@ -89,27 +130,23 @@ const UserFormPage = () => {
               이미지 변경
             </label>
           </div>
-          <div className={styles.socialRow}>
-            <span className={styles.socialLabel}>소셜 연동:</span>
-            <span className={`${styles.socialIcon} ${styles[`${formData.social}Icon`]}`}>{formData.social === 'google' ? 'G' : formData.social === 'kakao' ? 'K' : 'N'}</span>
-          </div>
         </div>
         <form className={styles.editForm} onSubmit={handleSubmit}>
           <div className={styles.profileCardColumn}>
             <div className={styles.profileCardLeft}>
               <div className={styles.formGroup}>
                 <label htmlFor="name">이름</label>
-                <input type="text" id="name" name="name" value={formData.name} onChange={handleInputChange} />
+                <input type="text" id="name" name="name" value={formData.name || ''} onChange={handleInputChange} />
                 {errors.name && <div className={styles.errorMsg}>{errors.name}</div>}
               </div>
               <div className={styles.formGroup}>
-                <label htmlFor="nickname">닉네임</label>
-                <input type="text" id="nickname" name="nickname" value={formData.nickname} onChange={handleInputChange} />
-                {errors.nickname && <div className={styles.errorMsg}>{errors.nickname}</div>}
+                <label htmlFor="email">이메일</label>
+                <input type="email" id="email" name="email" value={formData.email || ''} onChange={handleInputChange} />
+                {errors.email && <div className={styles.errorMsg}>{errors.email}</div>}
               </div>
               <div className={styles.formGroup}>
                 <label htmlFor="phone">휴대폰 번호</label>
-                <input type="text" id="phone" name="phone" value={formData.phone} onChange={handleInputChange} placeholder="010-1234-5678" />
+                <input type="text" id="phone" name="phone" value={formData.phone || ''} onChange={handleInputChange} placeholder="010-1234-5678" />
                 {errors.phone && <div className={styles.errorMsg}>{errors.phone}</div>}
               </div>
               <div className={styles.formGroup}>
