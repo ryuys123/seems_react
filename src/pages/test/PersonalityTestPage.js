@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom"; // ✨ 1. useParams 임포트
 import axios from "axios";
 import UserHeader from "../../components/common/UserHeader";
 import styles from "./PersonalityTestPage.module.css";
 
 const PersonalityTestPage = () => {
   const navigate = useNavigate();
-  const topOfTestRef = useRef(null); // ✨ 1. 스크롤 기준점으로 사용할 ref 생성
+  const { testId } = useParams(); // ✨ 2. URL 파라미터에서 testId를 가져옵니다.
+  const topOfTestRef = useRef(null);
 
-  // --- 상태(State) 관리 ---
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
   const [currentPage, setCurrentPage] = useState(0);
@@ -24,8 +24,6 @@ const PersonalityTestPage = () => {
     5: "매우 그렇다",
   };
 
-  // --- 데이터 요청 (Side Effect) ---
-  // 처음 로드될 때 질문 목록을 가져옵니다.
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
@@ -47,7 +45,6 @@ const PersonalityTestPage = () => {
     fetchQuestions();
   }, []);
 
-  // ✨ 2. 페이지(currentPage)가 바뀔 때마다 스크롤을 맨 위로 올리는 효과
   useEffect(() => {
     if (topOfTestRef.current) {
       topOfTestRef.current.scrollIntoView({
@@ -57,19 +54,14 @@ const PersonalityTestPage = () => {
     }
   }, [currentPage]);
 
-  // --- 이벤트 핸들러 함수 ---
   const handleAnswerChange = (questionId, value) => {
-    setAnswers((prevAnswers) => ({
-      ...prevAnswers,
-      [questionId]: value,
-    }));
+    setAnswers((prevAnswers) => ({ ...prevAnswers, [questionId]: value }));
   };
 
   const handleNextPage = () => {
     const startIndex = currentPage * questionsPerPage;
     const endIndex = startIndex + questionsPerPage;
     const currentQuestionsOnPage = questions.slice(startIndex, endIndex);
-
     const allAnswered = currentQuestionsOnPage.every(
       (q) => answers[q.questionId] !== undefined
     );
@@ -99,9 +91,17 @@ const PersonalityTestPage = () => {
       return;
     }
 
-    const currentUserId = "1"; // TODO: 실제 로그인된 사용자 ID로 변경
+    // ✨ 3. localStorage에서 실제 로그인된 사용자 ID를 가져옵니다.
+    const currentUserId = localStorage.getItem("loggedInUserId");
+    if (!currentUserId) {
+      alert("사용자 정보가 없습니다. 다시 로그인해주세요.");
+      return;
+    }
+
+    // ✨ 4. 제출 데이터에 testId를 포함시킵니다.
     const submissionData = Object.keys(answers).map((questionId) => ({
       userId: currentUserId,
+      personalityTestId: parseInt(testId, 10),
       questionId: parseInt(questionId, 10),
       answerValue: answers[questionId],
     }));
@@ -127,7 +127,6 @@ const PersonalityTestPage = () => {
     }
   };
 
-  // --- 렌더링 로직 ---
   if (isLoading)
     return (
       <div>
@@ -152,18 +151,18 @@ const PersonalityTestPage = () => {
 
   const totalPages = Math.ceil(questions.length / questionsPerPage);
   const startIndex = currentPage * questionsPerPage;
-  const endIndex = startIndex + questionsPerPage;
-  const currentQuestions = questions.slice(startIndex, endIndex);
+  const currentQuestions = questions.slice(
+    startIndex,
+    startIndex + questionsPerPage
+  );
 
   return (
     <div className={styles.container}>
       <UserHeader />
-      {/* ✨ 3. 스크롤의 기준점이 될 요소에 ref를 연결합니다. */}
       <div className={styles.testCard} ref={topOfTestRef}>
         <div className={styles.questionCounter}>
           Page {currentPage + 1} / {totalPages}
         </div>
-
         {currentQuestions.map((question, index) => (
           <div key={question.questionId} className={styles.questionBlock}>
             <p className={styles.questionText}>
@@ -187,7 +186,6 @@ const PersonalityTestPage = () => {
             </div>
           </div>
         ))}
-
         <div className={styles.navigationButtons}>
           <button
             onClick={handlePreviousPage}
