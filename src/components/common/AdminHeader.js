@@ -37,7 +37,7 @@ function AdminHeader() {
         
         <nav className={styles.nav}>
           <Link to="/userlist">사용자 관리</Link>
-          <Link to="/noticelist">공지사항</Link>
+          <Link to="/notice">공지사항</Link>
           <Link to="/faqlist">FAQ</Link>
           <Link to="/log">시스템로그</Link>
           <Link to="/" style={{ color: 'var(--main-accent)', fontWeight: 900 }} onClick={handleLogout}>로그아웃</Link>

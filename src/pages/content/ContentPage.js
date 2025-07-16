@@ -117,7 +117,7 @@ const ContentPage = () => {
           <nav className={styles.nav}>
             <Link to="/">홈</Link>
             <Link to="/counseling">상담</Link>
-            <Link to="/record">기록</Link>
+            <Link to="/emotionrecord">기록</Link>
             <Link to="/test">심리 검사</Link>
             <Link to="/analysis">분석</Link>
             <Link to="/quest">활동</Link>

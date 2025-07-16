@@ -31,3 +31,13 @@ yarn-error.log*
 ### Cursor AI ###
 .cursor/
 .cursorrules
+
+# Node modules
+node_modules/
+
+# ESLint cache
+.eslintcache
+
+# Cache packs
+*.pack
+
