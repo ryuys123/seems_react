@@ -31,3 +31,7 @@ yarn-error.log*
 ### Cursor AI ###
 .cursor/
 .cursorrules
+
+node_modules/
+*.pack
+.eslintcache
