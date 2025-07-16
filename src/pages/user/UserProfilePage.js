@@ -8,34 +8,23 @@ import apiClient from '../../utils/axios';
 const UserProfilePage = () => {
   const { username } = useContext(AuthContext); // 전역에서 이름 받아오기
   const [userDetail, setUserDetail] = useState(null);
-  const [isNotificationOn, setIsNotificationOn] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
-  const [userPreferences, setUserPreferences] = useState(null);
-  const [simulationSettings, setSimulationSettings] = useState(null);
 
   useEffect(() => {
-    const saved = localStorage.getItem('user-preferences');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        setUserPreferences(parsed[0]?.preferences || null);
-      } catch {}
-    }
-  }, []);
-
-  useEffect(() => {
-    // 사용자 상세 정보 불러오기
     const fetchUserDetail = async () => {
       try {
-        const res = await apiClient.get('/user/me'); // 실제 API 경로로 수정
+        const res = await apiClient.get('/user/info'); // 또는 '/user/me' 서버에 맞게
         setUserDetail(res.data);
+        setError(null);
       } catch (err) {
-        console.error('사용자 정보 불러오기 실패:', err);
+        setError('사용자 정보를 불러오지 못했습니다.');
       }
     };
     fetchUserDetail();
   }, []);
 
+  if (error) return <div>{error}</div>;
   if (!userDetail) return <div>로딩 중...</div>;
 
   const handleUserFormClick = () => {
@@ -46,41 +35,35 @@ const UserProfilePage = () => {
   return (
     <>
       <UserHeader />
-
       <main className={styles.main}>
         <h1 className={styles.pageTitle}>마이페이지</h1>
-        
         <div className={styles.profileSection}>
-          <div className={styles.profileAvatar}>🧑</div>
+          <div className={styles.profileAvatar}>
+            {userDetail.profileImage ? (
+              <img src={userDetail.profileImage} alt="프로필" style={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover' }} />
+            ) : (
+              <span role="img" aria-label="avatar">🧑</span>
+            )}
+          </div>
           <div className={styles.profileInfo}>
             <div className={styles.profileHeader}>
-              <h2 className={styles.profileName}>{username || userDetail.name}</h2>
+              <h2 className={styles.profileName}>{userDetail.userName || username || '이름 없음'}</h2>
               <div className={`${styles.profileBadge} ${styles.mentalHealthMaster}`}>
                 🏅 정신 건강 마스터
               </div>
             </div>
             <div className={styles.profileEmailSection}>
-              <p className={styles.profileEmail}>{userDetail.email}</p>
+              <p className={styles.profileEmail}>{userDetail.email || '이메일 없음'}</p>
               <div className={`${styles.socialIcon} ${styles.googleIcon}`}>G</div>
             </div>
-            <p className={styles.joinDate}>가입일: {userDetail.joinDate}</p>
-            <div className={styles.profileStats}>
-              <div className={styles.statItem}>
-                <div className={styles.statValue}>{userDetail.recordCount}</div>
-                <div className={styles.statLabel}>기록 일수</div>
-              </div>
-              <div className={styles.statItem}>
-                <div className={styles.statValue}>{userDetail.counselCount}</div>
-                <div className={styles.statLabel}>상담 횟수</div>
-              </div>
-              <div className={styles.statItem}>
-                <div className={styles.statValue}>{userDetail.activityCount}</div>
-                <div className={styles.statLabel}>활동 참여</div>
-              </div>
-            </div>
+            <p className={styles.joinDate}>계정 생성일: {userDetail.joinDate}</p>
+            <p className={styles.profileStatus}>
+              계정 상태: {userDetail.status === 1 ? '활성화' : '비활성화'}
+            </p>
+            {/* 활동 통계 등은 필요시 추가 */}
           </div>
         </div>
-
+        {/* 계정 설정 카드, 최근 활동 등 기존 폼은 그대로 유지 */}
         <div className={styles.settingsGrid} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
           <div className={styles.settingsCard}>
             <h3>계정 설정</h3>
@@ -90,8 +73,8 @@ const UserProfilePage = () => {
                 <label className={styles.toggleSwitch}>
                   <input 
                     type="checkbox" 
-                    checked={isNotificationOn}
-                    onChange={(e) => setIsNotificationOn(e.target.checked)}
+                    checked={true}
+                    onChange={() => {}}
                   />
                   <span className={styles.toggleSlider}></span>
                 </label>
@@ -104,7 +87,6 @@ const UserProfilePage = () => {
             </div>
           </div>
         </div>
-
         <div className={styles.activityHistory}>
           <h3>최근 활동</h3>
           <div className={styles.historyList}>
@@ -132,9 +114,6 @@ const UserProfilePage = () => {
           </div>
         </div>
       </main>
-
-      {/* 회원 탈퇴 모달 */}
-      {/* Removed modal related code */}
     </>
   );
 };
