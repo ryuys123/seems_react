@@ -1,40 +1,39 @@
-// src/pages/test/SelectTestPage.js
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios"; // API 호출을 위해 axios 임포트
+import axios from "axios";
 import styles from "./SelectTestPage.module.css";
 import UserHeader from "../../components/common/UserHeader";
 
 const SelectTestPage = () => {
   const navigate = useNavigate();
-  // ✨ 1. 결과 데이터와 로딩 상태를 관리할 state 추가
   const [personalityResult, setPersonalityResult] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // ✨ 2. 컴포넌트가 로드될 때 사용자의 최근 결과를 가져오는 로직
+  // ✨ 1. localStorage에서 사용하는 키와 사용자 정보를 하나의 변수로 정리합니다.
+  const userName = localStorage.getItem("userName") || "사용자";
+  const loggedInUserId = localStorage.getItem("loggedInUserId");
+
+  // ✨ 2. useEffect 로직을 수정하여 페이지에 다시 돌아올 때마다 데이터를 갱신합니다.
   useEffect(() => {
     const fetchLatestResult = async () => {
-      // TODO: 실제 로그인된 사용자 ID 정보를 가져와야 합니다.
-      const userId = "1";
       const token = localStorage.getItem("accessToken");
 
-      if (!token) {
-        // 토큰이 없으면 로그인하지 않은 사용자로 간주, 검사 시작 버튼을 보여줌
+      if (!token || !loggedInUserId) {
         setIsLoading(false);
         return;
       }
 
       try {
+        // 로딩 상태를 true로 설정하여 사용자에게 피드백을 줍니다.
+        setIsLoading(true);
         const response = await axios.get(
-          `/seems/api/personality-test/results/${userId}`,
+          `/seems/api/personality-test/results/${loggedInUserId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-        // 결과가 있으면 state에 저장
         setPersonalityResult(response.data);
       } catch (error) {
-        // 404 에러 등 결과가 없는 경우는 정상적인 상황이므로 에러 처리하지 않음
         if (error.response && error.response.status === 404) {
           console.log("이전 성격 검사 결과가 없습니다.");
           setPersonalityResult(null);
@@ -46,23 +45,31 @@ const SelectTestPage = () => {
       }
     };
 
+    // 페이지가 처음 로드될 때 즉시 데이터를 가져옵니다.
     fetchLatestResult();
-  }, []); // 빈 배열을 전달하여 컴포넌트가 처음 마운트될 때 한 번만 실행
+
+    // 다른 탭이나 창에 갔다가 다시 돌아왔을 때(focus) 데이터를 새로고침합니다.
+    window.addEventListener("focus", fetchLatestResult);
+
+    // 컴포넌트가 사라질 때 등록했던 이벤트 리스너를 깨끗하게 제거합니다. (메모리 누수 방지)
+    return () => {
+      window.removeEventListener("focus", fetchLatestResult);
+    };
+  }, [loggedInUserId]); // loggedInUserId가 바뀔 때만 이 effect 설정을 다시 실행합니다.
 
   const handleStartPsychologyTest = () => {
     navigate("/psychologyTestPage");
   };
 
   const handleStartPersonalityTest = () => {
-    navigate("/personalityTestPage");
+    navigate("/personality-test/1");
   };
 
   return (
     <div className={styles.selectTestContainer}>
       <UserHeader />
-      <h1>심심하면 검사나 갈기시죠들</h1>
+      <h1>AI 심리 분석</h1>
 
-      {/* 심리 검사 섹션 (기존과 동일) */}
       <div className={styles.testSection}>
         <h2>AI 이미지 심리 검사</h2>
         <p>
@@ -73,21 +80,33 @@ const SelectTestPage = () => {
         <button onClick={handleStartPsychologyTest}>내면 탐색 시작하기</button>
       </div>
 
-      {/* ✨ 3. 성격 검사 섹션 (조건부 렌더링) */}
       <div className={styles.testSection}>
-        <h2>성격 검사</h2>
+        <h2>MBTI 성격 검사</h2>
         {isLoading ? (
           <p>최근 검사 기록을 불러오는 중입니다...</p>
         ) : personalityResult ? (
-          // 결과가 있는 경우
           <div className={styles.resultSummary}>
-            <p>최근 검사에서 나온 당신의 유형은...</p>
+            <p>
+              <strong>{userName}</strong>님의 최근 검사에서 나온 유형은...
+            </p>
             <strong className={styles.resultType}>
               {personalityResult.result}
             </strong>
+            <p className={styles.mbtiTitle}>{personalityResult.mbtiTitle}</p>
             <div className={styles.buttonGroup}>
-              <button onClick={() => navigate(`/personality-test/result/1`)}>
+              <button
+                onClick={() =>
+                  navigate(`/personality-test/result/${loggedInUserId}`)
+                }
+              >
                 상세 결과 보기
+              </button>
+              <button
+                onClick={() =>
+                  navigate(`/personality-test/history/${loggedInUserId}`)
+                }
+              >
+                나의 검사 기록
               </button>
               <button
                 onClick={handleStartPersonalityTest}
@@ -98,7 +117,6 @@ const SelectTestPage = () => {
             </div>
           </div>
         ) : (
-          // 결과가 없는 경우
           <>
             <p>
               당신은 어떤 성격을 가지고 있나요? 흥미로운 성격 유형 검사를 통해

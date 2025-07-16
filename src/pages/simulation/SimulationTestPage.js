@@ -3,18 +3,24 @@ import { useLocation, useNavigate } from "react-router-dom";
 import styles from "./SimulationTestPage.module.css";
 
 // 백엔드 API 주소 (SelectSimulationPage와 동일)
-const API_BASE_URL = "http://localhost:8080/api/simulation";
+const API_BASE_URL = "/seems/api/simulation";
 
-// 이전에 하드코딩된 데이터는 제거합니다. (scenarioFlows, traitFeedback, scenarioResults)
+// ✅ 추가된 디버깅용 로그: 파일 로드 시점 확인
+console.log("--- SimulationTestPage.js 파일 로드됨 ---");
 
 export default function SimulationTestPage() {
   const { state } = useLocation();
   const navigate = useNavigate();
 
+  // ✅ 추가된 디버깅용 로그: 컴포넌트 렌더링 시작 시점 확인
+  console.log("SimulationTestPage 컴포넌트 렌더링 시작");
+  // ✅ 추가된 디버깅용 로그: useLocation 훅으로 받은 state 값 확인
+  console.log("useLocation state:", state);
+
   // SelectSimulationPage에서 전달받은 정보
   // settingId: 백엔드에서 생성된 세션 ID
   // scenario: 시나리오 이름 등 (예: { id: 1, title: '로맨스' })
-  // firstQuestion: 시뮬레이션 시작 시 백엔드가 제공한 첫 질문 데이터 (SimulationQuestionDTO)
+  // question: 시뮬레이션 시작 시 백엔드가 제공한 첫 질문 데이터 (SimulationQuestionDTO)
   const { scenario, settingId, question: initialQuestion } = state || {};
 
   // 현재 질문 상태 및 세션 정보를 관리합니다.
@@ -28,14 +34,27 @@ export default function SimulationTestPage() {
 
   // 컴포넌트 마운트 시 초기 질문 설정 또는 중간 저장된 세션 로드
   useEffect(() => {
+    // ✅ 추가된 디버깅용 로그: useEffect 실행 시점 확인
+    console.log("SimulationTestPage useEffect 실행됨");
+    // ✅ 추가된 디버깅용 로그: useEffect 내에서 초기 질문과 세션 ID 값 확인
+    console.log("initialQuestion (useEffect):", initialQuestion);
+    console.log("settingId (useEffect):", settingId);
+
     if (!scenario || !settingId) {
-      // 시나리오나 세션 정보가 없으면 홈으로 리다이렉트
+      // ✅ 추가된 디버깅용 로그: 리다이렉트 조건에 걸렸을 때 출력
+      console.log(
+        "시나리오 또는 세션 정보 부족, 홈으로 리다이렉트 (/simulation)"
+      );
       navigate("/simulation");
       return;
     }
 
     if (initialQuestion) {
-      // SelectSimulationPage에서 첫 질문을 받은 경우
+      // ✅ 추가된 디버깅용 로그: initialQuestion으로 설정할 때 출력
+      console.log(
+        "initialQuestion이 존재함. currentQuestion 설정:",
+        initialQuestion
+      );
       setCurrentQuestion(initialQuestion);
       setIsLoading(false);
     } else {
@@ -49,6 +68,7 @@ export default function SimulationTestPage() {
       setIsLoading(false); // 임시로 로딩 종료
       // 실제 구현 시 백엔드 API를 호출하여 currentQuestion을 설정해야 합니다.
     }
+    // 의존성 배열 유지
   }, [scenario, settingId, initialQuestion, navigate]);
 
   // 사용자가 선택지를 클릭했을 때 호출

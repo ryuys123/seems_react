@@ -7,13 +7,14 @@ import PersonalityTestPage from "../pages/test/PersonalityTestPage";
 import PsychologyTestPage from "../pages/test/PsychologyTestPage";
 import PsychologyResultPage from "../pages/test/PsychologyResultPage";
 import PersonalityResultPage from "../pages/test/PersonalityResultPage"; // ✨ 1. 결과 페이지 컴포넌트 임포트
+import TestHistoryPage from "../pages/test/TestHistoryPage"; // ✨ 히스토리 페이지 임포트
 const testRoutes = [
   {
     path: "/SelectTestPage", // 검사 선택 페이지 경로
     element: <SelectTestPage />,
   },
   {
-    path: "/PersonalityTestPage", // 성격 검사 페이지 경로
+    path: "/personality-test/:testId", // 성격 검사 페이지 경로
     element: <PersonalityTestPage />,
   },
   {
@@ -27,6 +28,10 @@ const testRoutes = [
   {
     path: "/personality-test/result/:userId", // :userId는 동적 파라미터입니다.
     element: <PersonalityResultPage />,
+  },
+  {
+    path: "/personality-test/history/:userId",
+    element: <TestHistoryPage />,
   },
 ];
 
