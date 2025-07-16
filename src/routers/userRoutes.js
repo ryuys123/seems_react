@@ -21,7 +21,6 @@ import NaverLoginPage from '../pages/user/NaverLoginPage';
 import SocialLoginCallback from '../pages/user/SocialLoginCallback';
 import FaceLoginPage from '../pages/user/FaceLoginPage';
 import FaceSignupPage from '../pages/user/FaceSignupPage';
-import Login from '../pages/Login';
 
 const userRoutes = [
   {
@@ -99,11 +98,7 @@ const userRoutes = [
   {
     path: '/user/facesignup',
     element: <FaceSignupPage />,
-  },
-  {
-      path: '/login',
-      element: <Login />
-    }
+  }
 ];
 
 export default userRoutes;
