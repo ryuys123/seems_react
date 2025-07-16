@@ -52,7 +52,7 @@ const UserDashboard = () => {
 
         {/* 서비스 핵심 기능 카드 */}
         <section className={styles.cardsSection}>
-          <Link to="/record" className={styles.featureCard}>
+          <Link to="/emotionrecord" className={styles.featureCard}>
             <div className={styles.featureIcon}>😊</div>
             <div className={styles.featureTitle}>감정 기록</div>
             <div className={styles.featureDesc}>이모지로 오늘의 감정을 빠르게 기록하고, 나만의 감정 일지를 만들어보세요.</div>
@@ -87,7 +87,7 @@ const UserDashboard = () => {
             <div className={styles.featureTitle}>추천 콘텐츠</div>
             <div className={styles.featureDesc}>심리학 관련 글, 명상 가이드, 자기계발 콘텐츠를 추천받아보세요.</div>
           </Link>
-          <Link to="/record" className={styles.featureCard}>
+          <Link to="/emotionrecord" className={styles.featureCard}>
             <div className={styles.featureIcon}>📝</div>
             <div className={styles.featureTitle}>상담/기록</div>
             <div className={styles.featureDesc}>감정 타임라인과 최근 상담 내역을 한눈에 확인할 수 있습니다.</div>
@@ -100,7 +100,7 @@ const UserDashboard = () => {
             <div className={styles.summaryTitle}>오늘의 감정</div>
             <div className={styles.summaryEmoji}>😄</div>
             <div style={{color: '#888', fontSize: '1.1rem', marginBottom: '8px'}}>기쁨</div>
-            <button className={styles.summaryBtn} onClick={() => handleSummaryClick('/record')}>상세 보기</button>
+            <button className={styles.summaryBtn} onClick={() => handleSummaryClick('/emotionrecord')}>상세 보기</button>
           </div>
           <div className={styles.summaryCard}>
             <div className={styles.summaryTitle}>감정 변화 그래프</div>
@@ -115,7 +115,7 @@ const UserDashboard = () => {
               <li>최근 기록: 2024-06-03</li>
               <li>최근 기록: 2024-06-04</li>
             </ul>
-            <button className={styles.summaryBtn} onClick={() => handleSummaryClick('/record')}>더보기</button>
+            <button className={styles.summaryBtn} onClick={() => handleSummaryClick('/emotionrecord')}>더보기</button>
           </div>
           <div className={styles.summaryCard}>
             <div className={styles.summaryTitle}>공지사항</div>

@@ -35,7 +35,7 @@ const AppRouter = () => {
       <Route path="/counseling/*" element={<CounselingRoutes />} />
 
       {/* 감정 기록 페이지 라우트 */}
-      <Route path="/record" element={<EmotionRecordPage />} />
+      <Route path="/emotionrecord" element={<EmotionRecordPage />} />
 
       {/* ⭐️ analysisRoutes 매핑 */}
       {analysisRoutes.map((route) => (

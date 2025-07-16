@@ -61,7 +61,7 @@ function UserHeader() {
 
         <nav className={styles.nav}>
           <Link to="/counseling">상담</Link>
-          <Link to="/record">기록</Link>
+          <Link to="/emotionrecord">기록</Link>
           <Link to="/SelectTestPage">심리 검사</Link>
           <Link to="/analysis-dashboard">분석</Link>
           <Link to="/activity">활동</Link>

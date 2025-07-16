@@ -1,114 +1,169 @@
-import React, { useState } from 'react';
-import UserHeader from '../../components/common/UserHeader';
-import Footer from '../../components/common/Footer';
+import React, { useState, useEffect, useContext } from 'react';
 import styles from './EmotionRecordPage.module.css';
-
-const emotions = [
-  { label: '행복', emoji: '😊' },
-  { label: '슬픔', emoji: '😔' },
-  { label: '화남', emoji: '😡' },
-  { label: '평온', emoji: '😌' },
-  { label: '불안', emoji: '😰' },
-  { label: '피곤', emoji: '😴' },
-  { label: '고민', emoji: '🤔' },
-  { label: '자신감', emoji: '😎' },
-];
+import UserHeader from '../../components/common/UserHeader';
+import { AuthContext } from '../../AuthProvider';
 
 const EmotionRecordPage = () => {
   const [selectedEmotion, setSelectedEmotion] = useState(null);
   const [recordText, setRecordText] = useState('');
-  const [history, setHistory] = useState([]); // 기록된 감정 일기 목록
+  const [emotions, setEmotions] = useState([]);
+  const [emotionLogs, setEmotionLogs] = useState([]); // 감정 기록 상태 추가
+  const { isLoggedIn, userid, secureApiRequest } = useContext(AuthContext);
 
-  const handleEmotionSelect = (emotion) => {
+  // 감정 목록 가져오기
+  useEffect(() => {
+    const fetchEmotions = async () => {
+      try {
+        const response = await secureApiRequest('http://localhost:8888/seems/api/emotions');
+        setEmotions(response.data);
+      } catch (error) {
+        console.error("감정 목록을 가져오는 데 실패했습니다:", error);
+      }
+    };
+
+    fetchEmotions();
+  }, [secureApiRequest]);
+
+  // 사용자 감정 기록 가져오기
+  useEffect(() => {
+    const fetchEmotionLogs = async () => {
+      if (isLoggedIn && userid) { // 로그인 상태이고 userId가 있을 때만 호출
+        try {
+          const response = await secureApiRequest(`http://localhost:8888/seems/api/emotion-logs/${userid}`);
+          setEmotionLogs(response.data);
+        } catch (error) {
+          console.error("감정 기록을 가져오는 데 실패했습니다:", error);
+        }
+      } else {
+        setEmotionLogs([]); // 로그아웃 상태면 기록 비움
+      }
+    };
+
+    fetchEmotionLogs();
+  }, [isLoggedIn, userid, secureApiRequest]); // 로그인 상태, userId, secureApiRequest 변경 시 재실행
+
+  const handleEmotionClick = (emotion) => {
     setSelectedEmotion(emotion);
   };
 
-  const handleTextChange = (e) => {
-    setRecordText(e.target.value);
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!selectedEmotion) {
-      alert('오늘의 감정을 선택해주세요.');
+      alert('감정을 선택해주세요.');
       return;
     }
     if (!recordText.trim()) {
-      alert('오늘의 생각과 느낌을 작성해주세요.');
+      alert('오늘의 생각과 느낌을 입력해주세요.');
+      return;
+    }
+    if (!isLoggedIn) {
+      alert('로그인 후 이용해주세요.');
       return;
     }
 
-    const newRecord = {
-      id: Date.now(), // 임시 ID
-      date: new Date().toLocaleDateString('ko-KR'),
-      emotion: selectedEmotion,
-      text: recordText.trim(),
-    };
+    try {
+      await secureApiRequest('http://localhost:8888/seems/api/emotion-logs', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        data: {
+          userId: userid,
+          emotionId: selectedEmotion.emotionId,
+          textContent: recordText,
+        },
+      });
 
-    setHistory(prevHistory => [newRecord, ...prevHistory]);
-    setSelectedEmotion(null);
-    setRecordText('');
-    alert('감정 기록이 저장되었습니다!');
-    // TODO: 실제 백엔드 API 연동
+      alert('기록이 성공적으로 제출되었습니다!');
+      setSelectedEmotion(null);
+      setRecordText('');
+      // 기록 제출 후 최신 기록을 다시 불러옴
+      // fetchEmotionLogs(); // 이 함수는 useEffect 내부에 있으므로 직접 호출 불가
+      // 대신, emotionLogs 상태를 직접 업데이트하거나, useEffect의 의존성 배열을 활용하여 재실행 유도
+      // 여기서는 간단하게 다시 불러오는 로직을 추가
+      const response = await secureApiRequest(`http://localhost:8888/seems/api/emotion-logs/${userid}`);
+      setEmotionLogs(response.data);
+
+    } catch (error) {
+      console.error('기록 제출 실패:', error);
+      alert('기록 제출에 실패했습니다.');
+    }
+  };
+
+  const handleCameraClick = () => {
+    document.getElementById('cameraInput').click();
+  };
+
+  const handleVoiceClick = () => {
+    alert('음성 입력 기능은 아직 구현되지 않았습니다.');
   };
 
   return (
-    <>
+    <div className={styles.body}>
       <UserHeader />
       <main className={styles.main}>
-        <h1 className={styles.pageTitle}>감정 기록</h1>
-        <div className={styles.recordGrid}>
-          <div className={styles.recordCard}>
+        <h1 className={styles['page-title']}>감정 기록</h1>
+        <div className={styles['record-grid']}>
+          <div className={styles['record-card']}>
             <h3>오늘의 감정</h3>
-            {/* 카메라 버튼은 일단 제외 */}
-            <div className={styles.emotionGrid}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginBottom: '4px' }}>
+              <button type="button" className={styles['camera-btn']} title="촬영" onClick={handleCameraClick}>
+                <img src="/images/camera.png" alt="촬영" style={{ width: '22px', height: 'auto', display: 'block' }} />
+              </button>
+              <input type="file" accept="image/*" capture="user" id="cameraInput" className={styles['camera-input']} />
+            </div>
+            <div className={styles['emotion-grid']}>
               {emotions.map((emotion) => (
                 <div
-                  key={emotion.label}
-                  className={`${styles.emotionItem} ${selectedEmotion && selectedEmotion.label === emotion.label ? styles.selected : ''}`}
-                  onClick={() => handleEmotionSelect(emotion)}
+                  key={emotion.emotionId}
+                  className={`${styles['emotion-item']} ${selectedEmotion && selectedEmotion.emotionId === emotion.emotionId ? styles.selected : ''}`}
+                  onClick={() => handleEmotionClick(emotion)}
                 >
-                  <span className={styles.emotionEmoji}>{emotion.emoji}</span>
-                  <span className={styles.emotionLabel}>{emotion.label}</span>
+                  <span className={styles['emotion-emoji']}>{emotion.emoji}</span>
+                  <span className={styles['emotion-label']}>{emotion.emotionName}</span>
                 </div>
               ))}
             </div>
-            <form className={styles.recordForm} onSubmit={handleSubmit}>
-              <div className={styles.formGroup}>
+            <form className={styles['record-form']} onSubmit={handleSubmit}>
+              <div className={styles['form-group']}>
                 <label htmlFor="record-text">오늘의 생각과 느낌</label>
                 <textarea
                   id="record-text"
                   placeholder="오늘 있었던 일이나 느낀 감정을 자유롭게 적어보세요..."
                   value={recordText}
-                  onChange={handleTextChange}
+                  onChange={(e) => setRecordText(e.target.value)}
                 ></textarea>
-                {/* 음성 입력 버튼은 일단 제외 */}
+                <button type="button" className={styles['voice-btn']} title="음성 입력" onClick={handleVoiceClick}>
+                  <img src="/images/rec_1.png" alt="음성 입력" />
+                </button>
               </div>
-              <button type="submit" className={styles.submitBtn}>기록하기</button>
+              <button type="submit" className={styles['submit-btn']}>기록하기</button>
             </form>
           </div>
-          {/* 감정 통계 부분은 제외 */}
         </div>
-        <div className={styles.historySection}>
+        <div className={styles['history-section']}>
           <h3>최근 기록</h3>
-          <div className={styles.historyList}>
-            {history.length > 0 ? (
-              history.map((item) => (
-                <div key={item.id} className={styles.historyItem}>
-                  <div className={styles.historyEmoji}>{item.emotion.emoji}</div>
-                  <div className={styles.historyContent}>
-                    <div className={styles.historyDate}>{item.date}</div>
-                    <p className={styles.historyText}>{item.text}</p>
+          <div className={styles['history-list']}>
+            {emotionLogs.length > 0 ? (
+              emotionLogs.map((log) => (
+                <div key={log.emotionLogId} className={styles['history-item']}>
+                  <div className={styles['history-emoji']}>{log.emotion.emoji}</div>
+                  <div className={styles['history-content']}>
+                    <div className={styles['history-date']}>
+                      {new Date(log.createdAt).toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })}
+                    </div>
+                    <p className={styles['history-text']}>{log.textContent}</p>
                   </div>
                 </div>
               ))
             ) : (
-              <p>저장된 감정 기록이 없습니다.</p>
+              <p>아직 기록된 감정이 없습니다.</p>
             )}
           </div>
         </div>
       </main>
-    </>
+    </div>
   );
 };
 
