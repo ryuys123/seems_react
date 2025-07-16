@@ -59,6 +59,9 @@ function NoticeWritePage() {
       await secureApiRequest("/admin/notice", {
         method: "POST",
         body: data,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
 
       alert("새 공지글 등록 성공");

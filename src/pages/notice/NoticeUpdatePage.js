@@ -102,6 +102,9 @@ function NoticeUpdatePage() {
       await secureApiRequest(`/admin/notice/${noticeNo}`, {
         method: "PUT",
         body: data,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
 
       alert("공지글 수정 성공");
