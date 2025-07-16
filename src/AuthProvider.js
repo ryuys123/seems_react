@@ -142,7 +142,7 @@ export const AuthProvider = ({ children }) => {
 
     try {
       const method = options.method || "GET";
-      const data = options.body || null;
+      const data = options.data || options.body || null;
 
       // 서버측으로 서비스 요청 보내고 결과 받기
       const response = await apiClient({
@@ -151,6 +151,7 @@ export const AuthProvider = ({ children }) => {
         headers: {
           Authorization: `Bearer ${accessToken}`, //빽틱 사용할 것
           RefreshToken: `Bearer ${refreshToken}`, //빽틱 사용할 것
+          ...options.headers,
         },
         data,
       });
