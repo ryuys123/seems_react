@@ -27,7 +27,7 @@ const UserProfilePage = () => {
     // 사용자 상세 정보 불러오기
     const fetchUserDetail = async () => {
       try {
-        const res = await apiClient.get('/user/me'); // 실제 API 경로로 수정
+        const res = await apiClient.get('/user/info'); // 실제 API 경로로 수정
         setUserDetail(res.data);
       } catch (err) {
         console.error('사용자 정보 불러오기 실패:', err);
