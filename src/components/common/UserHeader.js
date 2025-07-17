@@ -64,7 +64,9 @@ function UserHeader() {
           <Link to="/emotionrecord">기록</Link>
           <Link to="/SelectTestPage">심리 검사</Link>
           <Link to="/analysis-dashboard">분석</Link>
-          <Link to="/activity">활동</Link>
+          <Link to="/quest">퀘스트</Link>
+          <Link to="/quest-store">뱃지상점</Link>
+          <Link to="/content">컨텐츠</Link>
           <Link to="/simulation">시뮬레이션</Link>
           <Link to="/notice">공지사항</Link>
           <Link to="/faq">FAQ</Link>
