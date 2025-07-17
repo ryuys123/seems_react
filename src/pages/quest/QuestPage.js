@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import styles from './QuestPage.module.css';
+import UserHeader from '../../components/common/UserHeader';
 
 const QuestPage = () => {
   const [ongoingActivities, setOngoingActivities] = useState([
@@ -277,35 +278,7 @@ const QuestPage = () => {
 
   return (
     <div>
-      <header className={styles.header}>
-        <div className={styles.headerInner}>
-          <Link to="/" style={{ textDecoration: 'none' }}>
-            <div className={styles.logoWrap}>
-              <span className={styles.logoText}>
-                <span style={{ color: '#4b94d0', fontWeight: 900, fontSize: '2rem', letterSpacing: '-1px' }}>SEE</span>
-                <span style={{ color: '#3d3833', fontWeight: 900, fontSize: '2rem', letterSpacing: '-1px' }}>MS</span>
-              </span>
-              <img 
-                src="/logo.png" 
-                alt="SEE MS 로고" 
-                style={{ marginLeft: '-5px', width: '54px', height: '54px', borderRadius: 0, background: 'none', boxShadow: 'none' }}
-              />
-            </div>
-          </Link>
-          <nav className={styles.nav}>
-            <Link to="/">홈</Link>
-            <Link to="/counseling">상담</Link>
-            <Link to="/emotionrecord">기록</Link>
-            <Link to="/test">심리 검사</Link>
-            <Link to="/analysis">분석</Link>
-            <Link to="/quest">퀘스트</Link>
-            <Link to="/simulation">시뮬레이션</Link>
-            <Link to="/faq">FAQ</Link>
-            <Link to="/mypage">마이페이지</Link>
-            <Link to="/login" style={{ color: 'var(--main-accent)', fontWeight: 900 }}>로그인/회원가입</Link>
-          </nav>
-        </div>
-      </header>
+      <UserHeader/>
 
       <main className={styles.main}>
         <div className={styles.pageHeader}>
