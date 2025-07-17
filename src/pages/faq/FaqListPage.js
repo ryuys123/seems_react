@@ -94,12 +94,7 @@ function FaqListPage({ searchResults }) {
     fetchBoards(1);
   };
 
-  //제목 클릭시 상세보기 이동
-  // const handleTitleClick = (boardNum) => {
-  //   // url path 와 ${변수명} 를 같이 사용시에는 반드시 빽틱(`)을 표시해야 함 (작은따옴표 아님 : 주의)
-  //   navigate(/board/detail/${boardNum}); //상세 페이지로 이동 처리 지정
-  //   //라우터로 등록함
-  // };
+  //목록 클릭시 상세보기 이동
   const handleRowClick = (faqNo) => navigate(`/faqd/${faqNo}`);
 
   //글쓰기 버튼 클릭시 글쓰기 페이지로 이동동
