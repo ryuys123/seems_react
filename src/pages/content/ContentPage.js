@@ -21,7 +21,7 @@ const ContentPage = () => {
       description: '마음이 지칠 때 듣기 좋은 따뜻한 피아노 선율.',
       media: (
         <audio controls style={{ width: '100%' }}>
-          <source src="https://cdn.pixabay.com/audio/2022/10/16/audio_12b6fae5b7.mp3" type="audio/mp3" />
+          <source src={require("../../assets/audio/audio1.mp3")} type="audio/mp3" />
           브라우저가 오디오 태그를 지원하지 않습니다.
         </audio>
       )
@@ -61,7 +61,7 @@ const ContentPage = () => {
       description: '상쾌한 하루를 위한 기타 연주곡.',
       media: (
         <audio controls style={{ width: '100%' }}>
-          <source src="https://cdn.pixabay.com/audio/2022/11/16/audio_12b6fae5b7.mp3" type="audio/mp3" />
+          <source src="/assets/audio/audio2.mp3" type="audio/mp3" />
           브라우저가 오디오 태그를 지원하지 않습니다.
         </audio>
       )
@@ -80,7 +80,7 @@ const ContentPage = () => {
       description: '편안한 밤을 위한 ASMR 사운드.',
       media: (
         <audio controls style={{ width: '100%' }}>
-          <source src="https://cdn.pixabay.com/audio/2022/10/16/audio_12b6fae5b7.mp3" type="audio/mp3" />
+          <source src={require("../../assets/audio/audio1.mp3")} type="audio/mp3" />
           브라우저가 오디오 태그를 지원하지 않습니다.
         </audio>
       )
