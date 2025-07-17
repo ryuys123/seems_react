@@ -87,7 +87,7 @@ function FaqWritePage() {
         <tr>
           <td colSpan={2}>
             <div>
-              <div className={styles.pageTitle}>1:1 문의 작성 페이지</div>
+              <div className={styles.pageTitle}>문의글 작성 페이지</div>
               <div className={styles.subText}>문의사항을 작성해 주세요.</div>
             </div>
           </td>

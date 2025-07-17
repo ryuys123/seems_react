@@ -66,7 +66,8 @@ function UserHeader() {
           <Link to="/analysis-dashboard">분석</Link>
           <Link to="/activity">활동</Link>
           <Link to="/simulation">시뮬레이션</Link>
-          <Link to="/faqlist">FAQ</Link>
+          <Link to="/notice">공지사항</Link>
+          <Link to="/faq">FAQ</Link>
           <Link to="/userprofile">마이페이지</Link>
           <Link
             to="/"

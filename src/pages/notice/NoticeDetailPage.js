@@ -30,7 +30,6 @@ function NoticeDetailPage() {
 
   const hasFetched = useRef(false); //  요청 중복 방지용 ref (개발모드에서 2번 실행으로 인해 조회수 2씩 증가 방지)
 
-  //*********************************************** */
   useEffect(() => {
     if (hasFetched.current) return; // 이미 실행됐으면 아무것도 안함 (개발모드 2번실행 방지)
     hasFetched.current = true; // 최초 실행에서만 true로 바꿈
