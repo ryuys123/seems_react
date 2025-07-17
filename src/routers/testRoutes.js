@@ -5,6 +5,8 @@ import React from "react";
 import SelectTestPage from "../pages/test/SelectTestPage";
 import PersonalityTestPage from "../pages/test/PersonalityTestPage";
 import PsychologyTestPage from "../pages/test/PsychologyTestPage";
+import DepressionTestPage from "../pages/test/DepressionTestPage"; // <<-- 추가
+import StressTestPage from "../pages/test/StressTestPage"; // <<-- 추가
 import PsychologyResultPage from "../pages/test/PsychologyResultPage";
 import PersonalityResultPage from "../pages/test/PersonalityResultPage"; // ✨ 1. 결과 페이지 컴포넌트 임포트
 import TestHistoryPage from "../pages/test/TestHistoryPage"; // ✨ 히스토리 페이지 임포트
@@ -20,6 +22,14 @@ const testRoutes = [
   {
     path: "/psychologyTestPage", // 심리 검사 페이지 경로
     element: <PsychologyTestPage />,
+  },
+  {
+    path: "/psychological-test/depression", // <<-- 우울증 검사 페이지 라우트
+    element: <DepressionTestPage />,
+  },
+  {
+    path: "/psychological-test/stress", // <<-- 스트레스 검사 페이지 라우트
+    element: <StressTestPage />,
   },
   {
     path: "/psychological-test/result/:resultId", // :resultId는 동적 파라미터
