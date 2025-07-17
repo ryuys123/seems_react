@@ -58,11 +58,21 @@ const SelectTestPage = () => {
   }, [loggedInUserId]); // loggedInUserId가 바뀔 때만 이 effect 설정을 다시 실행합니다.
 
   const handleStartPsychologyTest = () => {
-    navigate("/psychologyTestPage");
+    navigate("/psychologyTestPage"); // 이 부분은 이전 그대로 유지합니다.
   };
 
   const handleStartPersonalityTest = () => {
-    navigate("/personality-test/1");
+    navigate("/personality-test/1"); // 이 부분은 이전 그대로 유지합니다.
+  };
+
+  // <<-- 우울증 검사 시작 버튼 핸들러 (새로 추가되는 부분)
+  const handleStartDepressionTest = () => {
+    navigate("/psychological-test/depression"); // 우울증 검사 페이지로 이동
+  };
+
+  // <<-- 스트레스 검사 시작 버튼 핸들러 (새로 추가되는 부분)
+  const handleStartStressTest = () => {
+    navigate("/psychological-test/stress"); // 스트레스 검사 페이지로 이동
   };
 
   return (
@@ -127,6 +137,20 @@ const SelectTestPage = () => {
             </button>
           </>
         )}
+      </div>
+
+      {/* <<-- 우울증 검사 섹션 추가 (새로 추가되는 부분) */}
+      <div className={styles.testSection}>
+        <h2>우울증 검사</h2>
+        <p>자신의 우울감 수준을 간단한 설문을 통해 확인해보세요.</p>
+        <button onClick={handleStartDepressionTest}>검사 시작하기</button>
+      </div>
+
+      {/* <<-- 스트레스 검사 섹션 추가 (새로 추가되는 부분) */}
+      <div className={styles.testSection}>
+        <h2>스트레스 검사</h2>
+        <p>일상생활에서 느끼는 스트레스 수준을 측정합니다.</p>
+        <button onClick={handleStartStressTest}>검사 시작하기</button>
       </div>
     </div>
   );
