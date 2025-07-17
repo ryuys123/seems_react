@@ -6,10 +6,12 @@
   --card-bg: #fff;
   --border-radius: 18px;
   --shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
+  --shadow-hover: 0 8px 32px rgba(0, 0, 0, 0.12);
 }
 
 .header {
-  background: #fff;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
   box-shadow: var(--shadow);
   padding: 0;
   position: fixed;
@@ -17,21 +19,24 @@
   left: 0;
   width: 100%;
   z-index: 999;
+  border-bottom: 1px solid rgba(75, 148, 208, 0.1);
 }
 
 .headerInner {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 16px 24px;
+  gap: 24px;
 }
 
 .logoWrap {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-shrink: 0;
 }
 
 .logoText {
@@ -41,8 +46,9 @@
 }
 
 .logoText span {
-  font-size: 2rem;
+  color: var(--main-blue);
   font-weight: 900;
+  font-size: 2rem;
   letter-spacing: -1px;
 }
 
@@ -63,45 +69,168 @@
   box-shadow: none;
 }
 
-.nav {
+.userSection {
   display: flex;
-  gap: 18px;
-}
-
-.nav a {
-  color: var(--main-dark);
-  text-decoration: none;
-  font-weight: 700;
-  font-size: 1rem;
-  padding: 6px 14px;
-  border-radius: 8px;
-  transition: background 0.2s;
-}
-
-.nav a:hover {
-  background: var(--main-blue);
-  color: #fff;
+  align-items: center;
+  flex-shrink: 0;
 }
 
 .userGreeting {
   color: var(--main-dark);
   font-weight: 600;
   font-size: 0.95rem;
-  padding: 6px 14px;
-  /* border-radius: 8px; */
+  padding: 8px 16px;
   background: var(--main-bg);
-  /* border: 1px solid var(--main-blue); */
-  margin-right: 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(75, 148, 208, 0.2);
+  white-space: nowrap;
+  min-width: max-content;
+  box-shadow: 0 2px 8px rgba(75, 148, 208, 0.1);
+}
+
+.nav {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  flex: 1;
+}
+
+.navGroup {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 4px 8px;
+  background: rgba(75, 148, 208, 0.1);
+  border-radius: 12px;
+  border: 1px solid rgba(75, 148, 208, 0.1);
+}
+
+.navLink {
+  color: var(--main-dark);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.9em;
+  padding: 6px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+}
+
+.navLink:hover {
+  background: var(--main-blue);
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(75, 148, 208, 0.3);
+}
+
+.navLink::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+  pointer-events: none;
+}
+
+.navLink:hover::before {
+  left: 100%;
+}
+
+.logoutLink {
+  color: var(--main-accent) !important;
+  font-weight: 900 !important;
+  background: rgba(239, 202, 208, 0.1) !important;
+  border: 1px solid rgba(239, 202, 208, 0.2) !important;
+}
+
+.logoutLink:hover {
+  background: var(--main-accent) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 12px rgba(239, 202, 208, 0.3) !important;
+}
+
+@media (max-width: 1200px) {
+  .headerInner {
+    max-width: 100%;
+    padding: 16px 20px;
+    gap: 16px;
+  }
+  
+  .nav {
+    gap: 12px;
+  }
+  
+  .navGroup {
+    gap: 6px;
+    padding: 3px 6px;
+  }
+  
+  .navLink {
+    font-size: 0.85rem;
+    padding: 5px;
+  }
 }
 
 @media (max-width: 768px) {
   .headerInner {
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
+    padding: 12px 16px;
   }
-
+  
   .nav {
+    justify-content: center;
+    gap: 8px;
+  }
+  
+  .navGroup {
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px;
+  }
+  
+  .userSection {
+    order: -1;
+  }
+}
+
+@media (max-width: 480px) {
+  .headerInner {
+    padding: 10px 12px;
+  }
+  
+  .nav {
+    flex-direction: column;
+    gap: 6px;
+  }
+  
+  .navGroup {
+    flex-direction: row;
     flex-wrap: wrap;
     justify-content: center;
+    gap: 4px;
+    padding: 6px;
+  }
+  
+  .navLink {
+    font-size: 0.8rem;
+    padding: 4px 8px;
+  }
+  
+  .logoSee,
+  .logoMs {
+    font-size: 1.5em;
+  }
+  
+  .logoImage {
+    width: 40px;
+    height: 40px;
   }
 }

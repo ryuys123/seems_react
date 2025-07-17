@@ -13,8 +13,6 @@ function UserHeader() {
   const { isLoggedIn, username, role, logoutAndRedirect } =
     useContext(AuthContext);
 
-  // console.log("UserHeader username:", username);
-
   const handleLogout = () => {
     // 로그아웃 처리
     logoutAndRedirect();
@@ -23,29 +21,12 @@ function UserHeader() {
   return (
     <header className={styles.header}>
       <div className={styles.headerInner}>
+        {/* 로고 섹션 */}
         <Link to="/" style={{ textDecoration: "none" }}>
           <div className={styles.logoWrap}>
             <span className={styles.logoText}>
-              <span
-                style={{
-                  color: "#4b94d0",
-                  fontWeight: 900,
-                  fontSize: "2rem",
-                  letterSpacing: "-1px",
-                }}
-              >
-                SEE
-              </span>
-              <span
-                style={{
-                  color: "#3d3833",
-                  fontWeight: 900,
-                  fontSize: "2rem",
-                  letterSpacing: "-1px",
-                }}
-              >
-                MS
-              </span>
+              <span className={styles.logoSee}>SEE</span>
+              <span className={styles.logoMs}>MS</span>
             </span>
             <img
               src={logoSeems}
@@ -55,29 +36,51 @@ function UserHeader() {
           </div>
         </Link>
 
-        <span className={styles.userGreeting}>
-          {username ? `${username}님, 안녕하세요` : "안녕하세요"}
-        </span>
+        {/* 사용자 인사말 */}
+        <div className={styles.userSection}>
+          <span className={styles.userGreeting}>
+            {username ? `${username}님, 안녕하세요` : "안녕하세요"}
+          </span>
+        </div>
 
+        {/* 네비게이션 메뉴 */}
         <nav className={styles.nav}>
-          <Link to="/counseling">상담</Link>
-          <Link to="/emotionrecord">기록</Link>
-          <Link to="/SelectTestPage">심리 검사</Link>
-          <Link to="/analysis-dashboard">분석</Link>
-          <Link to="/quest">퀘스트</Link>
-          <Link to="/quest-store">뱃지상점</Link>
-          <Link to="/content">컨텐츠</Link>
-          <Link to="/simulation">시뮬레이션</Link>
-          <Link to="/notice">공지사항</Link>
-          <Link to="/faq">FAQ</Link>
-          <Link to="/userprofile">마이페이지</Link>
-          <Link
-            to="/"
-            style={{ color: "var(--main-accent)", fontWeight: 900 }}
-            onClick={handleLogout}
-          >
-            로그아웃
-          </Link>
+          {/* 주요 서비스 */}
+          <div className={styles.navGroup}>
+            <Link to="/counseling" className={styles.navLink}>상담</Link>
+            <Link to="/SelectTestPage" className={styles.navLink}>심리 검사</Link>
+            <Link to="/analysis-dashboard" className={styles.navLink}>분석</Link>
+          </div>
+
+          {/* 게임화 요소 */}
+          <div className={styles.navGroup}>
+            <Link to="/quest" className={styles.navLink}>퀘스트</Link>
+            <Link to="/simulation" className={styles.navLink}>시뮬레이션</Link>
+            <Link to="/content" className={styles.navLink}>컨텐츠</Link>
+          </div>
+
+          {/* 기록록 */}
+          <div className={styles.navGroup}>
+          <Link to="/emotionrecord" className={styles.navLink}>기록</Link>
+          </div>
+
+          {/* 정보 및 지원 */}
+          <div className={styles.navGroup}>
+            <Link to="/notice" className={styles.navLink}>공지사항</Link>
+            <Link to="/faq" className={styles.navLink}>FAQ</Link>
+          </div>
+
+          {/* 사용자 관련 */}
+          <div className={styles.navGroup}>
+            <Link to="/userprofile" className={styles.navLink}>마이페이지</Link>
+            <Link
+              to="/"
+              className={`${styles.navLink} ${styles.logoutLink}`}
+              onClick={handleLogout}
+            >
+              로그아웃
+            </Link>
+          </div>
         </nav>
       </div>
     </header>

@@ -79,7 +79,7 @@ body {
 }
 
 .main {
-  max-width: 1200px;
+  max-width: 1800;
   margin: 0 auto;
   padding: 32px 16px;
   background: var(--main-bg);
@@ -153,7 +153,7 @@ body {
 
 .userStats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
   margin-bottom: 32px;
 }
@@ -218,7 +218,7 @@ body {
 
 .recommendationGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 20px;
 }
 
@@ -227,11 +227,24 @@ body {
   border-radius: 12px;
   padding: 20px;
   border: 1px solid #eee;
+  display: flex;
+  flex-direction: column;
+  height: 280px;
+  justify-content: space-between;
 }
 
 .recommendationCard h3 {
   margin: 0 0 12px 0;
   color: var(--main-dark);
+  font-size: 1.1rem;
+}
+
+.recommendationCard p {
+  flex: 1;
+  margin: 0;
+  color: #666;
+  line-height: 1.5;
+  font-size: 0.95rem;
 }
 
 .recommendationMeta {
@@ -274,7 +287,7 @@ body {
 
 .questGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 20px;
 }
 
@@ -323,6 +336,21 @@ body {
   margin: 16px 0;
 }
 
+.activityGroup {
+  margin-bottom: 16px;
+}
+
+.activityTitle {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--main-blue);
+  margin-bottom: 8px;
+  padding: 8px 12px;
+  background: rgba(75, 148, 208, 0.1);
+  border-radius: 8px;
+  border-left: 4px solid var(--main-blue);
+}
+
 .step {
   display: flex;
   align-items: center;
@@ -332,13 +360,42 @@ body {
 }
 
 .step .editInput {
-  font-size: 1rem;
+  font-size: 1em;
   padding: 2px 6px;
   border: 1px solid #bbb;
   border-radius: 4px;
   outline: none;
   margin-left: 0;
   margin-right: 8px;
+}
+
+.step .editInput:focus {
+  border-color: var(--main-accent);
+  box-shadow: 0 0 2px rgba(239, 119, 12, 0.5);
+}
+
+.step-text {
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.step-text:hover {
+  background-color: rgba(75, 148, 208, 0.1);
+}
+
+.step-text[contenteditable="true"] {
+  background-color: rgba(75, 148, 208, 0.1);
+  border: 2px solid var(--main-blue);
+  border-radius: 4px;
+  padding: 2px 6px;
+  outline: none;
+}
+
+.step-text[contenteditable="true"]:focus {
+  border-color: var(--main-accent);
+  box-shadow: 0 2px rgba(239, 119, 12, 0.5);
 }
 
 .step .deleteBtn {
@@ -429,6 +486,7 @@ body {
   transition: background 0.2s;
   width: 100%;
   margin-top: 16px;
+  font-size: 1rem;
 }
 
 .activityButton:hover {
@@ -589,8 +647,110 @@ body {
   100% { filter: drop-shadow(0 0 0px #fff); }
 }
 
-@media (max-width: 768px) {
-  .userStats {
-    grid-template-columns: repeat(2, 1fr);
+@media (max-width: 480px) {
+  .main {
+    flex-direction: column;
   }
+  .sidebar {
+    width: 100%;
+    max-height: 300px;
+  }
+  .questContainer {
+    height: calc(100vh - 160px);
+  }
+  .message {
+    max-width: 90%;
+  }
+}
+
+/* 퀘스트 시작 확인 모달 */
+.confirmModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: modalFadeIn 0.3s forwards;
+}
+
+.confirmContent {
+  background: white;
+  border-radius: 18px;
+  padding: 32px;
+  max-width: 500px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  animation: modalSlideIn 0.3s forwards;
+}
+
+.confirmContent h2 {
+  color: var(--main-dark);
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 16px;
+}
+
+.confirmContent p {
+  color: #666;
+  font-size: 1.1rem;
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+.confirmActions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.confirmBtn {
+  background: var(--gradient-blue);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 80px;
+}
+
+.confirmBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(75, 148, 208, 0.3);
+}
+
+.cancelBtn {
+  background: #f5f5f5;
+  color: #666;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 80px;
+}
+
+.cancelBtn:hover {
+  background: #e0e0e0;
+  transform: translateY(-2px);
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalSlideIn {
+  from { opacity: 0; transform: translateY(-20px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
