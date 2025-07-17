@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import styles from './EmotionRecordPage.module.css';
 import UserHeader from '../../components/common/UserHeader';
 import { AuthContext } from '../../AuthProvider';
@@ -9,6 +9,10 @@ const EmotionRecordPage = () => {
   const [emotions, setEmotions] = useState([]);
   const [emotionLogs, setEmotionLogs] = useState([]); // 감정 기록 상태 추가
   const { isLoggedIn, userid, secureApiRequest } = useContext(AuthContext);
+
+  // 음성 인식 상태 및 참조 추가
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef(null);
 
   // 감정 목록 가져오기
   useEffect(() => {
@@ -41,6 +45,53 @@ const EmotionRecordPage = () => {
 
     fetchEmotionLogs();
   }, [isLoggedIn, userid, secureApiRequest]); // 로그인 상태, userId, secureApiRequest 변경 시 재실행
+
+  // 음성 인식 설정 useEffect
+  useEffect(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      console.error("이 브라우저에서는 음성 인식을 지원하지 않습니다.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'ko-KR';
+    recognition.continuous = false; // 한 문장이 끝나면 인식 종료
+    recognition.interimResults = true;
+
+    recognitionRef.current = recognition;
+
+    recognition.onresult = (event) => {
+      let interimTranscript = '';
+      let finalTranscript = '';
+
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        if (event.results[i].isFinal) {
+          finalTranscript += event.results[i][0].transcript;
+        } else {
+          interimTranscript += event.results[i][0].transcript;
+        }
+      }
+      setRecordText(finalTranscript || interimTranscript);
+    };
+
+    recognition.onerror = (event) => {
+      console.error(`음성 인식 오류: ${event.error}`);
+      if (event.error === 'no-speech') {
+        // alert('음성이 감지되지 않았습니다. 마이크를 확인하고 다시 시도해주세요.');
+      } else if (event.error === 'audio-capture') {
+        alert('마이크 접근 권한이 없습니다. 브라우저 설정을 확인해주세요.');
+      } else {
+        alert('음성 인식 중 오류가 발생했습니다.');
+      }
+      setIsListening(false);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+  }, []);
 
   const handleEmotionClick = (emotion) => {
     setSelectedEmotion(emotion);
@@ -96,14 +147,20 @@ const EmotionRecordPage = () => {
   };
 
   const handleVoiceClick = () => {
-    alert('음성 입력 기능은 아직 구현되지 않았습니다.');
+    if (isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    } else {
+      recognitionRef.current.start();
+      setIsListening(true);
+    }
   };
 
   return (
     <div className={styles.body}>
       <UserHeader />
       <main className={styles.main}>
-        <h1 className={styles['page-title']}>감정 기록</h1>
+        {/* <h1 className={styles['page-title']}>감정 기록</h1> */}
         <div className={styles['record-grid']}>
           <div className={styles['record-card']}>
             <h3>오늘의 감정</h3>
@@ -134,8 +191,8 @@ const EmotionRecordPage = () => {
                   value={recordText}
                   onChange={(e) => setRecordText(e.target.value)}
                 ></textarea>
-                <button type="button" className={styles['voice-btn']} title="음성 입력" onClick={handleVoiceClick}>
-                  <img src="/images/rec_1.png" alt="음성 입력" />
+                <button type="button" className={`${styles['voice-btn']} ${isListening ? styles.listening : ''}`} title="음성 입력" onClick={handleVoiceClick}>
+                  <img src={isListening ? "/images/stop_1.jpg" : "/images/rec_1.png"} alt={isListening ? "녹음 중지" : "음성 입력"} />
                 </button>
               </div>
               <button type="submit" className={styles['submit-btn']}>기록하기</button>

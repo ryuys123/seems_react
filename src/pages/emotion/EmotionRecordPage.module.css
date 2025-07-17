@@ -18,7 +18,7 @@ body {
 .main {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 32px 16px;
+  padding: 140px 16px 32px; /* 헤더 높이를 고려하여 상단 여백을 120px로 조정 */
 }
 .page-title {
   font-size: 1.8rem;
@@ -158,7 +158,7 @@ body {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: #d0e7ff;
+  background: var(--main-blue); /* 진한 파란색으로 변경 */
   border: none;
   display: flex;
   align-items: center;
@@ -168,22 +168,65 @@ body {
   position: absolute;
   right: 8px;
   bottom: 12px;
-  color: var(--main-blue);
+  color: #fff; /* 아이콘 색상을 흰색으로 변경 (filter와 함께 사용) */
 }
 .voice-btn:hover {
-  background: var(--main-blue);
+  background: var(--main-accent);
   color: #fff;
 }
 .voice-btn img {
   width: 18px;
   height: auto;
   display: block;
+  filter: invert(1); /* 아이콘 색상을 흰색으로 반전 */
 }
+
+/* 음성 입력 활성화 상태 */
+.voice-btn.listening {
+  background: #e74c3c; /* 더 강렬한 빨간색 */
+  color: #fff;
+  box-shadow: 0 0 20px rgba(231, 76, 60, 0.8); /* 더 강한 그림자 효과 */
+  animation: pulse 1.5s infinite;
+  transform: scale(1.1); /* 활성화 시 약간 커지게 */
+  border-radius: 8px; /* 네모 모양을 위해 추가 */
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 15px rgba(231, 76, 60, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(231, 76, 60, 0);
+  }
+}
+
+/* 활성화 시, 기존 마이크 아이콘 숨기기 */
+.voice-btn.listening img {
+  visibility: hidden;
+}
+
+/* 활성화 시, ::after 가상 요소를 이용해 네모 아이콘 생성 */
+.voice-btn.listening::after {
+  content: '';
+  display: block;
+  width: 16px;
+  height: 16px;
+  background-color: #fff;
+  border-radius: 2px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
 .camera-btn {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: #d0e7ff;
+  background: var(--main-blue); /* 진한 파란색으로 변경 */
   border: none;
   display: flex;
   align-items: center;
@@ -191,17 +234,18 @@ body {
   cursor: pointer;
   transition: background 0.2s;
   margin-left: 8px;
-  color: var(--main-blue);
+  color: #fff; /* 아이콘 색상을 흰색으로 변경 (filter와 함께 사용) */
   position: relative;
 }
 .camera-btn:hover {
-  background: var(--main-blue);
+  background: var(--main-accent);
   color: #fff;
 }
 .camera-btn img {
   width: 22px;
   height: auto;
   display: block;
+  filter: invert(1); /* 아이콘 색상을 흰색으로 반전 */
 }
 .camera-input {
   display: none;
