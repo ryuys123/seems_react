@@ -14,6 +14,8 @@ const QuestStorePage = () => {
   const [activeFilter, setActiveFilter] = useState('all');
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [selectedReward, setSelectedReward] = useState(null);
   const [questRewards, setQuestRewards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [userStats, setUserStats] = useState({
@@ -121,21 +123,36 @@ const QuestStorePage = () => {
 
   const handlePurchase = async (reward) => {
     if (currentPoints >= reward.requiredPoints) {
-      try {
-        await purchaseBadge(reward.rewardId);
-        setCurrentPoints(prev => prev - reward.requiredPoints);
-        setOwnedItems(prev => [...prev, reward.rewardId]);
-        setUserStats(prev => ({
-          ...prev,
-          ownedTitles: prev.ownedTitles + 1
-        }));
-        showToastMessage(`${reward.titleReward} 뱃지 획득!`);
-      } catch (e) {
-        showToastMessage('구매 실패: ' + (e.response?.data || '오류'));
-      }
+      setSelectedReward(reward);
+      setShowConfirmModal(true);
     } else {
       showToastMessage('포인트가 부족합니다!');
     }
+  };
+
+  const confirmPurchase = async () => {
+    if (!selectedReward) return;
+    
+    try {
+      await purchaseBadge(selectedReward.rewardId);
+      setCurrentPoints(prev => prev - selectedReward.requiredPoints);
+      setOwnedItems(prev => [...prev, selectedReward.rewardId]);
+      setUserStats(prev => ({
+        ...prev,
+        ownedTitles: prev.ownedTitles + 1   }));
+      showToastMessage(`${selectedReward.titleReward} 뱃지 획득!`);
+      setShowConfirmModal(false);
+      setSelectedReward(null);
+    } catch (e) {
+      showToastMessage('구매 실패: ' + (e.response?.data || '오류'));
+      setShowConfirmModal(false);
+      setSelectedReward(null);
+    }
+  };
+
+  const cancelPurchase = () => {
+    setShowConfirmModal(false);
+    setSelectedReward(null);
   };
 
   const showToastMessage = (message) => {
@@ -290,6 +307,18 @@ const QuestStorePage = () => {
       {showToast && (
         <div className={styles.toast} style={{ display: 'block' }}>
           {toastMessage}
+        </div>
+      )}
+      {showConfirmModal && selectedReward && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <h2>뱃지 획득 확인</h2>
+            <p>{selectedReward.titleReward} 뱃지를 획득하시겠습니까?</p>
+            <div className={styles.modalButtons}>
+              <button onClick={confirmPurchase} className={styles.confirmBtn}>확인</button>
+              <button onClick={cancelPurchase} className={styles.cancelBtn}>취소</button>
+            </div>
+          </div>
         </div>
       )}
     </div>
