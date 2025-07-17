@@ -8,10 +8,10 @@ import PsychologyTestResultPage from "../pages/test/PsychologyResultPage";
 import AnalysisPage from "../pages/analysis/AnalysisPage"; // ⭐️ AnalysisPage 임포트
 // 기능별로 작성한 라우터를 불러오기
 import userRoutes from "./userRoutes";
-import NoticeListPage from "./noticeRoutes";
 import adminRoutes from "./adminRoutes";
 import testRoutes from "./testRoutes";
 import noticeRoutes from "./noticeRoutes";
+import faqRoutes from "./faqRoutes";
 import questRoutes from "./questRoutes";
 import contentRoutes from "./contentRoutes";
 import EmotionRecordPage from "../pages/emotion/EmotionRecordPage"; // 감정 기록 페이지 추가
@@ -27,6 +27,7 @@ const AppRouter = () => {
         <Route key={route.path} path={route.path} element={route.element} />
       ))}
       {noticeRoutes}
+      {faqRoutes}
       {adminRoutes.map((route) => (
         <Route key={route.path} path={route.path} element={route.element} />
       ))}
