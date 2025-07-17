@@ -1,10 +1,11 @@
 import React, { useRef, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import styles from "./FaceSignupPage.module.css";
 import axios from "axios";
 
 const FaceSignupPage = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const signupInfo = location.state || {}; // 전달받은 회원정보
 
   const videoRef = useRef(null);
@@ -30,27 +31,53 @@ const FaceSignupPage = () => {
       const canvas = canvasRef.current;
       const context = canvas.getContext("2d");
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const imageData = canvas.toDataURL("image/jpeg");
-      setCapturedImage(imageData);
+      const faceImageData = canvas.toDataURL("image/jpeg");
+      setCapturedImage(faceImageData);
 
-      // 서버 전송
+      // Spring Boot 서버에 페이스 회원가입 요청
       try {
-        // 전달받은 회원정보와 캡처 이미지를 함께 전송
-        const response = await axios.post("http://localhost:5000/api/face-signup", {
-          user_id: signupInfo.userId,
+        console.log("페이스 회원가입 요청 시작...");
+        console.log("회원정보:", signupInfo);
+        
+        const requestData = {
+          userId: signupInfo.userId,
           username: signupInfo.userName,
           phone: signupInfo.phone,
           password: signupInfo.userPwd,
-          image_data: imageData,
-        });
+          faceImageData: faceImageData,
+        };
+        
+        console.log("요청 데이터:", requestData);
+        
+        const response = await axios.post("http://localhost:8888/seems/api/face/signup", requestData);
+        
+        console.log("페이스 회원가입 응답:", response.data);
         setRegisterResult(response.data);
+        
         if (response.data.success) {
-          alert("얼굴 등록 성공! 이제 페이스로그인을 사용할 수 있습니다.");
+          alert("페이스 회원가입 성공! 이제 페이스로그인을 사용할 수 있습니다.");
+          // 성공 시 대시보드로 이동
+          setTimeout(() => {
+            navigate('/userdashboard');
+          }, 1500);
         } else {
-          alert("얼굴 등록 실패: " + (response.data.message || "다시 시도하세요."));
+          alert("페이스 회원가입 실패: " + (response.data.message || "다시 시도하세요."));
         }
       } catch (error) {
-        alert("서버 오류: " + error.message);
+        console.error("페이스 회원가입 오류:", error);
+        if (error.response) {
+          // 서버에서 응답이 왔지만 오류인 경우
+          console.error("서버 응답 오류:", error.response.data);
+          alert("서버 오류: " + (error.response.data?.message || error.response.statusText));
+        } else if (error.request) {
+          // 요청은 보냈지만 응답이 없는 경우
+          console.error("서버 연결 실패:", error.request);
+          alert("서버 연결 실패: Spring Boot 서버가 실행 중인지 확인해주세요.");
+        } else {
+          // 요청 자체에 문제가 있는 경우
+          console.error("요청 오류:", error.message);
+          alert("요청 오류: " + error.message);
+        }
       }
       setStep("idle");
     }
@@ -58,7 +85,16 @@ const FaceSignupPage = () => {
 
   return (
     <div className={styles.faceSignupContainer}>
-      <h2>얼굴 등록(회원가입)</h2>
+      <h2>페이스 회원가입</h2>
+      <p>회원가입과 함께 얼굴을 등록하여 페이스 로그인을 사용할 수 있습니다.</p>
+      
+      <div style={{ marginBottom: '20px', padding: '10px', backgroundColor: '#f5f5f5' }}>
+        <h4>회원정보 확인</h4>
+        <p>사용자 ID: {signupInfo.userId}</p>
+        <p>사용자명: {signupInfo.userName}</p>
+        <p>전화번호: {signupInfo.phone}</p>
+      </div>
+      
       <video
         ref={videoRef}
         width={320}
@@ -81,17 +117,18 @@ const FaceSignupPage = () => {
       <button
         onClick={handleButtonClick}
         disabled={step === "loading"}
+        className={styles.signupButton}
       >
-        {step === "idle" && "얼굴 등록"}
-        {step === "camera" && "캡처 및 등록"}
-        {step === "loading" && "등록 중..."}
+        {step === "idle" && "페이스 회원가입 시작"}
+        {step === "camera" && "캡처 및 회원가입"}
+        {step === "loading" && "처리 중..."}
       </button>
       {registerResult && (
-        <div>
+        <div className={registerResult.success ? styles.successMessage : styles.errorMessage}>
           {registerResult.success ? (
-            <p style={{ color: "green" }}>등록 성공! 이제 페이스로그인을 사용할 수 있습니다.</p>
+            <p>✅ {registerResult.message}</p>
           ) : (
-            <p style={{ color: "red" }}>등록 실패: {registerResult.message}</p>
+            <p>❌ {registerResult.message}</p>
           )}
         </div>
       )}
