@@ -223,6 +223,32 @@ export const getUserInfo = async () => {
   }
 };
 
+// 페이스 로그인
+export const faceLogin = async (faceImageData) => {
+  try {
+    const response = await apiClient.post('/auth/face-login', {
+      faceImageData: faceImageData
+    });
+
+    if (response.data.success) {
+      const { accessToken, refreshToken, userInfo } = response.data;
+      
+      // 토큰 저장
+      localStorage.setItem(TOKEN_CONFIG.accessTokenKey, accessToken);
+      localStorage.setItem(TOKEN_CONFIG.refreshTokenKey, refreshToken);
+      localStorage.setItem(STORAGE_KEYS.USER_INFO, JSON.stringify(userInfo));
+      localStorage.setItem('login-type', 'face');
+      
+      return { success: true, userInfo };
+    }
+    
+    throw new Error(response.data.message || '페이스 로그인에 실패했습니다.');
+  } catch (error) {
+    console.error('페이스 로그인 에러:', error);
+    throw error;
+  }
+};
+
 // 로그아웃
 export const logout = async () => {
   try {
@@ -235,5 +261,6 @@ export const logout = async () => {
     localStorage.removeItem(TOKEN_CONFIG.refreshTokenKey);
     localStorage.removeItem(STORAGE_KEYS.USER_INFO);
     localStorage.removeItem('social-login');
+    localStorage.removeItem('login-type');
   }
 }; 

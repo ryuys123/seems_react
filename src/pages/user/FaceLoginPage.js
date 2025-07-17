@@ -12,7 +12,6 @@ const FaceLoginPage = () => {
   // 버튼 클릭 핸들러
   const handleButtonClick = async () => {
     if (step === "idle") {
-      // 1. 웹캠 시작
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
         videoRef.current.srcObject = stream;
@@ -21,31 +20,53 @@ const FaceLoginPage = () => {
         alert("웹캠 접근이 불가합니다.");
       }
     } else if (step === "camera") {
-      // 2. 캡처 + 서버 전송
       setStep("loading");
       setLoginResult(null);
-      // 캡처
       const video = videoRef.current;
       const canvas = canvasRef.current;
       const context = canvas.getContext("2d");
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const imageData = canvas.toDataURL("image/jpeg");
-      setCapturedImage(imageData);
+      const faceImageData = canvas.toDataURL("image/jpeg");
+      setCapturedImage(faceImageData);
 
-      // 서버 전송
+      // Spring Boot 서버에 페이스 로그인 요청 (올바른 URL 사용)
       try {
-        const response = await axios.post("http://localhost:5000/api/face-login", {
-          image: imageData,
+        console.log("페이스 로그인 요청 시작...");
+        const response = await axios.post("http://localhost:8888/seems/api/face/login", {
+          faceImageData: faceImageData,
         });
+        
+        console.log("페이스 로그인 응답:", response.data);
         setLoginResult(response.data);
+        
         if (response.data.success) {
-          alert("로그인 성공! " + response.data.username);
-          // ...추가 로그인 처리
+          // 토큰을 로컬 스토리지에 저장
+          localStorage.setItem("accessToken", response.data.accessToken);
+          localStorage.setItem("refreshToken", response.data.refreshToken);
+          localStorage.setItem("userId", response.data.userId);
+          localStorage.setItem("userName", response.data.userName);
+          
+          alert("페이스 로그인 성공! 환영합니다, " + response.data.userName + "님!");
+          // 성공 시 메인 페이지로 이동
+          window.location.href = "/";
         } else {
-          alert("얼굴 인식 실패: " + (response.data.message || "다시 시도하세요."));
+          alert("페이스 로그인 실패: " + (response.data.message || "다시 시도하세요."));
         }
       } catch (error) {
-        alert("서버 오류: " + error.message);
+        console.error("페이스 로그인 오류:", error);
+        if (error.response) {
+          // 서버에서 응답이 왔지만 오류인 경우
+          console.error("서버 응답 오류:", error.response.data);
+          alert("서버 오류: " + (error.response.data?.message || error.response.statusText));
+        } else if (error.request) {
+          // 요청은 보냈지만 응답이 없는 경우
+          console.error("서버 연결 실패:", error.request);
+          alert("서버 연결 실패: Spring Boot 서버가 실행 중인지 확인해주세요.");
+        } else {
+          // 요청 자체에 문제가 있는 경우
+          console.error("요청 오류:", error.message);
+          alert("요청 오류: " + error.message);
+        }
       }
       setStep("idle");
     }
@@ -54,6 +75,8 @@ const FaceLoginPage = () => {
   return (
     <div className={styles.faceLoginContainer}>
       <h2>페이스 로그인</h2>
+      <p>등록된 얼굴로 로그인하세요.</p>
+      
       <video
         ref={videoRef}
         width={320}
@@ -76,17 +99,18 @@ const FaceLoginPage = () => {
       <button
         onClick={handleButtonClick}
         disabled={step === "loading"}
+        className={styles.loginButton}
       >
-        {step === "idle" && "얼굴로 로그인"}
+        {step === "idle" && "페이스 로그인 시작"}
         {step === "camera" && "캡처 및 로그인"}
         {step === "loading" && "로그인 중..."}
       </button>
       {loginResult && (
-        <div>
+        <div className={loginResult.success ? styles.successMessage : styles.errorMessage}>
           {loginResult.success ? (
-            <p style={{ color: "green" }}>로그인 성공! {loginResult.username}님 환영합니다.</p>
+            <p>✅ {loginResult.message}</p>
           ) : (
-            <p style={{ color: "red" }}>로그인 실패: {loginResult.message}</p>
+            <p>❌ {loginResult.message}</p>
           )}
         </div>
       )}
