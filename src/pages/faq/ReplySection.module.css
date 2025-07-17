@@ -57,3 +57,12 @@
 .replyInput button:hover {
   background: var(--main-accent);
 }
+
+.deleteButton {
+  margin-left: 2px;
+  font-size: 0.8em;
+  color: red;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
