@@ -1,17 +1,41 @@
 // src/components/common/UserHeader.js
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import logoSeems from "../../assets/images/logo_seems.png";
 import styles from "./UserHeader.module.css";
 import { AuthContext } from "../../AuthProvider";
+import apiClient from '../../utils/axios';
+import profileStyles from '../../pages/user/UserProfilePage.module.css';
 
 function UserHeader() {
   const [showSideMenu, setShowSideMenu] = useState(false);
   const navigate = useNavigate();
 
   // 전역 상태 관리자 AuthProvider 에서 필요한 정보 가져오기
-  const { isLoggedIn, username, role, logoutAndRedirect } =
+  const { isLoggedIn, username, role, logoutAndRedirect, userid } =
     useContext(AuthContext);
+
+  // 장착 뱃지 상태
+  const [equippedBadge, setEquippedBadge] = useState(null);
+
+  useEffect(() => {
+    const fetchEquippedBadge = async () => {
+      try {
+        if (!userid) return;
+        const res = await apiClient.get(`/api/user/equipped-badge?userId=${userid}`);
+        setEquippedBadge(res.data);
+      } catch {
+        setEquippedBadge(null);
+      }
+    };
+    if (userid) fetchEquippedBadge();
+  }, [userid]);
+
+  // 뱃지 REWARD_ID별 클래스
+  const badgeClass =
+    equippedBadge && equippedBadge.rewardId
+      ? `${profileStyles.profileBadge} ${profileStyles['badge' + equippedBadge.rewardId]}`
+      : profileStyles.profileBadge;
 
   const handleLogout = () => {
     // 로그아웃 처리
@@ -36,11 +60,18 @@ function UserHeader() {
           </div>
         </Link>
 
-        {/* 사용자 인사말 */}
-        <div className={styles.userSection}>
+        {/* 사용자 인사말 + 장착 뱃지 */}
+        <div className={styles.userSection} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <span className={styles.userGreeting}>
             {username ? `${username}님, 안녕하세요` : "안녕하세요"}
           </span>
+          {/* 장착 뱃지 노출 */}
+          {equippedBadge && (
+            <div className={badgeClass} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <img src={equippedBadge.imagePath} alt="장착 뱃지" style={{ width: 24, height: 24, marginRight: 4, verticalAlign: 'middle' }} />
+              <span style={{ fontSize: '0.98rem' }}>{equippedBadge.titleReward || equippedBadge.questName || '뱃지'}</span>
+            </div>
+          )}
         </div>
 
         {/* 네비게이션 메뉴 */}

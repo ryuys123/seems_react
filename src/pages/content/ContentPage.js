@@ -146,7 +146,7 @@ const ContentPage = () => {
 
       <main className={styles.main}>
         <div className={styles.pageHeader}>
-          <h1 className={styles.pageTitle}>맞춤 콘텐츠 추천</h1>
+        <h1 className={styles.pageTitle}>맞춤 콘텐츠 추천</h1>
         </div>
         
         {/* 분석 결과 감정 요약 */}
@@ -165,57 +165,57 @@ const ContentPage = () => {
         <div className={styles.contentContainer}>
           {/* 유튜브 영상 섹션 */}
           <div className={styles.youtubeSection}>
-            <div className={styles.contentHeader}>유튜브 영상 추천</div>
-            <div className={styles.youtubeGrid}>
-              {youtubeContents.map(content => (
-                <div key={content.id} className={styles.youtubeCard}>
-                  {playingVideoId === content.videoId ? (
-                    <div className={styles.youtubePlayerWrap}>
-                      <iframe
-                        width="100%"
+          <div className={styles.contentHeader}>유튜브 영상 추천</div>
+          <div className={styles.youtubeGrid}>
+            {youtubeContents.map(content => (
+              <div key={content.id} className={styles.youtubeCard}>
+                {playingVideoId === content.videoId ? (
+                  <div className={styles.youtubePlayerWrap}>
+                    <iframe
+                      width="100%"
                         height="220"
-                        src={`https://www.youtube.com/embed/${content.videoId}?autoplay=1`}
-                        title={content.title}
-                        frameBorder="0"
-                        allowFullScreen
-                      />
-                    </div>
-                  ) : (
-                    <div className={styles.youtubeThumbWrap} onClick={() => setPlayingVideoId(content.videoId)}>
-                      <img
-                        src={`https://img.youtube.com/vi/${content.videoId}/hqdefault.jpg`}
-                        alt={content.title}
-                        className={styles.youtubeThumb}
-                      />
-                      <div className={styles.youtubePlayBtn}>▶</div>
-                    </div>
-                  )}
-                  <div className={styles.contentTitle}>{content.title}</div>
-                  <div className={styles.contentDesc}>{content.description}</div>
-                </div>
-              ))}
-            </div>
+                      src={`https://www.youtube.com/embed/${content.videoId}?autoplay=1`}
+                      title={content.title}
+                      frameBorder="0"
+                      allowFullScreen
+                    />
+                  </div>
+                ) : (
+                  <div className={styles.youtubeThumbWrap} onClick={() => setPlayingVideoId(content.videoId)}>
+                    <img
+                      src={`https://img.youtube.com/vi/${content.videoId}/hqdefault.jpg`}
+                      alt={content.title}
+                      className={styles.youtubeThumb}
+                    />
+                    <div className={styles.youtubePlayBtn}>▶</div>
+                  </div>
+                )}
+                <div className={styles.contentTitle}>{content.title}</div>
+                <div className={styles.contentDesc}>{content.description}</div>
+              </div>
+            ))}
           </div>
+        </div>
 
           {/* 기타 콘텐츠 섹션 */}
           <div className={styles.otherContentSection}>
-            <div className={styles.contentHeader}>오늘의 추천 콘텐츠</div>
-            <div className={styles.contentList}>
-              {otherContents.map(content => (
-                <div key={content.id} className={styles.contentCard}>
-                  <div className={styles.contentType}>{content.type}</div>
-                  <div className={styles.contentTitle}>{content.title}</div>
-                  <div className={styles.contentDesc}>{content.description}</div>
-                  {content.media && (
-                    <div className={styles.contentMedia}>
-                      {content.media}
-                    </div>
-                  )}
-                  {content.quote && (
-                    <div className={styles.contentQuote}>{content.quote}</div>
-                  )}
-                </div>
-              ))}
+          <div className={styles.contentHeader}>오늘의 추천 콘텐츠</div>
+          <div className={styles.contentList}>
+            {otherContents.map(content => (
+              <div key={content.id} className={styles.contentCard}>
+                <div className={styles.contentType}>{content.type}</div>
+                <div className={styles.contentTitle}>{content.title}</div>
+                <div className={styles.contentDesc}>{content.description}</div>
+                {content.media && (
+                  <div className={styles.contentMedia}>
+                    {content.media}
+                  </div>
+                )}
+                {content.quote && (
+                  <div className={styles.contentQuote}>{content.quote}</div>
+                )}
+              </div>
+            ))}
             </div>
           </div>
         </div>
