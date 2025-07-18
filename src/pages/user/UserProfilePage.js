@@ -6,12 +6,28 @@ import { AuthContext } from '../../AuthProvider';
 import apiClient from '../../utils/axios';
 
 const UserProfilePage = () => {
-  const { username } = useContext(AuthContext); // 전역에서 이름 받아오기
+  const { username, userid } = useContext(AuthContext); // userid도 받아오기
   const [userDetail, setUserDetail] = useState(null);
   const [isNotificationOn, setIsNotificationOn] = useState(true);
   const navigate = useNavigate();
   const [userPreferences, setUserPreferences] = useState(null);
   const [simulationSettings, setSimulationSettings] = useState(null);
+  const [equippedBadge, setEquippedBadge] = useState(null); // 장착중 뱃지 정보
+
+  // 한글 등급 → 영문 CSS 클래스 매핑
+  const rarityToClass = {
+    '레어': 'rare',
+    '에픽': 'epic',
+    '유니크': 'unique',
+    '레전더리': 'legendary',
+    '플래티넘': 'platinum'
+  };
+
+  // 등급별 CSS 클래스 조합 (이제 REWARD_ID별로)
+  const badgeClass =
+    equippedBadge && equippedBadge.rewardId
+      ? `${styles.profileBadge} ${styles['badge' + equippedBadge.rewardId]}`
+      : styles.profileBadge;
 
   useEffect(() => {
     const saved = localStorage.getItem('user-preferences');
@@ -36,6 +52,23 @@ const UserProfilePage = () => {
     fetchUserDetail();
   }, []);
 
+  useEffect(() => {
+    // 장착중인 뱃지 정보 불러오기 (신규 API)
+    const fetchEquippedBadge = async () => {
+      try {
+        const userId = userid || userDetail?.userId || userDetail?.userid;
+        if (!userId) return;
+        const res = await apiClient.get(`/api/user/equipped-badge?userId=${userId}`);
+        setEquippedBadge(res.data); // null 또는 { rewardId, isEquipped, titleReward, imagePath, questName }
+      } catch (err) {
+        setEquippedBadge(null);
+      }
+    };
+    if (userid || userDetail?.userId || userDetail?.userid) {
+      fetchEquippedBadge();
+    }
+  }, [userid, userDetail]);
+
   if (!userDetail) return <div>로딩 중...</div>;
 
   const handleUserFormClick = () => {
@@ -55,9 +88,20 @@ const UserProfilePage = () => {
           <div className={styles.profileInfo}>
             <div className={styles.profileHeader}>
               <h2 className={styles.profileName}>{username || userDetail.name}</h2>
-              <div className={`${styles.profileBadge} ${styles.mentalHealthMaster}`}>
-                🏅 정신 건강 마스터
-              </div>
+              {/* 장착중인 뱃지 노출 */}
+              {equippedBadge ? (
+                <div
+                  className={badgeClass}
+                  style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+                >
+                  <img src={equippedBadge.imagePath} alt="장착 뱃지" style={{ width: 28, height: 28, marginRight: 4, verticalAlign: 'middle' }} />
+                  <span>{equippedBadge.titleReward || equippedBadge.questName || '뱃지'}</span>
+                </div>
+              ) : (
+                <div className={styles.profileBadge} style={{ color: '#aaa', background: 'none' }}>
+                  현재 장착한 뱃지가 없습니다
+                </div>
+              )}
             </div>
             <div className={styles.profileEmailSection}>
               <p className={styles.profileEmail}>{userDetail.email}</p>
