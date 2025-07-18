@@ -25,6 +25,9 @@ apiClient.interceptors.request.use(
     }
 
     console.log("Axios 요청 설정 : ", config);
+    console.log("Axios 요청 URL : ", config.baseURL + config.url);
+    console.log("Axios 요청 메서드 : ", config.method?.toUpperCase());
+    console.log("Axios 요청 헤더 : ", config.headers);
     return config;
   },
   (error) => {
@@ -60,56 +63,50 @@ apiClient.interceptors.response.use(
     console.error("Axios 응답 에러 : ", error);
     
     // 401 에러 (인증 실패)인 경우
-    if (error.response?.status === 401) {
-      console.log("토큰 만료 - 재발급 시도");
+    if (error.response?.status === 401 && !error.config._retry) {
+      error.config._retry = true;
       
-      const refreshToken = localStorage.getItem("refreshToken");
-      if (refreshToken) {
+      // 토큰 재발급 함수 직접 구현
+      const reissued = await reissueToken();
+      
+      async function reissueToken() {
         try {
-          // 토큰 재발급 요청
-          const reissueResponse = await axios.post(
-            `${process.env.REACT_APP_API_BASE_URL || "http://localhost:8888/seems"}/reissue`,
-            null,
-            {
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-                RefreshToken: `Bearer ${refreshToken}`,
-              },
-            }
-          );
+          const accessToken = localStorage.getItem('accessToken');
+          const refreshToken = localStorage.getItem('refreshToken');
           
-          // 새로운 토큰 저장
-          const newAccessToken = reissueResponse.headers["authorization"]?.split(" ")[1];
-          const newRefreshToken = reissueResponse.headers["refresh-token"]?.split(" ")[1];
+          const response = await axios.post('http://localhost:8888/seems/api/reissue', {}, {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'RefreshToken': `Bearer ${refreshToken}`
+            }
+          });
+          
+          // 새로운 토큰을 헤더에서 추출
+          const newAccessToken = response.headers['authorization'];
+          const newRefreshToken = response.headers['refresh-token'];
           
           if (newAccessToken) {
-            localStorage.setItem("accessToken", newAccessToken);
-            console.log("토큰 재발급 성공 - 새로운 AccessToken 저장됨");
+            localStorage.setItem('accessToken', newAccessToken.replace('Bearer ', ''));
           }
-          
           if (newRefreshToken) {
-            localStorage.setItem("refreshToken", newRefreshToken);
-            console.log("토큰 재발급 성공 - 새로운 RefreshToken 저장됨");
+            localStorage.setItem('refreshToken', newRefreshToken.replace('Bearer ', ''));
           }
           
-          // 원래 요청 재시도
-          const originalRequest = error.config;
-          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-          return apiClient(originalRequest);
-          
-        } catch (reissueError) {
-          console.log("토큰 재발급 실패 - 로그인 페이지로 리다이렉트");
-          localStorage.removeItem("accessToken");
-          localStorage.removeItem("refreshToken");
-          localStorage.removeItem("userInfo");
-          window.location.href = "/login";
+          return true;
+        } catch (error) {
+          console.error('토큰 재발급 실패:', error);
+          // 재발급 실패 시 로그인 페이지로 리다이렉트
+          localStorage.clear();
+          window.location.href = '/login';
+          return false;
         }
-      } else {
-        console.log("RefreshToken 없음 - 로그인 페이지로 리다이렉트");
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
-        localStorage.removeItem("userInfo");
-        window.location.href = "/login";
+      }
+      
+      if (reissued) {
+        // 새로운 토큰으로 원래 요청 재시도
+        const newAccessToken = localStorage.getItem('accessToken');
+        error.config.headers.Authorization = `Bearer ${newAccessToken}`;
+        return apiClient(error.config);
       }
     }
     
