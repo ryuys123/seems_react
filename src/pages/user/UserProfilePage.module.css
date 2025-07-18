@@ -142,12 +142,59 @@ body {
 }
 
 .profileBadge {
-  background: linear-gradient(135deg, #ff6b6b, #ff8e53);
-  color: white;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 0.8rem;
+  background: linear-gradient(135deg, #4b94d0 0%, #7b2ff2 100%);
+  color: #fff;
+  padding: 6px 18px 6px 10px;
+  border-radius: 24px;
+  font-size: 1rem;
   font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 12px 0 rgba(75, 148, 208, 0.18), 0 1.5px 6px 0 rgba(123, 47, 242, 0.10);
+  border: 1.5px solid #e3e8f7;
+  opacity: 0.97;
+  letter-spacing: 0.5px;
+  transition: box-shadow 0.2s, background 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.profileBadge::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -60%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(120deg, rgba(255,255,255,0.0) 0%, rgba(255,255,255,0.45) 50%, rgba(255,255,255,0.0) 100%);
+  transform: skewX(-20deg);
+  animation: badge-shine 2.2s cubic-bezier(0.4,0.0,0.2,1) infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+@keyframes badge-shine {
+  0% {
+    left: -60%;
+  }
+  60% {
+    left: 120%;
+  }
+  100% {
+    left: 120%;
+  }
+}
+.profileBadge img {
+  background: rgba(255,255,255,0.12);
+  border-radius: 50%;
+  box-shadow: 0 1px 4px rgba(75,148,208,0.10);
+  border: 1px solid #e3e8f7;
+  padding: 2px;
+  z-index: 2;
+}
+.profileBadge span {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-left: 2px;
+  z-index: 2;
 }
 
 .profileBadge.meditationMaster {
@@ -191,6 +238,45 @@ body {
   border: 2px solid #ff9800;
   animation: glow 2s ease-in-out infinite alternate;
 }
+
+.profileBadge.rare {
+  background: linear-gradient(90deg, #4b94d0 0%, #6dd5ed 100%);
+  color: #fff;
+  box-shadow: 0 2px 12px 0 rgba(75, 148, 208, 0.18);
+}
+.profileBadge.epic {
+  background: linear-gradient(90deg, #7b2ff2 0%, #f357a8 100%);
+  color: #fff;
+  box-shadow: 0 2px 12px 0 rgba(123, 47, 242, 0.18);
+}
+.profileBadge.unique {
+  background: linear-gradient(90deg, #43cea2 0%, #185a9d 100%);
+  color: #fff;
+  box-shadow: 0 2px 12px 0 rgba(67, 206, 162, 0.18);
+}
+.profileBadge.legendary {
+  background: linear-gradient(90deg, #ffd700 0%, #ff9800 100%);
+  color: #4b2e05;
+  box-shadow: 0 2px 12px 0 rgba(255, 215, 0, 0.18);
+  border: 2px solid #ffb300;
+}
+.profileBadge.platinum {
+  background: linear-gradient(90deg, #e3e8f7 0%, #bdbdbd 100%);
+  color: #333;
+  box-shadow: 0 2px 12px 0 rgba(189, 189, 189, 0.18);
+  border: 2px solid #bdbdbd;
+}
+
+.profileBadge.badge1 { background: linear-gradient(90deg, #4b94d0 0%, #6dd5ed 100%); }
+.profileBadge.badge2 { background: linear-gradient(90deg, #2193b0 0%, #6dd5ed 100%); }
+.profileBadge.badge3 { background: linear-gradient(90deg, #7b2ff2 0%, #f357a8 100%); }
+.profileBadge.badge4 { background: linear-gradient(90deg, #8e2de2 0%, #4a00e0 100%); }
+.profileBadge.badge5 { background: linear-gradient(90deg, #43cea2 0%, #185a9d 100%); }
+.profileBadge.badge6 { background: linear-gradient(90deg, #f7971e 0%, #ffd200 100%); }
+.profileBadge.badge7 { background: linear-gradient(90deg, #ff512f 0%, #dd2476 100%); }
+.profileBadge.badge8 { background: linear-gradient(90deg, #1d976c 0%, #93f9b9 100%); }
+.profileBadge.badge9 { background: linear-gradient(90deg, #dadada 0%, #bdbdbd 100%); color: #333; }
+.profileBadge.badge10 { background: linear-gradient(90deg, #f7971e 0%, #ffd200 100%); color: #4b2e05; }
 
 @keyframes glow {
   from { box-shadow: 0 0 5px #ff9800; }
