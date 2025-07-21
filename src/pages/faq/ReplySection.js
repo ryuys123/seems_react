@@ -5,7 +5,7 @@ import { useParams, useNavigate } from "react-router-dom";
 
 import styles from "./ReplySection.module.css";
 
-function ReplySection({ faqNo }) {
+function ReplySection({ faqNo, faqStatus }) {
   // 전역 상태 관리자에서 필요한 정보 가져오기
   const { isLoggedIn, userid, secureApiRequest } = useContext(AuthContext);
 
@@ -122,15 +122,21 @@ function ReplySection({ faqNo }) {
         )}
       </div>
 
-      {isLoggedIn && (
-        <div className={styles.replyInput}>
-          <textarea
-            value={newReply}
-            onChange={(e) => setNewReply(e.target.value)}
-            placeholder="댓글을 입력하세요"
-          />
-          <button onClick={handleSubmitReply}>등록</button>
-        </div>
+      {faqStatus === "CLOSED" ? (
+        <p style={{ color: "gray" }}>
+          상담이 종료되어 댓글을 작성할 수 없습니다.
+        </p>
+      ) : (
+        isLoggedIn && (
+          <div className={styles.replyInput}>
+            <textarea
+              value={newReply}
+              onChange={(e) => setNewReply(e.target.value)}
+              placeholder="댓글을 입력하세요"
+            />
+            <button onClick={handleSubmitReply}>등록</button>
+          </div>
+        )
       )}
     </div>
   );
