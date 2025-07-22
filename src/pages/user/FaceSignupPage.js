@@ -2,11 +2,14 @@ import React, { useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styles from "./FaceSignupPage.module.css";
 import axios from "axios";
+import { useContext } from "react";
+import { AuthContext } from "../../AuthProvider";
 
 const FaceSignupPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const signupInfo = location.state || {}; // 전달받은 회원정보
+  const { userid } = useContext(AuthContext);
 
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -36,14 +39,21 @@ const FaceSignupPage = () => {
 
       // Spring Boot 서버에 페이스 회원가입 요청
       try {
+        // 값 확인용 콘솔 출력
+        console.log('signupInfo:', signupInfo);
+        console.log('userId:', signupInfo.userId || userid);
+        console.log('userName:', signupInfo.userName);
+        console.log('userPwd:', signupInfo.userPwd);
+        console.log('phone:', signupInfo.phone);
+        
         console.log("페이스 회원가입 요청 시작...");
         console.log("회원정보:", signupInfo);
         
         const requestData = {
-          userId: signupInfo.userId,
+          userId: signupInfo.userId || userid,
           username: signupInfo.userName,
-          phone: signupInfo.phone,
           password: signupInfo.userPwd,
+          phone: signupInfo.phone,
           faceImageData: faceImageData,
         };
         
@@ -58,7 +68,7 @@ const FaceSignupPage = () => {
           alert("페이스 회원가입 성공! 이제 페이스로그인을 사용할 수 있습니다.");
           // 성공 시 대시보드로 이동
           setTimeout(() => {
-            navigate('/userdashboard');
+            navigate('/');
           }, 1500);
         } else {
           alert("페이스 회원가입 실패: " + (response.data.message || "다시 시도하세요."));
