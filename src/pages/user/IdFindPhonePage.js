@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logoImage from '../../assets/images/logo_2.png';
 import styles from './IdFindPhonePage.module.css';
+import apiClient from '../../utils/axios'; // axios 인스턴스 추가
 
 const IdFindPhone = () => {
   const navigate = useNavigate();
@@ -12,6 +13,12 @@ const IdFindPhone = () => {
   });
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [showErrorMessage, setShowErrorMessage] = useState(false);
+  const [isCodeSent, setIsCodeSent] = useState(false); // 인증번호 발송 여부
+  const [isVerified, setIsVerified] = useState(false); // 인증 성공 여부
+  const [timer, setTimer] = useState(0); // 타이머(초)
+  const [isLoading, setIsLoading] = useState(false); // 로딩 상태
+  const [resultMessage, setResultMessage] = useState(''); // 결과/에러 메시지
+  const timerRef = useRef(null); // interval ID 관리
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -21,23 +28,72 @@ const IdFindPhone = () => {
     }));
   };
 
-  const handleSendVerificationCode = () => {
-    // 휴대폰 인증번호 전송 로직
+  const handleSendVerificationCode = async () => {
     if (formData.name && formData.phone) {
-      setShowSuccessMessage(true);
-      setShowErrorMessage(false);
-      // 실제로는 API 호출
+      setIsLoading(true);
+      setResultMessage('');
+      try {
+        await apiClient.post('/api/user/verification/sms-verification', { phone: formData.phone });
+        setShowSuccessMessage(true);
+        setShowErrorMessage(false);
+        setIsCodeSent(true);
+        setIsVerified(false);
+        setTimer(180); // 3분
+        setResultMessage('인증번호가 문자로 전송되었습니다.');
+        // 타이머 시작
+        if (timerRef.current) clearInterval(timerRef.current);
+        timerRef.current = setInterval(() => {
+          setTimer(prev => prev - 1);
+        }, 1000);
+      } catch (err) {
+        setShowErrorMessage(true);
+        setShowSuccessMessage(false);
+        setResultMessage(err.response?.data?.message || '인증번호 발송 실패');
+      } finally {
+        setIsLoading(false);
+      }
     } else {
       setShowErrorMessage(true);
       setShowSuccessMessage(false);
+      setResultMessage('이름과 휴대폰번호를 모두 입력하세요.');
     }
   };
 
-  const handleVerifyCode = () => {
-    // 인증번호 확인 로직
-    if (formData.verifyCode) {
-      // 인증 성공 시 처리
-      console.log('인증 성공');
+  // 타이머 관리 useEffect
+  useEffect(() => {
+    if (isCodeSent && timer === 0) {
+      setIsCodeSent(false);
+      setResultMessage('인증 시간이 만료되었습니다. 다시 시도해주세요.');
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    }
+    // 컴포넌트 언마운트 시 interval 정리
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [isCodeSent, timer]);
+
+  const handleVerifyCode = async () => {
+    if (!formData.verifyCode) return;
+    setIsLoading(true);
+    setResultMessage('');
+    try {
+      await apiClient.post('/api/user/verification/sms-verification', {
+        phone: formData.phone,
+        verificationCode: formData.verifyCode
+      });
+      setIsVerified(true);
+      setResultMessage('인증 성공!');
+    } catch (err) {
+      setIsVerified(false);
+      setResultMessage(err.response?.data?.message || '인증 실패');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -92,13 +148,15 @@ const IdFindPhone = () => {
               onChange={handleInputChange}
               placeholder="휴대폰번호를 입력하세요" 
               required 
+              disabled={isCodeSent && timer > 0}
             />
             <button 
               type="button" 
               className={styles.verifyBtn}
               onClick={handleSendVerificationCode}
+              disabled={isLoading || (isCodeSent && timer > 0)}
             >
-              인증번호 받기
+              {isCodeSent && timer > 0 ? `재전송(${timer}s)` : '인증번호 받기'}
             </button>
           </div>
         </div>
@@ -114,11 +172,13 @@ const IdFindPhone = () => {
               onChange={handleInputChange}
               placeholder="인증번호 6자리를 입력하세요" 
               required 
+              disabled={!isCodeSent || timer === 0 || isVerified}
             />
             <button 
               type="button" 
               className={styles.verifyBtn}
               onClick={handleVerifyCode}
+              disabled={!isCodeSent || timer === 0 || isVerified || isLoading}
             >
               확인
             </button>
@@ -136,6 +196,11 @@ const IdFindPhone = () => {
           <div className={styles.errorMessage} style={{display: 'block'}}>
             입력하신 휴대폰번호를 찾을 수 없습니다.<br />
             다시 확인해주세요.
+          </div>
+        )}
+        {resultMessage && (
+          <div style={{textAlign: 'center', color: isVerified ? '#2e7d32' : '#c62828', margin: '12px 0'}}>
+            {resultMessage}
           </div>
         )}
       </form>
