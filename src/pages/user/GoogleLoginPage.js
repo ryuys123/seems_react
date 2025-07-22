@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
-import { googleLogin } from '../../services/AuthService';
+import { googleLogin } from '../../services/authService';
 import styles from './GoogleLogin.module.css';
 
 const GoogleLoginPage = () => {
@@ -27,6 +27,7 @@ const GoogleLoginPage = () => {
     } catch (error) {
       console.error('Google 로그인 에러:', error);
       setError('로그인에 실패했습니다. 다시 시도해주세요.');
+      navigate('/');
     } finally {
       setIsLoading(false);
     }

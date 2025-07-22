@@ -13,7 +13,7 @@ import NoticeListPage from "./pages/notice/NoticeListPage";
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
 // 소셜 로그인 SDK 초기화
-import { initializeSocialSDK } from './services/AuthService';
+import { initializeSocialSDK } from './services/authService';
 
 function App() {
   useEffect(() => {
