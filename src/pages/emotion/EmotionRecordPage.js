@@ -160,27 +160,29 @@ const EmotionRecordPage = () => {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ image_data: base64Image }),
+          body: JSON.stringify({ image: base64Image }),
         }
       );
       const result = await response.json();
       console.log("[📬 Flask 응답] result:", result);
 
-      if (result.success) {
-        const emotionMap = {
-          happy: "행복",
-          sad: "슬픔",
-          angry: "화남",
-          neutral: "평온",
-          fear: "불안",
-          disgust: "화남",
-          surprise: "고민",
-        };
+      const emotionMap = {
+        happy: "행복",
+        sad: "슬픔",
+        angry: "화남",
+        neutral: "평온",
+        fear: "불안",
+        disgust: "화남",
+        surprise: "고민",
+      };
 
-        const korEmotion = emotionMap[result.dominant_emotion];
+      if (result.success) {
+        const engEmotion = result.emotion;
+        const korEmotion = emotionMap[engEmotion]; // 여기서 undefined 해결됨
+
         console.log(
           "[🎯 매핑된 감정] 영어:",
-          result.dominant_emotion,
+          engEmotion,
           "➡ 한글:",
           korEmotion
         );
