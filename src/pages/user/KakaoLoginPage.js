@@ -55,7 +55,7 @@ const KakaoLoginPage = () => {
   };
 
   const handleBackToLogin = () => {
-    navigate('/login');
+    navigate('/');
   };
 
   return (
