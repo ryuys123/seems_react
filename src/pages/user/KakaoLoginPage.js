@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { kakaoLogin } from '../../services/AuthService';
+import { kakaoLogin } from '../../services/authService';
 import styles from './KakaoLoginPage.module.css';
 
 const KakaoLoginPage = () => {
@@ -49,6 +49,7 @@ const KakaoLoginPage = () => {
     } catch (error) {
       console.error('카카오 로그인 에러:', error);
       setError('로그인에 실패했습니다. 다시 시도해주세요.');
+      navigate('/');
     } finally {
       setIsLoading(false);
     }
