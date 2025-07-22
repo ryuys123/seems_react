@@ -141,8 +141,7 @@ import FaceModal from '../../components/modal/FaceModal';
     });
 
     if (photoFile) {
-      combinedFormData.append('photofile', photoFile);
-      //'photofile'  서버측 Controller 메소드가 받을 parameter 이름임, 반드시 일치해야 함
+      combinedFormData.append('profileImage', photoFile); // 서버 컨트롤러 파라미터와 일치!
     }
 
     setPendingFormData({ ...formData }); // 회원정보 임시 저장
@@ -161,6 +160,9 @@ import FaceModal from '../../components/modal/FaceModal';
       Object.keys(formData).forEach((key) => {
         combinedFormData.append(key, formData[key]);
       });
+      if (photoFile) {
+        combinedFormData.append('profileImage', photoFile); // 반드시 추가!
+      }
       // photoFile(얼굴 이미지) 없이 전송
       const response = await apiClient.post(
         '/user/signup',
