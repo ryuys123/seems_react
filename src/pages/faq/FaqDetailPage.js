@@ -8,6 +8,7 @@ import apiClient from "../../utils/axios";
 
 import styles from "./FaqDetailPage.module.css";
 import UserHeader from "../../components/common/UserHeader"; // 헤더
+import AdminHeader from "../../components/common/AdminHeader"; // 관리자헤더
 import ReplySection from "./ReplySection"; //댓글
 
 // 함수형 컴포넌트 작성 방법 2가지
@@ -109,9 +110,8 @@ function FaqDetailPage() {
 
   return (
     <div className={styles.container}>
-      <UserHeader />
+      <>{role === "ADMIN" ? <AdminHeader /> : <UserHeader />}</> <br></br>
       <h2 className={styles.pageTitle}>FAQ 상세보기 페이지</h2>
-
       <div className={styles.card}>
         <h3 className={styles.title}>{faq.title}</h3>
         <p className={styles.meta}>
@@ -143,7 +143,6 @@ function FaqDetailPage() {
           상담이 종료됩니다.
         </h5>
       </div>
-
       <ReplySection
         faqNo={faqNo}
         questionUserId={faq.userid}
