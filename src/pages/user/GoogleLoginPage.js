@@ -37,7 +37,7 @@ const GoogleLoginPage = () => {
   };
 
   const handleBackToLogin = () => {
-    navigate('/login');
+    navigate('/');
   };
 
   // Google 클라이언트 ID가 설정되지 않은 경우
