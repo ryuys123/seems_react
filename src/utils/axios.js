@@ -7,7 +7,7 @@ const apiClient = axios.create({
   baseURL: process.env.REACT_APP_API_BASE_URL || "http://localhost:8888/seems",
   headers: {
     // 데이터타입 문제로 주석처리함. 대신  authprovider에서 json일때는 명시해주게 해서 문제없음
-    // 'Content-Type': 'application/json',
+    'Content-Type': 'application/json',
   },
   withCredentials: true, // 쿠키 포함 여부
 });
@@ -114,7 +114,7 @@ apiClient.interceptors.response.use(
           console.error("토큰 재발급 실패:", error);
           // 재발급 실패 시 로그인 페이지로 리다이렉트
           localStorage.clear();
-          window.location.href = "/login";
+          window.location.href = "/";
           return false;
         }
       }
