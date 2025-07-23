@@ -8,7 +8,12 @@ function DepressionTestPage() {
   const navigate = useNavigate();
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+
+  // --- ✨ 1. 페이지 상태 관리로 변경 ---
+  const [currentPage, setCurrentPage] = useState(0); // 현재 페이지 번호 (0부터 시작)
+  const questionsPerPage = 5; // 한 페이지에 보여줄 질문 수
+  // ---
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -27,6 +32,7 @@ function DepressionTestPage() {
       try {
         setLoading(true);
         setError(null);
+        // 백엔드에서 해당 카테고리의 모든 질문을 가져옵니다 (총 30개)
         const response = await axios.get(
           `/seems/api/psychological-test/questions/${testCategory}`
         );
@@ -48,18 +54,35 @@ function DepressionTestPage() {
     }));
   };
 
-  const handleNextQuestion = () => {
-    if (answers[questions[currentQuestionIndex].questionId] === undefined) {
-      alert("현재 문항에 답변을 선택해주세요.");
+  // --- ✨ 2. 페이지 이동 함수로 변경 ---
+  const handleNextPage = () => {
+    // 현재 페이지의 모든 질문에 답했는지 확인
+    const currentQuestions = questions.slice(
+      currentPage * questionsPerPage,
+      (currentPage + 1) * questionsPerPage
+    );
+    const allAnswered = currentQuestions.every(
+      (q) => answers[q.questionId] !== undefined
+    );
+
+    if (!allAnswered) {
+      alert("현재 페이지의 모든 문항에 답변해주세요.");
       return;
     }
 
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
+    const totalPages = Math.ceil(questions.length / questionsPerPage);
+    if (currentPage < totalPages - 1) {
+      setCurrentPage((prevPage) => prevPage + 1);
     } else {
+      // 마지막 페이지라면 검사 제출
       handleSubmitTest();
     }
   };
+
+  const handlePrevPage = () => {
+    setCurrentPage((prevPage) => prevPage - 1);
+  };
+  // ---
 
   const handleSubmitTest = async () => {
     if (Object.keys(answers).length !== questions.length) {
@@ -78,23 +101,18 @@ function DepressionTestPage() {
       userId: currentUserId,
       questionId: q.questionId,
       answerValue: answers[q.questionId],
-      testType: q.testType, // ✨ 1. testType 추가
+      testType: q.testType,
     }));
-
-    const requestBody = submissionData;
 
     try {
       setLoading(true);
       const response = await axios.post(
         "/seems/api/psychological-test/submit-depression-test",
-        requestBody
+        submissionData
       );
       const resultId = response.data.resultId;
-      const resultTestType = response.data.testType;
 
       alert("우울증 검사가 완료되었습니다! 결과를 확인합니다.");
-
-      // ✨ 2. URL 파라미터 수정
       navigate(
         `/psychological-test/result/${resultId}?type=PSYCHOLOGICAL_SCALE`
       );
@@ -127,16 +145,22 @@ function DepressionTestPage() {
     );
   }
 
+  // --- ✨ 3. 현재 페이지에 해당하는 질문들만 잘라서 사용 ---
+  const totalPages = Math.ceil(questions.length / questionsPerPage);
+  const currentQuestions = questions.slice(
+    currentPage * questionsPerPage,
+    (currentPage + 1) * questionsPerPage
+  );
+  // ---
+
   if (questions.length === 0) {
     return (
       <div className={styles.container}>
         <UserHeader />
-        <p>표시할 우울증 검사 문항이 없습니다. 관리자에게 문의하세요.</p>
+        <p>표시할 우울증 검사 문항이 없습니다.</p>
       </div>
     );
   }
-
-  const currentQuestion = questions[currentQuestionIndex];
 
   return (
     <div className={styles.container}>
@@ -148,40 +172,48 @@ function DepressionTestPage() {
           선택해주세요.
         </p>
 
+        {/* 페이지 진행 상황 표시 */}
         <div className={styles.questionCounter}>
-          {currentQuestionIndex + 1} / {questions.length}
+          페이지 {currentPage + 1} / {totalPages}
         </div>
-        <p className={styles.questionText}>{currentQuestion.questionText}</p>
 
-        <div className={styles.answerOptions}>
-          {[1, 2, 3, 4, 5].map((value) => (
-            <label key={value} className={styles.answerOption}>
-              <input
-                type="radio"
-                name={`question_${currentQuestion.questionId}`}
-                value={value}
-                checked={answers[currentQuestion.questionId] === value}
-                onChange={() =>
-                  handleAnswerChange(currentQuestion.questionId, value)
-                }
-              />
-              <span>{answerLabels[value]}</span>
-            </label>
-          ))}
-        </div>
+        {/* ✨ 4. map 함수가 전체 questions가 아닌 currentQuestions를 순회하도록 변경 */}
+        {currentQuestions.map((question, index) => (
+          <div key={question.questionId} className={styles.questionItem}>
+            <p className={styles.questionText}>
+              {currentPage * questionsPerPage + index + 1}.{" "}
+              {question.questionText}
+            </p>
+            <div className={styles.answerOptions}>
+              {[1, 2, 3, 4, 5].map((value) => (
+                <label key={value} className={styles.answerOption}>
+                  <input
+                    type="radio"
+                    name={`question_${question.questionId}`}
+                    value={value}
+                    checked={answers[question.questionId] === value}
+                    onChange={() =>
+                      handleAnswerChange(question.questionId, value)
+                    }
+                  />
+                  <span>{answerLabels[value]}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        ))}
+        {/* --- */}
 
         <div className={styles.navigationButtons}>
           <button
-            onClick={() => setCurrentQuestionIndex((prev) => prev - 1)}
-            disabled={currentQuestionIndex === 0}
+            onClick={handlePrevPage}
+            disabled={currentPage === 0}
             className={styles.navButton}
           >
             이전
           </button>
-          <button onClick={handleNextQuestion} className={styles.navButton}>
-            {currentQuestionIndex === questions.length - 1
-              ? "검사 완료"
-              : "다음"}
+          <button onClick={handleNextPage} className={styles.navButton}>
+            {currentPage === totalPages - 1 ? "검사 완료" : "다음"}
           </button>
         </div>
       </div>
