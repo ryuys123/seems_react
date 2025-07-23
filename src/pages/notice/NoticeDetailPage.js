@@ -8,6 +8,7 @@ import { AuthContext } from "../../AuthProvider";
 
 import styles from "./NoticeDetailPage.module.css";
 import UserHeader from "../../components/common/UserHeader"; // 헤더
+import AdminHeader from "../../components/common/AdminHeader"; // 관리자헤더
 
 // 함수형 컴포넌트 작성 방법 2가지
 // 1. function 컴포넌트이름() {}
@@ -115,8 +116,7 @@ function NoticeDetailPage() {
 
   return (
     <div className={styles.container}>
-      <UserHeader />
-
+      <>{role === "ADMIN" ? <AdminHeader /> : <UserHeader />}</>{" "}
       <table className={styles.table}>
         <colgroup>
           <col style={{ width: "15%" }} />
@@ -172,7 +172,6 @@ function NoticeDetailPage() {
           </tr>
         </tbody>
       </table>
-
       {/* 로그인한 사용자의 role 이 ADMIN 이면, 수정 및 삭제 버튼 표시함 */}
       <div className={styles.buttonGroup}>
         {isLoggedIn && role === "ADMIN" && (
