@@ -33,18 +33,28 @@ const IdFindPhone = () => {
       setIsLoading(true);
       setResultMessage('');
       try {
-        await apiClient.post('/api/user/verification/sms-verification', { phone: formData.phone });
-        setShowSuccessMessage(true);
-        setShowErrorMessage(false);
-        setIsCodeSent(true);
-        setIsVerified(false);
-        setTimer(180); // 3분
-        setResultMessage('인증번호가 문자로 전송되었습니다.');
-        // 타이머 시작
-        if (timerRef.current) clearInterval(timerRef.current);
-        timerRef.current = setInterval(() => {
-          setTimer(prev => prev - 1);
-        }, 1000);
+        const response = await apiClient.post('/api/user/verification', { 
+          verificationType: 'SMS_SEND', 
+          phone: formData.phone 
+        });
+        
+        if (response.data.success) {
+          setShowSuccessMessage(true);
+          setShowErrorMessage(false);
+          setIsCodeSent(true);
+          setIsVerified(false);
+          setTimer(180); // 3분
+          setResultMessage(response.data.message || '인증번호가 문자로 전송되었습니다.');
+          // 타이머 시작
+          if (timerRef.current) clearInterval(timerRef.current);
+          timerRef.current = setInterval(() => {
+            setTimer(prev => prev - 1);
+          }, 1000);
+        } else {
+          setShowErrorMessage(true);
+          setShowSuccessMessage(false);
+          setResultMessage(response.data.message || '인증번호 발송 실패');
+        }
       } catch (err) {
         setShowErrorMessage(true);
         setShowSuccessMessage(false);
@@ -83,15 +93,46 @@ const IdFindPhone = () => {
     setIsLoading(true);
     setResultMessage('');
     try {
-      await apiClient.post('/api/user/verification/sms-verification', {
+      const response = await apiClient.post('/api/user/verification', {
+        verificationType: 'SMS_VERIFY',
         phone: formData.phone,
         verificationCode: formData.verifyCode
       });
-      setIsVerified(true);
-      setResultMessage('인증 성공!');
+      
+      if (response.data.success) {
+        setIsVerified(true);
+        setResultMessage(response.data.message || '인증 성공!');
+      } else {
+        setIsVerified(false);
+        setResultMessage(response.data.message || '인증 실패');
+      }
     } catch (err) {
       setIsVerified(false);
       setResultMessage(err.response?.data?.message || '인증 실패');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 아이디 찾기 함수 추가
+  const handleFindId = async () => {
+    if (!isVerified) return;
+    setIsLoading(true);
+    setResultMessage('');
+    try {
+      const response = await apiClient.post('/api/user/verification', {
+        verificationType: 'FIND_ID',
+        name: formData.name, // 이름 필드 추가
+        phone: formData.phone
+      });
+      
+      if (response.data.success) {
+        setResultMessage(`아이디: ${response.data.foundUserId}`);
+      } else {
+        setResultMessage(response.data.message || '아이디 찾기 실패');
+      }
+    } catch (err) {
+      setResultMessage(err.response?.data?.message || '아이디 찾기 실패');
     } finally {
       setIsLoading(false);
     }
@@ -202,6 +243,19 @@ const IdFindPhone = () => {
           <div style={{textAlign: 'center', color: isVerified ? '#2e7d32' : '#c62828', margin: '12px 0'}}>
             {resultMessage}
           </div>
+        )}
+
+        {/* 아이디 찾기 버튼 추가 */}
+        {isVerified && (
+          <button 
+            type="button" 
+            className={styles.submitBtn}
+            onClick={handleFindId}
+            disabled={isLoading}
+            style={{marginTop: '16px'}}
+          >
+            {isLoading ? '처리 중...' : '아이디 찾기'}
+          </button>
         )}
       </form>
       

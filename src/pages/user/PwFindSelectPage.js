@@ -7,7 +7,7 @@ const PwFindSelectPage = () => {
   const navigate = useNavigate();
 
   const handleIdVerification = () => {
-    navigate('/pwfindid');
+    navigate('/pwfindphone');
   };
 
   const handleEmailVerification = () => {
