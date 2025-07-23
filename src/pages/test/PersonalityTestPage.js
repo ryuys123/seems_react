@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom"; // ✨ 1. useParams 임포트
-import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import UserHeader from "../../components/common/UserHeader";
 import styles from "./PersonalityTestPage.module.css";
+import { submitPersonalityTest } from "../../services/TestService";
+import apiClient from "../../utils/axios";
 
 const PersonalityTestPage = () => {
   const navigate = useNavigate();
-  const { testId } = useParams(); // ✨ 2. URL 파라미터에서 testId를 가져옵니다.
   const topOfTestRef = useRef(null);
 
   const [questions, setQuestions] = useState([]);
@@ -14,6 +14,7 @@ const PersonalityTestPage = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [testResult, setTestResult] = useState(null); // To store the result
   const questionsPerPage = 5;
 
   const answerLabels = {
@@ -25,32 +26,26 @@ const PersonalityTestPage = () => {
   };
 
   useEffect(() => {
-    const fetchQuestions = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const response = await axios.get(
-          "/seems/api/personality-test/questions"
-        );
-        setQuestions(response.data);
-      } catch (err) {
-        console.error("문항을 불러오는데 실패했습니다:", err);
-        setError(
-          "문항을 불러오는데 실패했습니다. 서버가 실행 중인지 확인해주세요."
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    };
     fetchQuestions();
   }, []);
 
+  const fetchQuestions = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const response = await apiClient.get("/api/personality-test/questions");
+      setQuestions(response.data);
+    } catch (err) {
+      console.error("문항을 불러오는데 실패했습니다:", err);
+      setError("문항을 불러오는데 실패했습니다. 서버가 실행 중인지 확인해주세요.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (topOfTestRef.current) {
-      topOfTestRef.current.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
+      topOfTestRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   }, [currentPage]);
 
@@ -91,32 +86,26 @@ const PersonalityTestPage = () => {
       return;
     }
 
-    // ✨ 3. localStorage에서 실제 로그인된 사용자 ID를 가져옵니다.
     const currentUserId = localStorage.getItem("loggedInUserId");
     if (!currentUserId) {
       alert("사용자 정보가 없습니다. 다시 로그인해주세요.");
+      navigate("/login");
       return;
     }
 
-    // ✨ 4. 제출 데이터에 testId를 포함시킵니다.
-    const submissionData = Object.keys(answers).map((questionId) => ({
+    const submissionData = {
       userId: currentUserId,
-      personalityTestId: parseInt(testId, 10),
-      questionId: parseInt(questionId, 10),
-      answerValue: answers[questionId],
-    }));
+      answers: questions.map((q) => ({
+        questionId: q.questionId,
+        answerValue: answers[q.questionId],
+        scoreDirection: q.scoreDirection,
+      })),
+    };
 
     try {
-      const token = localStorage.getItem("accessToken");
-      const response = await axios.post(
-        "/seems/api/personality-test/submit-answers",
-        submissionData,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      console.log("검사 제출 성공:", response.data);
-      alert("성격 검사가 완료되었습니다! 결과를 확인해주세요.");
+      setIsLoading(true);
+      const result = await submitPersonalityTest(submissionData);
+      alert("성격 검사가 완료되었습니다!");
       navigate(`/personality-test/result/${currentUserId}`);
     } catch (err) {
       console.error(
@@ -124,41 +113,28 @@ const PersonalityTestPage = () => {
         err.response ? err.response.data : err.message
       );
       setError("검사 제출 중 오류가 발생했습니다.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  if (isLoading)
-    return (
-      <div>
-        <UserHeader />
-        <p>로딩 중...</p>
-      </div>
-    );
-  if (error)
-    return (
-      <div>
-        <UserHeader />
-        <p>{error}</p>
-      </div>
-    );
-  if (questions.length === 0)
-    return (
-      <div>
-        <UserHeader />
-        <p>표시할 문항이 없습니다.</p>
-      </div>
+  const handleRestartTest = () => {
+    setAnswers({});
+    setCurrentPage(0);
+    setTestResult(null);
+    setError(null);
+    fetchQuestions();
+  };
+
+  const renderTest = () => {
+    const totalPages = Math.ceil(questions.length / questionsPerPage);
+    const startIndex = currentPage * questionsPerPage;
+    const currentQuestions = questions.slice(
+      startIndex,
+      startIndex + questionsPerPage
     );
 
-  const totalPages = Math.ceil(questions.length / questionsPerPage);
-  const startIndex = currentPage * questionsPerPage;
-  const currentQuestions = questions.slice(
-    startIndex,
-    startIndex + questionsPerPage
-  );
-
-  return (
-    <div className={styles.container}>
-      <UserHeader />
+    return (
       <div className={styles.testCard} ref={topOfTestRef}>
         <div className={styles.questionCounter}>
           Page {currentPage + 1} / {totalPages}
@@ -199,8 +175,45 @@ const PersonalityTestPage = () => {
           </button>
         </div>
       </div>
+    );
+  };
+
+  const renderResult = () => {
+    return (
+      <div className={styles.resultCard}>
+        <h1 className={styles.title}>MBTI 성격유형검사 결과</h1>
+        <div className={styles.resultSection}>
+          <h2>{testResult.mbtiTitle}</h2>
+          <p className={styles.mbtiType}>{testResult.mbtiType}</p>
+        </div>
+        <div className={styles.resultSection}>
+          <h2>유형 설명</h2>
+          <p>{testResult.description}</p>
+        </div>
+        <button onClick={handleRestartTest} className={styles.restartButton}>
+          다시 시작하기
+        </button>
+      </div>
+    );
+  };
+
+  return (
+    <div className={styles.container}>
+      <UserHeader />
+      {isLoading ? (
+        <p>로딩 중...</p>
+      ) : error ? (
+        <p>{error}</p>
+      ) : testResult ? (
+        renderResult()
+      ) : questions.length > 0 ? (
+        renderTest()
+      ) : (
+        <p>표시할 문항이 없습니다.</p>
+      )}
     </div>
   );
 };
 
 export default PersonalityTestPage;
+
