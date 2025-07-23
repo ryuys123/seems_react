@@ -1,200 +1,165 @@
-// SelectSimulationPage.js
-
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./SelectSimulationPage.module.css";
 import UserHeader from "../../components/common/UserHeader";
+import axios from "axios";
 
-// 백엔드 API 주소 (프록시 설정을 고려한 상대 경로)
-const API_BASE_URL = "/seems/api/simulation";
+// 백엔드 API 기본 주소
+const API_BASE_URL = "http://localhost:8888/seems/api/simulation";
 
 export default function SelectSimulationPage() {
   const navigate = useNavigate();
-  const [scenarios, setScenarios] = useState([]);
-  const [recentSetting, setRecentSetting] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [loggedInUserId, setLoggedInUserId] = useState(null);
+
+  // 맞춤형 시뮬레이션 관련 상태 (기존 코드 유지)
+  const [userProfile, setUserProfile] = useState(null);
+  const [loadingProfile, setLoadingProfile] = useState(true);
+
+  // '오늘의 시뮬레이션' 목록을 위한 상태
+  const [scenarios, setScenarios] = useState([]); // DB에서 받아온 전체 시나리오 목록
+  const [loadingScenarios, setLoadingScenarios] = useState(true); // 시나리오 로딩 상태
+  const [error, setError] = useState(null); // 에러 상태
 
   useEffect(() => {
-    const storedUserId = localStorage.getItem("loggedInUserId");
-    if (storedUserId) {
-      setLoggedInUserId(storedUserId);
-    } else {
-      console.warn(
-        "로그인된 사용자 ID를 찾을 수 없습니다. 시뮬레이션 기능에 제한이 있을 수 있습니다."
-      );
-      setLoggedInUserId("default_guest");
-    }
-
-    const fetchScenarios = async () => {
+    // 맞춤형 프로필을 가져오는 로직 (기존 코드 유지)
+    const fetchUserProfile = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/scenarios`);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        setScenarios(data);
+        setLoadingProfile(true);
+        // (이 부분은 실제 API가 구현되면 해당 호출로 변경하시면 됩니다)
+        setUserProfile({
+          summary:
+            "최근 심리 검사와 상담챗봇 대화를 종합 분석한 결과, '자기 성찰'에 대한 욕구가 높으며 '대인 관계'에서 약간의 스트레스를 경험하고 있습니다.",
+          recommendedTopic: "대인 관계 스트레스 해소",
+        });
       } catch (error) {
-        console.error("Error fetching scenarios:", error);
-        setError("시나리오를 불러오는 데 실패했습니다.");
-      }
-    };
-
-    const fetchRecentProgress = async (userId) => {
-      if (!userId || userId === "default_guest") {
-        setRecentSetting(null);
-        setLoading(false);
-        return;
-      }
-      try {
-        const response = await fetch(`${API_BASE_URL}/resume?userId=${userId}`);
-        if (response.ok) {
-          const data = await response.json();
-          setRecentSetting(data);
-        } else if (response.status === 404) {
-          setRecentSetting(null);
-        } else {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-      } catch (error) {
-        console.error("Error fetching recent progress:", error);
+        console.error("Failed to fetch user profile:", error);
+        setUserProfile(null);
       } finally {
-        setLoading(false);
+        setLoadingProfile(false);
       }
     };
 
-    if (storedUserId) {
-      fetchScenarios();
-      fetchRecentProgress(storedUserId);
-    } else {
-      fetchScenarios();
-      setLoading(false);
-    }
-  }, []);
+    // 백엔드에서 활성화된 모든 시나리오 목록을 가져오는 함수
+    const fetchAllScenarios = async () => {
+      try {
+        setLoadingScenarios(true);
+        const response = await axios.get(`${API_BASE_URL}/list`);
+        setScenarios(response.data); // 받아온 데이터로 상태 업데이트
+      } catch (err) {
+        console.error("시나리오 목록 조회 실패:", err);
+        setError("시나리오를 불러오는 데 실패했습니다.");
+      } finally {
+        setLoadingScenarios(false);
+      }
+    };
 
-  const handleSelect = async (scenario) => {
-    if (!loggedInUserId || loggedInUserId === "default_guest") {
-      alert("시뮬레이션을 시작하려면 로그인해야 합니다.");
+    fetchUserProfile();
+    fetchAllScenarios(); // 페이지 로드 시 시나리오 목록을 가져오도록 호출
+  }, []); // 최초 1회만 실행
+
+  // 시뮬레이션 시작 처리 함수
+  const handleSimulationStart = (scenario) => {
+    // 1. localStorage에서 로그인 시 저장했던 사용자 ID를 가져옵니다.
+    const loggedInUserId = localStorage.getItem("loggedInUserId");
+
+    // 2. ID가 없으면 (로그인하지 않은 상태) 경고하고 함수를 중단합니다.
+    if (!loggedInUserId) {
+      alert("로그인이 필요합니다.");
+      navigate("/login"); // 로그인 페이지로 이동
       return;
     }
 
-    try {
-      // ✅ 추가된 디버깅용 로그 시작점
-      console.log(
-        "시뮬레이션 시작 요청 보냄. 시나리오:",
-        scenario.scenarioName,
-        "사용자 ID:",
-        loggedInUserId
-      );
-
-      const response = await fetch(`${API_BASE_URL}/start`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          scenarioId: scenario.scenarioId,
-          userId: loggedInUserId,
-        }),
-      });
-
-      if (!response.ok) {
-        // ✅ 수정된 부분: 에러 응답을 JSON으로 파싱 시도 (백엔드에서 JSON 에러 보낼 경우)
-        let errorMessage = `HTTP error! status: ${response.status}`;
-        try {
-          const errorData = await response.json();
-          if (errorData && errorData.error) {
-            errorMessage += ` - ${errorData.error}`;
-          } else if (errorData) {
-            errorMessage += ` - ${JSON.stringify(errorData)}`;
-          }
-          console.error("백엔드 에러 응답 데이터:", errorData); // 에러 데이터 로깅
-        } catch (jsonError) {
-          // JSON이 아닌 일반 텍스트 에러일 경우
-          const textError = await response.text();
-          errorMessage += ` - ${textError}`;
-          console.error("백엔드 에러 응답 텍스트:", textError); // 에러 텍스트 로깅
-        }
-        throw new Error(errorMessage); // 에러 메시지와 함께 예외 발생
-      }
-
-      const firstQuestionData = await response.json();
-      // ✅ 추가된 디버깅용 로그
-      console.log("백엔드로부터 첫 질문 데이터 받음:", firstQuestionData);
-
-      navigate("/simulation/test", {
-        state: {
-          scenario: { id: scenario.scenarioId, title: scenario.scenarioName },
-          settingId: firstQuestionData.settingId,
-          question: firstQuestionData,
-        },
-      });
-      // ✅ 추가된 디버깅용 로그
-      console.log("페이지 이동 명령 실행 완료.");
-    } catch (error) {
-      console.error("시뮬레이션 시작 중 오류 발생:", error);
-      // ✅ 수정된 부분: 사용자에게 상세 에러 메시지 표시
-      alert(
-        "시뮬레이션 시작에 실패했습니다. 다시 시도해 주세요: " + error.message
-      );
-    }
-  };
-
-  const handleResume = () => {
-    if (recentSetting) {
-      navigate("/simulation/test", {
-        state: {
-          settingId: recentSetting.settingId,
-          scenario: {
-            id: recentSetting.scenarioId,
-            title: recentSetting.scenarioName,
+    // 3. 백엔드의 start API를 호출합니다.
+    axios
+      .post(`${API_BASE_URL}/start`, {
+        scenarioId: scenario.scenarioId,
+        // 하드코딩된 ID 대신 localStorage에서 가져온 ID를 사용합니다.
+        userId: loggedInUserId,
+      })
+      .then((response) => {
+        // 성공 시, 다음 페이지로 state와 함께 이동
+        // (실제 사용하는 페이지 경로로 수정해주세요)
+        navigate("/simulation/test", {
+          state: {
+            scenario: { id: scenario.scenarioId, title: scenario.scenarioName },
+            settingId: response.data.settingId,
+            question: response.data,
           },
-        },
+        });
+      })
+      .catch((err) => {
+        console.error("시뮬레이션 시작 실패:", err);
+        alert("시뮬레이션을 시작할 수 없습니다. 잠시 후 다시 시도해주세요.");
       });
-    }
   };
-
-  if (loading) {
-    return <div>시나리오를 불러오는 중입니다...</div>;
-  }
-
-  if (error) {
-    return (
-      <div className={styles.container}>
-        <p className={styles.errorText}>{error}</p>
-      </div>
-    );
-  }
 
   return (
     <div className={styles.container}>
       <UserHeader />
 
-      <h2 className={styles.title}>게임 테마를 선택하세요</h2>
-      {recentSetting && (
-        <div style={{ marginBottom: 24, textAlign: "center" }}>
-          <b>최근에 진행한 시나리오:</b> {recentSetting.scenarioName}
-          <button style={{ marginLeft: 12 }} onClick={handleResume}>
-            이어서 진행하기
-          </button>
-        </div>
-      )}
-      <div className={styles.cardsWrapper}>
-        {scenarios.length > 0 ? (
-          scenarios.map((s) => (
-            <div
-              key={s.scenarioId}
-              className={styles.card}
-              onClick={() => handleSelect(s)}
+      {/* --- 1. 맞춤형 극복 시뮬레이션 섹션 --- */}
+      <h2 className={styles.title}>맞춤형 극복 시뮬레이션</h2>
+      <div className={`${styles.card} ${styles.healingCard}`}>
+        {loadingProfile ? (
+          <p>종합 분석 데이터를 불러오는 중입니다...</p>
+        ) : userProfile ? (
+          <>
+            <div className={styles.cardIcon}>💖</div>
+            <div className={styles.cardTitle}>나를 위한 시나리오</div>
+            <p className={styles.cardDesc}>
+              <strong>종합 분석 요약:</strong> {userProfile.summary}
+            </p>
+            <p className={styles.healingPrompt}>
+              AI가 당신의 상황에 맞춰 특별히 생성한 시나리오를 통해 마음을
+              돌보는 시간을 가져보세요.
+            </p>
+            <button
+              className={styles.healingButton}
+              onClick={() =>
+                alert(
+                  `'${userProfile.recommendedTopic}' 극복 시뮬레이션 시작 기능 구현 필요`
+                )
+              }
             >
-              <div className={styles.cardIcon}>🎮</div>
-              <div className={styles.cardTitle}>{s.scenarioName}</div>
-              <div className={styles.cardDesc}>{s.description}</div>
+              '{userProfile.recommendedTopic}' 극복 시뮬레이션 시작하기
+            </button>
+          </>
+        ) : (
+          <p>
+            종합 분석 프로필을 불러올 수 없거나, 분석할 데이터(검사 기록, 상담
+            내용)가 부족합니다.
+          </p>
+        )}
+      </div>
+
+      <hr className={styles.divider} />
+
+      {/* --- 2. 오늘의 시뮬레이션 섹션 --- */}
+      <h2 className={styles.title}>오늘의 시뮬레이션</h2>
+      <p className={styles.sectionIntro}>
+        매일 다른 시나리오를 통해 당신의 무의식적인 선택과 성향을 발견해 보세요.
+      </p>
+
+      <div className={styles.cardsWrapper}>
+        {loadingScenarios ? (
+          <p>오늘의 시뮬레이션을 불러오는 중입니다...</p>
+        ) : error ? (
+          <p style={{ color: "red" }}>{error}</p>
+        ) : scenarios.length > 0 ? (
+          // ✅ 백엔드에서 받아온 모든 시나리오를 화면에 표시합니다.
+          scenarios.map((scenario) => (
+            <div
+              key={scenario.scenarioId}
+              className={`${styles.card} ${styles.themedCard}`}
+              onClick={() => handleSimulationStart(scenario)}
+            >
+              <div className={styles.cardContent}>
+                <div className={styles.cardTitle}>{scenario.scenarioName}</div>
+                <div className={styles.cardDesc}>{scenario.description}</div>
+              </div>
             </div>
           ))
         ) : (
-          <p>불러올 시나리오가 없습니다.</p>
+          <p>오늘 진행 가능한 시뮬레이션 정보가 없습니다.</p>
         )}
       </div>
     </div>
