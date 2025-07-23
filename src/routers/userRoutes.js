@@ -5,7 +5,7 @@ import { Route } from 'react-router-dom';
 import SignupPage from '../pages/user/SignupPage';
 import PwFindSelectPage from '../pages/user/PwFindSelectPage';
 import PwFindIdPage from '../pages/user/PwFindIdPage';
-import PwFindEmailPage from '../pages/user/PwFindEmailPage';
+import PwFindPhonePage from '../pages/user/PwFindPhonePage';
 import UserProfilePage from '../pages/user/UserProfilePage';
 import UserDashboard from '../pages/user/UserDashboard';
 import UserFormPage from '../pages/user/UserFormPage';
@@ -36,8 +36,8 @@ const userRoutes = [
     element: <PwFindIdPage />
   },
   {
-    path: '/pwfindemail',  
-    element: <PwFindEmailPage />
+    path: '/pwfindphone',  
+    element: <PwFindPhonePage />
   },
   {
     path: '/userprofile',

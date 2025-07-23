@@ -5,16 +5,20 @@
   --main-accent: #ef770c;
   --card-bg: #fff;
   --border-radius: 18px;
-  --shadow: 0 4px 24px rgba(0,0,0,0.07);
+  --shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
 }
 
 .header {
-  background: #fff;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
   box-shadow: var(--shadow);
   padding: 0;
-  position: sticky;
+  position: fixed;
   top: 0;
-  z-index: 10;
+  left: 0;
+  width: 100%;
+  z-index: 999;
+  border-bottom: 1px solid rgba(75, 148, 208, 0.1);
 }
 
 .headerInner {
@@ -80,13 +84,25 @@
   background: var(--main-blue);
   color: #fff;
 }
+.userGreeting {
+  color: var(--main-dark);
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 8px 16px;
+  background: var(--main-bg);
+  border-radius: 12px;
+  border: 1px solid rgba(75, 148, 208, 0.2);
+  white-space: nowrap;
+  min-width: max-content;
+  box-shadow: 0 2px 8px rgba(75, 148, 208, 0.1);
+}
 
 @media (max-width: 480px) {
   .headerInner {
     flex-direction: column;
     gap: 16px;
   }
-  
+
   .nav {
     flex-wrap: wrap;
     justify-content: center;

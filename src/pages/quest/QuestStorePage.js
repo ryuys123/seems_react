@@ -71,6 +71,15 @@ const QuestStorePage = () => {
     const res = await apiClient.post(`/api/quest-rewards/purchase?userId=${userId}`, { rewardId });
     return res.data;
   };
+  const equipBadge = async (rewardId) => {
+    try {
+      const res = await apiClient.post(`/api/user/equip-badge?userId=${userId}`, { rewardId });
+      setOwnedItems(res.data); // 최신 ownedItems 목록으로 갱신
+      showToastMessage('뱃지가 장착되었습니다!');
+    } catch (e) {
+      showToastMessage('장착 실패: ' + (e.response?.data || '오류'));
+    }
+  };
 
   // 데이터 로딩
   useEffect(() => {
@@ -134,12 +143,13 @@ const QuestStorePage = () => {
     if (!selectedReward) return;
     
     try {
-      await purchaseBadge(selectedReward.rewardId);
+      const result = await purchaseBadge(selectedReward.rewardId);
       setCurrentPoints(prev => prev - selectedReward.requiredPoints);
-      setOwnedItems(prev => [...prev, selectedReward.rewardId]);
+      setOwnedItems(prev => [...prev, result]); // result: { rewardId, isEquipped: false }
       setUserStats(prev => ({
         ...prev,
-        ownedTitles: prev.ownedTitles + 1   }));
+        ownedTitles: prev.ownedTitles + 1
+      }));
       showToastMessage(`${selectedReward.titleReward} 뱃지 획득!`);
       setShowConfirmModal(false);
       setSelectedReward(null);
@@ -260,17 +270,17 @@ const QuestStorePage = () => {
           </div>
           <div className={styles.storeGrid}>
             {filteredRewards.map(reward => {
-              console.log('렌더링할 뱃지:', reward); // 디버깅용 로그 추가
+              const ownedObj = ownedItems.find(item => item.rewardId === reward.rewardId);
+              const isOwned = !!ownedObj;
+              const isEquipped = ownedObj?.isEquipped;
               return (
                 <div 
                   key={reward.rewardId} 
                   className={
-                    `${styles.storeItem} ${ownedItems.includes(reward.rewardId) ? styles.owned : ''} ${getRarityClass(reward.rewardRarity)}`
+                    `${styles.storeItem} ${isOwned ? styles.owned : ''} ${getRarityClass(reward.rewardRarity)}`
                   }
                 >
-                  <div className={`${styles.itemRarity} ${getRarityClass(reward.rewardRarity)}`}>
-                    {reward.rewardRarity || '등급 없음'} {/* fallback 추가 */}
-                  </div>
+                  <div className={`${styles.itemRarity} ${getRarityClass(reward.rewardRarity)}`}>{reward.rewardRarity || '등급 없음'}</div>
                   <div className={`${styles.itemIcon} ${getRarityClass(reward.rewardRarity)}`}>
                     <img
                       src={reward.imagePath || `/images/badge/badge_${reward.rewardId}.png`}
@@ -278,22 +288,30 @@ const QuestStorePage = () => {
                       style={{ width: 48, height: 48, objectFit: 'contain' }}
                     />
                   </div>
-                  <h3 className={styles.itemTitle}>{reward.questName}</h3>
+                  <h3 className={styles.itemTitle}>{reward.titleReward || reward.questName}</h3>
                   <p className={styles.itemDescription}>{reward.description}</p>
-                  <div className={styles.itemPrice}>
-                    {reward.requiredPoints.toLocaleString()} 포인트
-                  </div>
+                  <div className={styles.itemPrice}>{reward.requiredPoints.toLocaleString()} 포인트</div>
+                  {/* 구매/획득 버튼 */}
                   <button 
-                    className={`${styles.purchaseBtn} ${
-                      ownedItems.includes(reward.rewardId) ? styles.owned : 
-                      currentPoints < reward.requiredPoints ? styles.insufficient : ''
-                    } ${ownedItems.includes(reward.rewardId) ? 'owned' : ''}`}
+                    className={`${styles.purchaseBtn} ${isOwned ? styles.owned : currentPoints < reward.requiredPoints ? styles.insufficient : ''} ${isOwned ? 'owned' : ''}`}
                     onClick={() => handlePurchase(reward)}
-                    disabled={ownedItems.includes(reward.rewardId) || currentPoints < reward.requiredPoints}
+                    disabled={isOwned || currentPoints < reward.requiredPoints}
                   >
-                    {ownedItems.includes(reward.rewardId) ? '획득 완료' : '획득하기'}
+                    {isOwned ? '획득 완료' : '획득하기'}
                   </button>
-                  {(!ownedItems.includes(reward.rewardId) && currentPoints < reward.requiredPoints) && (
+                  {/* 장착 버튼 */}
+                  {isOwned && (
+                    <button
+                      className={styles.equipBtn}
+                      disabled={isEquipped}
+                      onClick={() => equipBadge(reward.rewardId)}
+                      style={{ marginTop: 8 }}
+                    >
+                      {isEquipped ? '장착중' : '장착하기'}
+                    </button>
+                  )}
+                  {/* 포인트 부족 안내 */}
+                  {(!isOwned && currentPoints < reward.requiredPoints) && (
                     <div className={styles.pointsShortMsg}>
                       {reward.requiredPoints - currentPoints}포인트만 더 모으면 구매 가능!
                     </div>

@@ -26,11 +26,14 @@ const AppRouter = () => {
       {userRoutes.map((route) => (
         <Route key={route.path} path={route.path} element={route.element} />
       ))}
+      {/* 공지 라우트 */}
       {noticeRoutes}
+
+      {/* FAQ 라우트 */}
       {faqRoutes}
-      {adminRoutes.map((route) => (
-        <Route key={route.path} path={route.path} element={route.element} />
-      ))}
+
+      {/* admin 라우트 */}
+      {adminRoutes}
 
       {/* 상담 관련 라우트 */}
       <Route path="/counseling/*" element={<CounselingRoutes />} />

@@ -158,57 +158,53 @@ export const googleLogin = async (credential) => {
   }
 };
 
-// 비밀번호 확인 (일반 로그인 회원)
+// 비밀번호 확인 (회원 탈퇴용) - 백엔드 API에 맞게 수정
 export const verifyPassword = async (password) => {
   try {
-    const response = await apiClient.post('/auth/verify-password', {
+    const response = await apiClient.post('/user/verify-password', {
       password: password
     });
     
-    return response.data.success;
+    return true; // 성공 시 true 반환
   } catch (error) {
     console.error('비밀번호 확인 에러:', error);
-    throw error;
+    if (error.response?.status === 401) {
+      return false; // 비밀번호 불일치
+    }
+    throw error; // 기타 오류는 throw
   }
 };
 
-// 회원 탈퇴
-export const deleteAccount = async (authType, authData = null) => {
+// 회원 탈퇴 - 백엔드 API에 맞게 수정
+export const deleteAccount = async (userType, authData = {}) => {
   try {
-    let endpoint = '/user/delete';
-    let requestData = {};
+    const requestData = {
+      userType: userType, // "normal" 또는 "social"
+      password: authData.password || null, // 일반 로그인 사용자의 비밀번호
+      socialType: authData.socialType || localStorage.getItem('social-login') // 소셜 로그인 타입
+    };
 
-    if (authType === 'social') {
-      // 소셜 로그인 회원 탈퇴
-      endpoint = '/user/delete/social';
-      requestData = {
-        socialType: localStorage.getItem('social-login'),
-        ...authData
-      };
-    } else {
-      // 일반 로그인 회원 탈퇴
-      endpoint = '/user/delete/normal';
-      requestData = {
-        password: authData.password
-      };
-    }
-
-    const response = await apiClient.post(endpoint, requestData);
+    const response = await apiClient.delete('/user/account', {
+      data: requestData
+    });
     
-    if (response.data.success) {
-      // 로컬 스토리지 정리
-      localStorage.removeItem(TOKEN_CONFIG.accessTokenKey);
-      localStorage.removeItem(TOKEN_CONFIG.refreshTokenKey);
-      localStorage.removeItem(STORAGE_KEYS.USER_INFO);
-      localStorage.removeItem('social-login');
-      
-      return { success: true };
-    }
+    // 회원 탈퇴 성공 시 로컬 스토리지 정리
+    localStorage.removeItem(TOKEN_CONFIG.accessTokenKey);
+    localStorage.removeItem(TOKEN_CONFIG.refreshTokenKey);
+    localStorage.removeItem(STORAGE_KEYS.USER_INFO);
+    localStorage.removeItem('social-login');
+    localStorage.removeItem('login-type');
     
-    throw new Error(response.data.message || '회원 탈퇴에 실패했습니다.');
+    return { 
+      success: true,
+      message: response.data || '회원 탈퇴가 완료되었습니다.'
+    };
   } catch (error) {
     console.error('회원 탈퇴 에러:', error);
-    throw error;
+    return {
+      success: false,
+      message: error.response?.data || '회원 탈퇴에 실패했습니다.'
+    };
   }
 };
 
@@ -263,4 +259,4 @@ export const logout = async () => {
     localStorage.removeItem('social-login');
     localStorage.removeItem('login-type');
   }
-}; 
+};

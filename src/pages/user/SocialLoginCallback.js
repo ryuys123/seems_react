@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { googleLogin, kakaoLogin, naverLogin } from '../../services/AuthService';
+import { googleLogin, kakaoLogin, naverLogin } from '../../services/authService';
 import styles from './SocialLoginCallback.module.css';
 
 const SocialLoginCallback = () => {
@@ -58,7 +58,7 @@ const SocialLoginCallback = () => {
   }, [searchParams, navigate]);
 
   const handleBackToLogin = () => {
-    navigate('/login');
+    navigate('/');
   };
 
   if (isLoading) {

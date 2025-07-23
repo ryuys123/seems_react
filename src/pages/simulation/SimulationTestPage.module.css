@@ -1,91 +1,79 @@
 .container {
-  padding: 32px;
-  max-width: 600px;
-  margin: 0 auto;
-  background: #f8f9ff;
-  border-radius: 18px;
-  box-shadow: 0 4px 16px rgba(108,99,255,0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  padding: 20px;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.loadingContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  font-size: 1.5rem;
+  color: #555;
 }
 
 .title {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #6c63ff;
-  margin-bottom: 12px;
-  text-align: center;
+  font-size: 2.2rem;
+  color: #343a40;
+  margin-bottom: 2rem;
 }
 
-.description {
-  font-size: 1.15rem;
-  margin-bottom: 32px;
-  color: #333;
-  text-align: center;
+.questionText {
+  font-size: 1.6rem;
+  font-weight: 500;
+  color: #212529;
+  line-height: 1.6;
+  max-width: 700px;
+  margin-bottom: 3rem;
+  min-height: 100px; /* 질문 길이에 따른 레이아웃 변경 최소화 */
 }
 
 .optionsWrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  width: 100%;
+  max-width: 800px;
 }
 
 .optionButton {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 18px 24px;
-  font-size: 1.1rem;
+  background-color: #ffffff;
+  border: 1px solid #dee2e6;
   border-radius: 12px;
-  border: 2px solid #6c63ff;
-  background: #fff;
-  color: #222;
+  padding: 25px;
+  font-size: 1.1rem;
   cursor: pointer;
-  text-align: left;
-  font-weight: 500;
-  transition: background 0.15s, box-shadow 0.15s;
-  box-shadow: 0 2px 8px #eee;
-}
-.optionButton:hover {
-  background: #e0e7ff;
-  box-shadow: 0 4px 16px #d1d5fa;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
-.optionIcon {
-  font-size: 1.7rem;
-  margin-right: 6px;
+.optionButton:hover:not(:disabled) {
+  border-color: #8e44ad;
+  transform: translateY(-5px);
+  box-shadow: 0 6px 20px rgba(142, 68, 173, 0.15);
+  color: #8e44ad;
 }
 
-.resultContainer {
-  padding: 40px 32px;
-  max-width: 600px;
-  margin: 40px auto 0 auto;
-  background: #f8f9ff;
-  border-radius: 18px;
-  box-shadow: 0 4px 16px rgba(108,99,255,0.08);
-  text-align: center;
+.optionButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
-.resultSummary {
-  margin: 32px 0 24px 0;
-  padding: 32px 16px;
-  background: #fff;
-  border-radius: 14px;
-  font-size: 1.15rem;
-  color: #333;
-  box-shadow: 0 2px 8px #eee;
-}
-
-.retryButton {
-  margin-top: 12px;
-  padding: 12px 32px;
-  background: #6c63ff;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-.retryButton:hover {
-  background: #554ee1;
+@media (max-width: 768px) {
+  .optionsWrapper {
+    grid-template-columns: 1fr;
+  }
+  .title {
+    font-size: 1.8rem;
+  }
+  .questionText {
+    font-size: 1.3rem;
+  }
 }

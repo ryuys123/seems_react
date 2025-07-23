@@ -679,3 +679,20 @@
     transform: translateY(0) scale(1);
   }
 }
+
+.equipBtn {
+  margin-top: 8px;
+  background: #2196f3;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-size: 1rem;
+}
+.equipBtn:disabled {
+  background: #aaa;
+  cursor: default;
+}

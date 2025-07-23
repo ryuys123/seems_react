@@ -1,15 +1,14 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import UserHeader from '../../components/common/UserHeader';
 import logoSeems from '../../assets/images/logo_seems.png';
 import styles from './UserFormPage.module.css';
+import apiClient from '../../utils/axios';
 
 const initialForm = {
-  name: '김마음',
-  nickname: '마음이',
+  name: '',
   phone: '',
   notification: true,
-  social: 'google', // 예시: google, kakao, naver
   currentPassword: '',
   newPassword: '',
   confirmPassword: '',
@@ -22,12 +21,39 @@ const UserFormPage = () => {
   const [profileImage, setProfileImage] = useState(logoSeems);
   const [errors, setErrors] = useState({});
   const [showPasswordFields, setShowPasswordFields] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // 사용자 정보 불러오기 (마운트 시)
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await apiClient.get('/user/info');
+        const user = res.data;
+        setFormData({
+          name: user.userName || '',
+          phone: user.phone || '',
+          notification: true,
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: '',
+        });
+        setProfileImage(user.profileImage || logoSeems);
+      } catch (err) {
+        // 실패 시 기본값 유지
+        setFormData(initialForm);
+        setProfileImage(logoSeems);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUser();
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: type === 'checkbox' ? checked : value || '',
     }));
   };
 
@@ -37,6 +63,7 @@ const UserFormPage = () => {
       const reader = new FileReader();
       reader.onload = (evt) => {
         setProfileImage(evt.target.result);
+        setFormData((prev) => ({ ...prev, profileImage: evt.target.result }));
       };
       reader.readAsDataURL(file);
     }
@@ -45,7 +72,6 @@ const UserFormPage = () => {
   const validate = () => {
     const newErrors = {};
     if (!formData.name) newErrors.name = '이름을 입력하세요.';
-    if (!formData.nickname) newErrors.nickname = '닉네임을 입력하세요.';
     if (formData.phone && !/^01[016789]-?\d{3,4}-?\d{4}$/.test(formData.phone)) newErrors.phone = '휴대폰 번호 형식이 올바르지 않습니다.';
     if (showPasswordFields && (formData.newPassword || formData.confirmPassword)) {
       if (!formData.currentPassword) newErrors.currentPassword = '현재 비밀번호를 입력하세요.';
@@ -55,19 +81,55 @@ const UserFormPage = () => {
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const validation = validate();
     setErrors(validation);
     if (Object.keys(validation).length > 0) return;
-    // 실제 저장 처리 로직
-    alert('프로필이 성공적으로 수정되었습니다.');
-    navigate('/userprofile');
+    try {
+      await apiClient.put('/user/info', {
+        userName: formData.name || '',
+        phone: formData.phone || '',
+        profileImage: formData.profileImage || '',
+        // notification: formData.notification, // 필요시 추가
+      });
+      alert('프로필이 성공적으로 수정되었습니다.');
+      navigate('/userprofile');
+    } catch (err) {
+      alert('프로필 수정에 실패했습니다.');
+    }
   };
 
   const handleCancel = () => {
     navigate('/userprofile');
   };
+
+  const handlePasswordChange = async (e) => {
+    e.preventDefault();
+    const validation = validate();
+    setErrors(validation);
+    if (Object.keys(validation).length > 0) return;
+    try {
+      await apiClient.put('/user/info', {
+        userName: formData.name || '',
+        phone: formData.phone || '',
+        profileImage: formData.profileImage || '',
+        currentPassword: formData.currentPassword,
+        newPassword: formData.newPassword,
+        confirmPassword: formData.confirmPassword
+      });
+      alert('비밀번호가 성공적으로 변경되었습니다. 다시 로그인 해주세요.');
+      setFormData({ ...formData, currentPassword: '', newPassword: '', confirmPassword: '' });
+      setShowPasswordFields(false);
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      navigate('/');
+    } catch (err) {
+      alert('비밀번호 변경에 실패했습니다.');
+    }
+  };
+
+  if (loading) return <div>로딩 중...</div>;
 
   return (
     <>
@@ -89,27 +151,18 @@ const UserFormPage = () => {
               이미지 변경
             </label>
           </div>
-          <div className={styles.socialRow}>
-            <span className={styles.socialLabel}>소셜 연동:</span>
-            <span className={`${styles.socialIcon} ${styles[`${formData.social}Icon`]}`}>{formData.social === 'google' ? 'G' : formData.social === 'kakao' ? 'K' : 'N'}</span>
-          </div>
         </div>
         <form className={styles.editForm} onSubmit={handleSubmit}>
           <div className={styles.profileCardColumn}>
             <div className={styles.profileCardLeft}>
               <div className={styles.formGroup}>
                 <label htmlFor="name">이름</label>
-                <input type="text" id="name" name="name" value={formData.name} onChange={handleInputChange} />
+                <input type="text" id="name" name="name" value={formData.name || ''} onChange={handleInputChange} />
                 {errors.name && <div className={styles.errorMsg}>{errors.name}</div>}
               </div>
               <div className={styles.formGroup}>
-                <label htmlFor="nickname">닉네임</label>
-                <input type="text" id="nickname" name="nickname" value={formData.nickname} onChange={handleInputChange} />
-                {errors.nickname && <div className={styles.errorMsg}>{errors.nickname}</div>}
-              </div>
-              <div className={styles.formGroup}>
                 <label htmlFor="phone">휴대폰 번호</label>
-                <input type="text" id="phone" name="phone" value={formData.phone} onChange={handleInputChange} placeholder="010-1234-5678" />
+                <input type="text" id="phone" name="phone" value={formData.phone || ''} onChange={handleInputChange} placeholder="010-1234-5678" />
                 {errors.phone && <div className={styles.errorMsg}>{errors.phone}</div>}
               </div>
               <div className={styles.formGroup}>
@@ -131,6 +184,7 @@ const UserFormPage = () => {
                     {errors.newPassword && <div className={styles.errorMsg}>{errors.newPassword}</div>}
                     <input type="password" name="confirmPassword" placeholder="새 비밀번호 확인" value={formData.confirmPassword} onChange={handleInputChange} autoComplete="new-password" />
                     {errors.confirmPassword && <div className={styles.errorMsg}>{errors.confirmPassword}</div>}
+                    <button type="button" className={styles.saveBtn} onClick={handlePasswordChange}>비밀번호 변경</button>
                   </div>
                 )}
               </div>

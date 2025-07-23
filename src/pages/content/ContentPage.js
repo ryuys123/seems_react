@@ -91,6 +91,48 @@ const ContentPage = () => {
       title: '오늘의 다짐',
       description: '스스로를 격려하는 다짐의 글.',
       quote: '"내일의 나는 오늘의 나보다 더 성장할 거야."'
+    },
+    {
+      id: 11,
+      type: '유튜브 영상',
+      title: '스트레스 해소 요가 명상',
+      description: '몸과 마음을 이완시키는 부드러운 요가 명상입니다.',
+      videoId: 'inpok4MKVLM'
+    },
+    {
+      id: 12,
+      type: '유튜브 영상',
+      title: '잠들기 전 마음 진정 음악',
+      description: '불면증 해소와 편안한 수면을 위한 힐링 음악.',
+      videoId: 'rUxyKA_-grg'
+    },
+    {
+      id: 13,
+      type: '유튜브 영상',
+      title: '긍정 마인드셋 강화 영상',
+      description: '자기계발과 긍정적 사고를 키우는 동기부여 영상.',
+      videoId: '7XFLTDQ4JMk'
+    },
+    {
+      id: 14,
+      type: '유튜브 영상',
+      title: '자연의 소리와 함께하는 명상',
+      description: '비 소리, 바람 소리로 마음의 평화를 찾아보세요.',
+      videoId: 'q76bMs-NwRk'
+    },
+    {
+      id: 15,
+      type: '유튜브 영상',
+      title: '창의력 향상 브레인 푸드',
+      description: '창의적 사고와 아이디어 발상을 돕는 음악.',
+      videoId: 'lFcSrYw-ARY'
+    },
+    {
+      id: 16,
+      type: '유튜브 영상',
+      title: '감사와 마음챙김 명상',
+      description: '일상의 작은 것들에 감사하며 마음챙김을 연습해보세요.',
+      videoId: 'z6X5oEIg6Ak'
     }
   ];
 
@@ -103,7 +145,9 @@ const ContentPage = () => {
       <UserHeader/>
 
       <main className={styles.main}>
+        <div className={styles.pageHeader}>
         <h1 className={styles.pageTitle}>맞춤 콘텐츠 추천</h1>
+        </div>
         
         {/* 분석 결과 감정 요약 */}
         <div className={styles.summarySection}>
@@ -117,8 +161,10 @@ const ContentPage = () => {
           </div>
         </div>
 
-        {/* 유튜브 영상 그리드 */}
-        <div className={styles.contentSection}>
+        {/* 콘텐츠 섹션 - PC 최적화 레이아웃 */}
+        <div className={styles.contentContainer}>
+          {/* 유튜브 영상 섹션 */}
+          <div className={styles.youtubeSection}>
           <div className={styles.contentHeader}>유튜브 영상 추천</div>
           <div className={styles.youtubeGrid}>
             {youtubeContents.map(content => (
@@ -127,7 +173,7 @@ const ContentPage = () => {
                   <div className={styles.youtubePlayerWrap}>
                     <iframe
                       width="100%"
-                      height="200"
+                        height="220"
                       src={`https://www.youtube.com/embed/${content.videoId}?autoplay=1`}
                       title={content.title}
                       frameBorder="0"
@@ -151,8 +197,8 @@ const ContentPage = () => {
           </div>
         </div>
 
-        {/* 콘텐츠 추천 리스트 */}
-        <div className={styles.contentSection}>
+          {/* 기타 콘텐츠 섹션 */}
+          <div className={styles.otherContentSection}>
           <div className={styles.contentHeader}>오늘의 추천 콘텐츠</div>
           <div className={styles.contentList}>
             {otherContents.map(content => (
@@ -170,6 +216,7 @@ const ContentPage = () => {
                 )}
               </div>
             ))}
+            </div>
           </div>
         </div>
       </main>
