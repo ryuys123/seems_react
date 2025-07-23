@@ -87,8 +87,8 @@ function PersonalityResultPage() {
           </div>
         </>
       )}
-      <button className={styles.homeButton} onClick={() => navigate("/")}>
-        처음으로
+      <button className={styles.homeButton} onClick={() => navigate("/SelectTestPage")}>
+        뒤로가기
       </button>
     </div>
   );

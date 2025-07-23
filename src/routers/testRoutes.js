@@ -32,7 +32,7 @@ const testRoutes = [
     element: <StressTestPage />,
   },
   {
-    path: "/psychological-test/result/:resultId", // :resultId는 동적 파라미터
+    path: "/psychology-result/:resultId", // :resultId 추가
     element: <PsychologyResultPage />,
   },
   {
