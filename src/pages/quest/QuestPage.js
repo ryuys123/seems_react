@@ -12,7 +12,9 @@ import {
   deleteQuest,
   getUserPoints,
   addUserPoints,
-  deductUserPoints
+  deductUserPoints,
+  getRecommendedQuests,
+  getTodayEmotion // 추가
 } from '../../services/QuestService';
 
 const QuestPage = () => {
@@ -63,56 +65,12 @@ const QuestPage = () => {
   });
   
   const [ongoingActivities, setOngoingActivities] = useState([]);
-  const [recommendations] = useState([
-    {
-      id: 1,
-      title: '스트레스 해소 명상',
-      duration: '10분',
-      reward: '포인트 +20',
-      description: '오늘의 감정 기록을 분석한 결과, 스트레스 수준이 높습니다. 명상을 통해 마음의 평화를 찾아보세요.',
-      added: false
-    },
-    {
-      id: 2,
-      title: '기분 전환 산책',
-      duration: '20분',
-      reward: '포인트 +25',
-      description: '최근 우울감이 증가하는 추세입니다. 가벼운 산책을 통해 기분을 전환해보세요.',
-      added: false
-    },
-    {
-      id: 3,
-      title: '감사 일기 작성',
-      duration: '5분',
-      reward: '포인트 +15',
-      description: '오늘 하루 감사한 일들을 기록하며 긍정적인 마인드를 키워보세요.',
-      added: false
-    },
-    {
-      id: 4,
-      title: '따뜻한 차 한 잔',
-      duration: '10분',
-      reward: '포인트 +20',
-      description: '진정 효과가 있는 허브차나 녹차를 마시며 잠시 휴식을 취해보세요.',
-      added: false
-    },
-    {
-      id: 5,
-      title: '긍정적 자기 대화',
-      duration: '5분',
-      reward: '포인트 +15',
-      description: '거울을 보며 자신에게 긍정적인 말을 해보세요. 자존감 향상에 도움이 됩니다.',
-      added: false
-    },
-    {
-      id: 6,
-      title: '창가에서 햇살 쬐기',
-      duration: '15분',
-      reward: '포인트 +15',
-      description: '자연광을 받으며 비타민 D를 보충하고 기분을 개선해보세요.',
-      added: false
-    }
-  ]);
+  const [recommendations, setRecommendations] = useState([]);
+  const [recommendLoading, setRecommendLoading] = useState(true);
+  const [recommendError, setRecommendError] = useState(null);
+  const [todayEmotion, setTodayEmotion] = useState(null);
+  const [todayEmotionLoading, setTodayEmotionLoading] = useState(true);
+  const [todayEmotionError, setTodayEmotionError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -468,6 +426,40 @@ const QuestPage = () => {
     }
   };
 
+  // 감정 기반 추천 퀘스트 불러오기 (userId 기반)
+  useEffect(() => {
+    const fetchRecommendations = async () => {
+      setRecommendLoading(true);
+      setRecommendError(null);
+      try {
+        const data = await getRecommendedQuests(userId);
+        setRecommendations(data);
+      } catch (err) {
+        setRecommendError('추천 퀘스트를 불러오지 못했습니다.');
+      } finally {
+        setRecommendLoading(false);
+      }
+    };
+    fetchRecommendations();
+  }, [userId]);
+
+  // 오늘의 감정 불러오기
+  useEffect(() => {
+    const fetchTodayEmotion = async () => {
+      setTodayEmotionLoading(true);
+      setTodayEmotionError(null);
+      try {
+        const data = await getTodayEmotion(userId);
+        setTodayEmotion(data);
+      } catch (err) {
+        setTodayEmotionError('오늘의 감정을 불러오지 못했습니다.');
+      } finally {
+        setTodayEmotionLoading(false);
+      }
+    };
+    fetchTodayEmotion();
+  }, [userId]);
+
   // 컴포넌트 마운트 시 데이터 로드
   useEffect(() => {
     // 로그인 상태 확인
@@ -549,32 +541,29 @@ const QuestPage = () => {
         setSelectedRecommendation(null);
         return;
       }
-      
+      // 추천 퀘스트의 타이틀과 보상포인트만 사용
       const newQuestData = {
         userId: userId,
         questName: selectedRecommendation.title,
-        questPoints: 5,
+        questPoints: selectedRecommendation.reward, // reward(숫자)
         isCompleted: 0,
         date: today
       };
-      
       const response = await createQuest(newQuestData);
-      
       // 오늘 날짜의 퀘스트가 이미 있는지 확인
       const existingQuestForToday = ongoingActivities.find(activity => 
         activity.date === today
       );
-      
       if (existingQuestForToday) {
         // 오늘 날짜가 있으면 해당 날짜의 기존 퀘스트에 새 단계 추가
         setOngoingActivities(prev => prev.map(activity => {
           if (activity.date === today) {
             const newStep = {
               id: response.questId || response.id || Date.now(),
-              text: `${selectedRecommendation.title} (${selectedRecommendation.duration})`,
+              text: selectedRecommendation.title,
               completed: false,
               current: true,
-              point: 5,
+              point: selectedRecommendation.reward,
               questId: response.questId || response.id // 원본 퀘스트 ID 보존
             };
             return {
@@ -597,22 +586,19 @@ const QuestPage = () => {
           steps: [
             {
               id: response.questId || response.id || Date.now(),
-              text: `${selectedRecommendation.title} (${selectedRecommendation.duration})`,
+              text: selectedRecommendation.title,
               completed: false,
               current: true,
-              point: 5,
+              point: selectedRecommendation.reward,
               questId: response.questId || response.id // 원본 퀘스트 ID 보존
             }
           ]
         };
-
         setOngoingActivities(prev => [newActivity, ...prev]);
       }
-      
       showToastMessage('활동이 추가되었습니다!');
       setShowQuestConfirmModal(false);
       setSelectedRecommendation(null);
-      
     } catch (error) {
       console.error('퀘스트 시작 에러:', error);
       showToastMessage('퀘스트 시작에 실패했습니다.');
@@ -1040,7 +1026,7 @@ const QuestPage = () => {
       } else {
         // 같은 날짜가 없으면 새 퀘스트 추가
         const newQuest = {
-          id: response.id || response.questId || Date.now(),
+          id: response.questId || response.id || Date.now(),
           date: response.date || response.createdAt || date,
           title: response.questName || '새 항목',
           progress: 0,
@@ -1055,9 +1041,9 @@ const QuestPage = () => {
               point: 5
             }
           ],
-          ...response
+          reward: '보상: 직접 입력'
         };
-        setOngoingActivities(prev => [...prev, newQuest]);
+        setOngoingActivities(prev => [newQuest, ...prev]);
       }
       
       showToastMessage('새 항목이 추가되었습니다!');
@@ -1383,6 +1369,52 @@ const QuestPage = () => {
                   당일 할당 퀘스트 모두 완료 시 연속일로 인정
                 </div>
               </div>
+              <div className={styles.statCard}>
+                <div className={styles.statLabel}>오늘의 감정</div>
+                {todayEmotionLoading ? (
+                  <div className={styles.statValue} style={{ fontSize: '1.2rem' }}>로딩중...</div>
+                ) : todayEmotionError ? (
+                  <div className={styles.statValue} style={{ fontSize: '1.2rem', color: '#e74c3c' }}>오류</div>
+                ) : todayEmotion ? (
+                  <>
+                    <div style={{ 
+                      fontSize: '2rem', 
+                      margin: '12px 0',
+                      color: '#4b94d0',
+                      fontWeight: '900',
+                      animation: 'points-shine 2.5s infinite'
+                    }}>
+                      {todayEmotion.emoji}
+                    </div>
+                    <div className={styles.statLabel}>{todayEmotion.emotionName}</div>
+                    <div className={styles.statDescription}>
+                      {todayEmotion.textContent ? 
+                        (todayEmotion.textContent.length > 20 ? 
+                          todayEmotion.textContent.substring(0, 20) + '...' : 
+                          todayEmotion.textContent
+                        ) : 
+                        '감정 기록 없음'
+                      }
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ 
+                      fontSize: '2rem', 
+                      margin: '12px 0',
+                      color: '#4b94d0',
+                      fontWeight: '900',
+                      animation: 'points-shine 2.5s infinite'
+                    }}>
+                      ❓
+                    </div>
+                    <div className={styles.statLabel}>감정 기록 없음</div>
+                    <div className={styles.statDescription}>
+                      감정을 기록해보세요
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
 
         {/* 맞춤형 퀘스트 추천 */}
@@ -1391,20 +1423,27 @@ const QuestPage = () => {
             <h2 className={styles.recommendationTitle}>맞춤형 퀘스트 추천</h2>
           </div>
           <div className={styles.recommendationGrid}>
-            {recommendations && recommendations.length > 0 ? recommendations.map((recommendation, index) => (
-              <div key={recommendation.id || `recommendation-${index}`} className={styles.recommendationCard}>
+            {recommendLoading ? (
+              <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '30px', color: '#666', fontSize: '1rem' }}>
+                추천 퀘스트를 불러오는 중...
+              </div>
+            ) : recommendError ? (
+              <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '30px', color: '#e74c3c', fontSize: '1rem' }}>
+                {recommendError}
+              </div>
+            ) : recommendations && recommendations.length > 0 ? recommendations.map((recommendation, index) => (
+              <div key={recommendation.recommendId || `recommendation-${index}`} className={styles.recommendationCard}>
                 <h3>{recommendation.title}</h3>
                 <div className={styles.recommendationMeta}>
-                  <span>{recommendation.duration}</span>
-                  <span className={styles.recommendationReward}>{recommendation.reward}</span>
+                  <span>{recommendation.duration}분</span>
+                  <span className={styles.recommendationReward}>포인트 +{recommendation.reward}</span>
                 </div>
                 <p>{recommendation.description}</p>
                 <button 
-                  className={`${styles.activityButton} ${recommendation.added ? styles.added : ''}`}
+                  className={styles.activityButton}
                   onClick={() => addActivity(recommendation)}
-                  disabled={recommendation.added}
                 >
-                  {recommendation.added ? '추가됨' : '퀘스트 시작'}
+                  퀘스트 시작
                 </button>
               </div>
             )) : (

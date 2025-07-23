@@ -227,3 +227,25 @@ export const deleteQuest = async (questId, userId) => {
     throw error;
   }
 }; 
+
+// 맞춤형 추천 퀘스트 조회 (userId 기반)
+export const getRecommendedQuests = async (userId) => {
+  try {
+    const response = await apiClient.get(`/api/quest-recommendations?userId=${userId}`);
+    return response.data;
+  } catch (error) {
+    console.error('추천 퀘스트 조회 에러:', error);
+    throw error;
+  }
+};
+
+// 오늘의 감정 조회
+export const getTodayEmotion = async (userId) => {
+  try {
+    const response = await apiClient.get(`/api/today-emotion?userId=${userId}`);
+    return response.data;
+  } catch (error) {
+    console.error('오늘의 감정 조회 에러:', error);
+    throw error;
+  }
+}; 
