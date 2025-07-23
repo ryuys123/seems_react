@@ -110,9 +110,6 @@ function UserHeader() {
 
           {/* 게임화 요소 */}
           <div className={styles.navGroup}>
-            <Link to="/quest" className={styles.navLink}>
-              퀘스트
-            </Link>
             <Link to="/simulation" className={styles.navLink}>
               시뮬레이션
             </Link>
@@ -125,6 +122,9 @@ function UserHeader() {
           <div className={styles.navGroup}>
             <Link to="/emotionrecord" className={styles.navLink}>
               기록
+            </Link>
+            <Link to="/quest" className={styles.navLink}>
+              퀘스트
             </Link>
           </div>
 
