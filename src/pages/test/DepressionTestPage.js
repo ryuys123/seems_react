@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import UserHeader from "../../components/common/UserHeader";
 import styles from "./DepressionTestPage.module.css";
+import { submitScaleTest } from "../../services/TestService";
+import apiClient from "../../utils/axios";
 
 function DepressionTestPage() {
   const navigate = useNavigate();
@@ -11,6 +12,7 @@ function DepressionTestPage() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [testResult, setTestResult] = useState(null); // State to hold the test result
 
   const testCategory = "DEPRESSION_SCALE";
 
@@ -23,23 +25,24 @@ function DepressionTestPage() {
   };
 
   useEffect(() => {
-    const fetchQuestions = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const response = await axios.get(
-          `/seems/api/psychological-test/questions/${testCategory}`
-        );
-        setQuestions(response.data);
-      } catch (err) {
-        console.error(`Failed to fetch ${testCategory} questions:`, err);
-        setError("문항을 불러오는 데 실패했습니다. 서버 상태를 확인해주세요.");
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchQuestions();
-  }, [testCategory]);
+  }, []);
+
+  const fetchQuestions = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await apiClient.get(
+        `/api/psychological-test/questions?count=10&testType=${testCategory}`
+      );
+      setQuestions(response.data);
+    } catch (err) {
+      console.error(`Failed to fetch ${testCategory} questions:`, err);
+      setError("문항을 불러오는 데 실패했습니다. 서버 상태를 확인해주세요.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleAnswerChange = (questionId, value) => {
     setAnswers((prevAnswers) => ({
@@ -74,30 +77,20 @@ function DepressionTestPage() {
       return;
     }
 
-    const submissionData = questions.map((q) => ({
+    const submissionData = {
       userId: currentUserId,
-      questionId: q.questionId,
-      answerValue: answers[q.questionId],
-      testType: q.testType, // ✨ 1. testType 추가
-    }));
-
-    const requestBody = submissionData;
+      testCategory: testCategory,
+      answers: questions.map((q) => ({
+        questionId: q.questionId,
+        answerValue: answers[q.questionId],
+      })),
+    };
 
     try {
       setLoading(true);
-      const response = await axios.post(
-        "/seems/api/psychological-test/submit-depression-test",
-        requestBody
-      );
-      const resultId = response.data.resultId;
-      const resultTestType = response.data.testType;
-
-      alert("우울증 검사가 완료되었습니다! 결과를 확인합니다.");
-
-      // ✨ 2. URL 파라미터 수정
-      navigate(
-        `/psychological-test/result/${resultId}?type=PSYCHOLOGICAL_SCALE`
-      );
+      const result = await submitScaleTest(submissionData);
+      alert("우울증 검사가 완료되었습니다!");
+      navigate(`/psychology-result/${result.resultId}?type=${testCategory}`);
     } catch (err) {
       console.error(
         "검사 제출 실패:",
@@ -109,38 +102,22 @@ function DepressionTestPage() {
     }
   };
 
-  if (loading) {
+  const handleRestartTest = () => {
+    setAnswers({});
+    setCurrentQuestionIndex(0);
+    setTestResult(null);
+    setError(null);
+    fetchQuestions(); // Refetch questions if needed
+  };
+
+  const renderTest = () => {
+    if (questions.length === 0) {
+      return <p>표시할 우울증 검사 문항이 없습니다. 관리자에게 문의하세요.</p>;
+    }
+
+    const currentQuestion = questions[currentQuestionIndex];
+
     return (
-      <div className={styles.container}>
-        <UserHeader />
-        <p>문항을 불러오는 중입니다...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className={styles.container}>
-        <UserHeader />
-        <p className={styles.errorText}>오류 발생: {error}</p>
-      </div>
-    );
-  }
-
-  if (questions.length === 0) {
-    return (
-      <div className={styles.container}>
-        <UserHeader />
-        <p>표시할 우울증 검사 문항이 없습니다. 관리자에게 문의하세요.</p>
-      </div>
-    );
-  }
-
-  const currentQuestion = questions[currentQuestionIndex];
-
-  return (
-    <div className={styles.container}>
-      <UserHeader />
       <div className={styles.testCard}>
         <h1 className={styles.title}>우울증 검사</h1>
         <p className={styles.description}>
@@ -185,8 +162,51 @@ function DepressionTestPage() {
           </button>
         </div>
       </div>
+    );
+  };
+
+  const renderResult = () => {
+    return (
+      <div className={styles.resultCard}>
+        <h1 className={styles.title}>우울증 검사 결과</h1>
+        <div className={styles.resultSection}>
+          <h2>총점</h2>
+          <p>{testResult.totalScore}점</p>
+        </div>
+        <div className={styles.resultSection}>
+          <h2>위험도</h2>
+          <p>{testResult.riskLevel}</p>
+        </div>
+        <div className={styles.resultSection}>
+          <h2>결과 해석</h2>
+          <p>{testResult.interpretation}</p>
+        </div>
+        <div className={styles.resultSection}>
+          <h2>제안</h2>
+          <p>{testResult.suggestions}</p>
+        </div>
+        <button onClick={handleRestartTest} className={styles.restartButton}>
+          다시 시작하기
+        </button>
+      </div>
+    );
+  };
+
+  return (
+    <div className={styles.container}>
+      <UserHeader />
+      {loading ? (
+        <p>처리 중입니다...</p>
+      ) : error ? (
+        <p className={styles.errorText}>오류 발생: {error}</p>
+      ) : testResult ? (
+        renderResult()
+      ) : (
+        renderTest()
+      )}
     </div>
   );
 }
 
 export default DepressionTestPage;
+
