@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { naverLogin } from '../../services/AuthService'; // 이 import는 필요함
+import { naverLogin } from '../../services/authService'; // 이 import는 필요함
 import styles from './NaverLoginPage.module.css';
 
 const NaverLoginPage = () => {
@@ -92,7 +92,7 @@ const NaverLoginPage = () => {
       
       naverLoginInstance.authorize();
       
-      // 방법 2: AuthService 사용 (팝업 방식)
+      // 방법 2: authService 사용 (팝업 방식)
       // const result = await naverLogin();
       // if (result.success) {
       //   navigate('/dashboard');

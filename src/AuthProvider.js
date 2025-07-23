@@ -66,22 +66,20 @@ export const AuthProvider = ({ children }) => {
       console.log("-----------------------------");
 
       // if (parsedToken) {
-        setAuthInfo({
-          isLoggedIn: true,
-          role: parsedToken.role,
-          userid: parsedToken.sub,
-          username: parsedToken.name, // ✅ 서버 필드명과 일치
+      setAuthInfo({
+        isLoggedIn: true,
+        role: parsedToken.role,
+        userid: parsedToken.sub,
+        username: parsedToken.name, // ✅ 서버 필드명과 일치
         // });
-      // } else {
+        // } else {
         // 토큰 파싱이 실패한 경우 로그아웃 처리
         // logoutAndRedirect();
-      // }
-
-        });
+        // }
+      });
     } else {
-      setAuthInfo({isLoggedIn: false, role: "", username: ""});
+      setAuthInfo({ isLoggedIn: false, role: "", username: "" });
     }
-
   }, []); //useEffect
 
   useEffect(() => {
@@ -103,7 +101,10 @@ export const AuthProvider = ({ children }) => {
     if (accessToken) {
       localStorage.setItem("accessToken", accessToken);
       localStorage.setItem("refreshToken", refreshToken);
-      console.log("localStorage 저장 직후 accessToken:", localStorage.getItem("accessToken"));
+      console.log(
+        "localStorage 저장 직후 accessToken:",
+        localStorage.getItem("accessToken")
+      );
 
       const parsedToken = parseAccessToken(accessToken);
       console.log("AuthProvider updateTokens : ", parsedToken);
@@ -151,6 +152,9 @@ export const AuthProvider = ({ children }) => {
         headers: {
           Authorization: `Bearer ${accessToken}`, //빽틱 사용할 것
           RefreshToken: `Bearer ${refreshToken}`, //빽틱 사용할 것
+          ...(data instanceof FormData
+            ? {} // FormData면 Content-Type 설정하지 않음
+            : { "Content-Type": "application/json" }),
           ...options.headers,
         },
         data,

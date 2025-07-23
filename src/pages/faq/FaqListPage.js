@@ -6,6 +6,7 @@ import { AuthContext } from "../../AuthProvider"; //공유자원 가져오기 �
 
 import styles from "./FaqListPage.module.css"; // css 사용
 import UserHeader from "../../components/common/UserHeader"; // 헤더
+import AdminHeader from "../../components/common/AdminHeader"; // 관리자헤더
 import PagingView from "../../components/common/PagingView"; //목록 아래 페이징 출력 처리용
 
 function FaqListPage({ searchResults }) {
@@ -23,7 +24,7 @@ function FaqListPage({ searchResults }) {
   const [error, setError] = useState(null); // 에러 상태 관리
   const ERROR_MESSAGE = "게시글을 불러오는 데 실패했습니다.";
 
-  const { isLoggedIn, secureApiRequest } = useContext(AuthContext); // AuthProvider 에서 가져오기
+  const { isLoggedIn, role, secureApiRequest } = useContext(AuthContext); // AuthProvider 에서 가져오기
 
   const navigate = useNavigate(); //페이지 이동을 위한 navigate 함수 선언함
 
@@ -108,8 +109,7 @@ function FaqListPage({ searchResults }) {
 
   return (
     <div className={styles.container}>
-      <UserHeader />
-      <br></br>
+      <>{role === "ADMIN" ? <AdminHeader /> : <UserHeader />}</> <br></br>
       <h1 className={styles.pageTitle}>FAQ 1:1 문의 게시판</h1>
       <div className={styles.subText}>본인이 작성한 문의만 볼 수 있습니다.</div>
       <button className={styles.writeButton} onClick={() => navigate("/faqw")}>
@@ -177,7 +177,6 @@ function FaqListPage({ searchResults }) {
           )}
         </tbody>
       </table>
-
       <PagingView
         currentPage={pagingInfo.currentPage || 1}
         totalPage={pagingInfo.maxPage || 1}
