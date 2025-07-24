@@ -242,7 +242,7 @@ export const getRecommendedQuests = async (userId) => {
 // 오늘의 감정 조회
 export const getTodayEmotion = async (userId) => {
   try {
-    const response = await apiClient.get(`/api/today-emotion?userId=${userId}`);
+    const response = await apiClient.get(`/api/emotion-logs/${userId}/today`);
     return response.data;
   } catch (error) {
     console.error('오늘의 감정 조회 에러:', error);
