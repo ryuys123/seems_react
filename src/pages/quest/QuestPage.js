@@ -1375,18 +1375,20 @@ const QuestPage = () => {
                   <div className={styles.statValue} style={{ fontSize: '1.2rem' }}>로딩중...</div>
                 ) : todayEmotionError ? (
                   <div className={styles.statValue} style={{ fontSize: '1.2rem', color: '#e74c3c' }}>오류</div>
-                ) : todayEmotion ? (
+                ) : todayEmotion && todayEmotion.emotion ? (
                   <>
                     <div style={{ 
-                      fontSize: '2rem', 
+                      fontSize: '2.5rem', 
                       margin: '12px 0',
                       color: '#4b94d0',
                       fontWeight: '900',
                       animation: 'points-shine 2.5s infinite'
                     }}>
-                      {todayEmotion.emoji}
+                      {todayEmotion.emotion.emoji || '❓'}
                     </div>
-                    <div className={styles.statLabel}>{todayEmotion.emotionName}</div>
+                    <div className={styles.statLabel} style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>
+                      {todayEmotion.emotion.emotionName || '감정명 없음'}
+                    </div>
                     <div className={styles.statDescription}>
                       {todayEmotion.textContent ? 
                         (todayEmotion.textContent.length > 20 ? 
