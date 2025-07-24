@@ -53,7 +53,7 @@ function AdminHeader() {
         <nav className={styles.nav}>
           <Link to="/userlist">사용자 관리</Link>
           <Link to="/notice">공지사항</Link>
-          <Link to="/faq">FAQ</Link>
+          <Link to="/adminfaq">FAQ</Link>
           <Link to="/log">시스템로그</Link>
           <Link
             to="/"

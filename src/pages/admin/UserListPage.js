@@ -25,7 +25,7 @@ function UserListPage({ searchResults }) {
   const [error, setError] = useState(null); //에러 메세지 저장용
   const [isSearchMode, setIsSearchMode] = useState(false); //검색 모드인지 아닌지 확인용
   // 검색 타입과 검색어 상태 분리
-  const [searchType, setSearchType] = useState("title");
+  const [searchType, setSearchType] = useState("name");
   const [searchTerm, setSearchTerm] = useState("");
   // 날짜 검색용 상태 추가
   const [begin, setbegin] = useState("");
@@ -34,6 +34,7 @@ function UserListPage({ searchResults }) {
   //모달 상태 추가
   const [selectedUser, setSelectedUser] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { secureApiRequest } = useContext(AuthContext);
 
   //서버로 유저목록 조회용 함수 (기본 1페이지)
   const fetchUsers = async (page) => {
@@ -60,12 +61,16 @@ function UserListPage({ searchResults }) {
     try {
       setLoading(true);
       let response;
-      if (searchType === "date") {
-        response = await apiClient.get(`/user/search/date`, {
+      if (searchType === "createdAt") {
+        response = await apiClient.get(`/admin/search/createdAt`, {
           params: { action: searchType, begin, end },
         });
+      } else if (searchType === "status") {
+        response = await apiClient.get(`/admin/search/status`, {
+          params: { action: searchType, status: searchTerm },
+        });
       } else {
-        response = await apiClient.get(`/notice/search/${searchType}`, {
+        response = await apiClient.get(`/admin/search/${searchType}`, {
           params: { action: searchType, keyword: searchTerm },
         });
       }
@@ -116,7 +121,7 @@ function UserListPage({ searchResults }) {
       if (isSearchMode) {
         let response;
         if (searchType === "date") {
-          response = await apiClient.get(`/notice/search/date`, {
+          response = await apiClient.get(`/admin/search/createdAt`, {
             params: {
               action: searchType,
               begin,
@@ -125,7 +130,7 @@ function UserListPage({ searchResults }) {
             },
           });
         } else {
-          response = await apiClient.get(`/notice/search/${searchType}`, {
+          response = await apiClient.get(`/admin/search/${searchType}`, {
             params: {
               action: searchType,
               keyword: searchTerm,
@@ -142,6 +147,32 @@ function UserListPage({ searchResults }) {
       setError("페이징 요청 실패");
     } finally {
       setLoading(false); // 로딩 완료
+    }
+  };
+
+  // 사용자 상태 변경 (활성, 비활성)
+  const toggleUserStatus = async (user) => {
+    const updatedStatus = user.status === 1 ? 2 : 1;
+
+    try {
+      const response = await secureApiRequest("/admin/ustatus", {
+        method: "POST",
+        data: {
+          userId: user.userId,
+          status: updatedStatus,
+        },
+      });
+
+      if (response.status === 200) {
+        alert("상태가 변경되었습니다.");
+        setSelectedUser((prev) => ({ ...prev, status: updatedStatus }));
+        fetchUsers(pagingInfo.currentPage);
+      } else {
+        alert("상태 변경에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("상태 변경 중 오류 발생:", error);
+      alert("서버 오류가 발생했습니다.");
     }
   };
 
@@ -168,11 +199,11 @@ function UserListPage({ searchResults }) {
               onChange={(e) => setSearchType(e.target.value)}
             >
               <option value="name">이름 또는 아이디</option>
-              <option value="date">가입일</option>
-              <option value="activity">상태</option>
+              <option value="createdAt">가입일</option>
+              <option value="status">상태</option>
             </select>
 
-            {searchType === "date" ? (
+            {searchType === "createdAt" ? (
               <>
                 <input
                   type="date"
@@ -190,15 +221,16 @@ function UserListPage({ searchResults }) {
                   placeholder="끝나는 날짜"
                 />
               </>
-            ) : searchType === "activity" ? (
+            ) : searchType === "status" ? (
               <select
                 className={styles.searchInput}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               >
                 <option value="">상태 선택</option>
-                <option value="ACTIVE">활성</option>
-                <option value="INACTIVE">비활성</option>
+                <option value="1">활성</option>
+                <option value="2">비활성</option>
+                <option value="0">탈퇴</option>
               </select>
             ) : (
               <input
@@ -260,7 +292,11 @@ function UserListPage({ searchResults }) {
                   <td className={styles.readCount}>{user.createdAt}</td>
                   <td className={styles.readCount}>{user.updatedAt}</td>
                   <td className={styles.readCount}>
-                    {user.status === 1 ? "활성" : "탈퇴"}
+                    {user.status === 1
+                      ? "활성"
+                      : user.status === 2
+                        ? "비활성"
+                        : "탈퇴"}{" "}
                   </td>{" "}
                 </tr>
               ))
@@ -287,6 +323,24 @@ function UserListPage({ searchResults }) {
         <div className={styles.modalOverlay}>
           <div className={styles.modalContent}>
             <h2>사용자 상세 정보</h2>
+            <div className={styles.profileImageWrapper}>
+              {selectedUser.profileImage && !selectedUser.imageError ? (
+                <img
+                  src={selectedUser.profileImage}
+                  alt="프로필 이미지"
+                  className={styles.profileImage}
+                  onError={() => {
+                    setSelectedUser((prev) => ({ ...prev, imageError: true }));
+                  }}
+                />
+              ) : (
+                <div className={styles.profileEmojiCircle}>
+                  <span role="img" aria-label="avatar" className={styles.emoji}>
+                    🧑
+                  </span>
+                </div>
+              )}
+            </div>
             <p>
               <strong>ID:</strong> {selectedUser.userId}
             </p>
@@ -297,10 +351,17 @@ function UserListPage({ searchResults }) {
               <strong>전화번호:</strong> {selectedUser.phone}
             </p>
             <p>
+              <strong>이메일:</strong> {selectedUser.email}
+            </p>
+            <p>
               <strong>가입일:</strong> {selectedUser.createdAt}
             </p>
             <p>
               <strong>최근 로그인:</strong> {selectedUser.updatedAt}
+            </p>
+            <p>
+              <strong>페이스로그인:</strong> {selectedUser.faceLoginEnabled}
+              {selectedUser.status === 1 ? "사용" : "미사용"}
             </p>
             <p>
               <strong>상태:</strong>{" "}
@@ -309,6 +370,12 @@ function UserListPage({ searchResults }) {
                 : selectedUser.status === 2
                   ? "비활성"
                   : "탈퇴"}
+              <button
+                onClick={() => toggleUserStatus(selectedUser)}
+                className={styles.statusButton}
+              >
+                {selectedUser.status === 1 ? "비활성화하기" : "활성화하기"}
+              </button>
             </p>
             <button onClick={() => setIsModalOpen(false)}>닫기</button>
           </div>
