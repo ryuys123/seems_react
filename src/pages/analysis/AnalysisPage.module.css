@@ -2,7 +2,7 @@
 
 /* 전체 페이지 컨테이너: 따뜻하고 부드러운 배경 */
 .container {
-  max-width: 960px; /* 너비 확장 */
+  max-width: 1000px; /* 너비 확장 */
   margin: 60px auto;
   padding: 50px;
   background-color: #f8f8f8; /* 아주 연한 회색 */
@@ -30,7 +30,166 @@
   margin-bottom: 40px;
 }
 
-/* AI 통찰 요약 텍스트: 힐링 테마 강조 */
+.resultCard h2 {
+  text-align: center;
+  font-size: 2rem;
+  color: #2c3e50;
+  margin-bottom: 30px; /* 여백 증가 */
+}
+
+/* 개별 결과 컨테이너 (Flexbox로 배치) */
+.individualResults {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px; /* 항목 간 간격 */
+  margin-bottom: 40px;
+  justify-content: center; /* 개별 결과 항목 가운데 정렬 */
+}
+
+/* 개별 결과 항목 스타일 */
+.individualResultItem {
+  flex: 1 1 calc(50% - 10px); /* 사용 가능한 공간을 채우면서 기본 너비 유지 */
+  background-color: #fdfdfd;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 25px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.individualResultItem h4 {
+  font-size: 1.3rem;
+  color: #34495e; /* 진한 회색 */
+  margin-bottom: 10px; /* 여백 감소 */
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.individualResultItem p {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #555;
+  margin-bottom: 5px; /* 여백 감소 */
+}
+
+.individualResultItem p strong {
+  color: #2c3e50;
+}
+
+/* AI 종합 분석 섹션 */
+.overallAnalysis {
+  background-color: #e8f4f8; /* 부드러운 파란색 배경 */
+  border-radius: 15px;
+  padding: 35px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+  margin-top: 40px; /* 개별 결과와 종합 분석 간 여백 */
+}
+
+.overallAnalysis h3 {
+  font-size: 1.8rem;
+  color: #2980b9; /* 시원한 파란색 */
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #c8e0f0;
+}
+
+.overallAnalysis .analysisText {
+  line-height: 1.8;
+  font-size: 1.15rem;
+  color: #333;
+  background-color: #f7fff7; /* 아주 연한 녹색 배경 */
+  padding: 25px;
+  border-radius: 10px;
+  border-left: 6px solid #4caf50; /* 힐링을 상징하는 녹색 강조 */
+  margin-bottom: 35px;
+  font-weight: 500;
+}
+
+.overallAnalysis .aiSuggestion {
+  background-color: #f0f8ff; /* 아주 연한 파란색 배경 */
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #b3e0ff; /* 연한 테두리 */
+  line-height: 1.7;
+  margin-top: 15px;
+  margin-bottom: 25px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  color: #354f52;
+}
+
+.overallAnalysis .testDate {
+  font-size: 0.9rem;
+  color: #999;
+  margin-top: 20px;
+  font-weight: 500;
+}
+
+/* 과제 완료 상태 및 분석 시작 버튼 섹션 */
+.taskStatus {
+  background-color: #fff;
+  border-radius: 15px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+  padding: 30px;
+  margin-top: 40px;
+  text-align: center;
+}
+
+.taskStatus h3 {
+  font-size: 1.8rem;
+  color: #2c3e50;
+  margin-bottom: 25px;
+}
+
+.taskStatus ul {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 30px;
+}
+
+.taskStatus li {
+  font-size: 1.1rem;
+  color: #555;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.taskStatus li span {
+  margin-left: 10px;
+  font-weight: bold;
+}
+
+/* 버튼 스타일 */
+.startButton {
+  background-color: #4CAF50; /* 녹색 계열 */
+  color: white;
+  padding: 15px 30px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  margin-top: 30px; /* 여백 증가 */
+  width: auto;
+  display: block; /* 블록 레벨 요소로 만들어 margin: auto 적용 가능하게 함 */
+  margin: 30px auto; /* 가운데 정렬 */
+}
+
+.startButton:hover {
+  background-color: #45a049;
+  transform: translateY(-2px);
+}
+
+.startButton:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* 로딩 및 오류 상태 메시지 */
 .analysisText {
   line-height: 1.8;
   font-size: 1.15rem;
@@ -43,125 +202,45 @@
   font-weight: 500;
 }
 
-/* 분석 점수 시각화 섹션 */
-.gaugeContainer {
-  padding: 30px;
-  background-color: #e8f4f8; /* 부드러운 파란색 배경 */
-  border-radius: 15px;
-  margin-bottom: 40px;
-  display: flex;
-  justify-content: space-around;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-.gaugeContainer h3 {
-  width: 100%;
-  text-align: center;
-  font-size: 1.8rem;
-  color: #2980b9; /* 시원한 파란색 */
-  margin-bottom: 30px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #c8e0f0;
-}
-
-/* 개별 게이지 아이템 */
-.gaugeItem {
-  text-align: center;
-  padding: 20px;
-  flex-basis: 45%; /* 게이지 아이템 너비 */
-}
-
-.gaugeItem h4 {
-  font-size: 1.4rem;
-  color: #555;
-  margin-bottom: 15px;
-}
-
-/* 감정 점수 텍스트 스타일 */
-.gaugeItem p {
-  font-size: 1.2rem;
-  font-weight: bold;
-  margin-top: 15px;
-}
-
-/* 상세 분석 및 제안 섹션 */
-.additionalInfo {
-  margin-top: 40px;
-  padding-top: 30px;
-  border-top: 1px dashed #ccc;
-}
-
-.additionalInfo h3 {
-  font-size: 1.6rem;
-  color: #354f52;
-  margin-bottom: 20px;
-  font-weight: 600;
-}
-
-.additionalInfo p {
-  font-size: 1rem;
-  line-height: 1.8;
-  color: #666;
-  margin-bottom: 15px;
-}
-
-/* 로그인 정보 없음 등 상태 표시 컨테이너 */
-/* AnalysisPage.js의 loading, error, !latestResult 반환 시 사용 */
-/* 이 스타일은 UserHeader와 함께 사용되도록 조정했습니다. */
 .loadingContainer,
 .errorContainer {
-  /* UserHeader가 상단에 있기 때문에 겹치지 않도록 마진 추가 */
   margin-top: 80px;
   padding: 20px;
   text-align: center;
   color: #555;
   font-size: 1.2rem;
 }
-/* 상세 분석 및 제안 섹션 항목들을 위한 스타일 */
-.additionalInfo {
-  /* ... 기존 additionalInfo 스타일 유지 ... */
-  margin-top: 40px;
-  padding-top: 30px;
-  border-top: 1px dashed #ccc;
-}
 
-/* ⭐️ AI 제안 스타일: 강조된 박스 */
-.aiSuggestion {
-  background-color: #f0f8ff; /* 아주 연한 파란색 배경 */
-  padding: 20px;
-  border-radius: 12px;
-  border: 1px solid #b3e0ff; /* 연한 테두리 */
-  line-height: 1.7;
-  margin-top: 15px;
-  margin-bottom: 25px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-  color: #354f52;
-}
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .container {
+    padding: 30px;
+    margin: 30px auto;
+  }
 
-/* ⭐️ 핵심 키워드 스타일: 구분을 위한 배경색 및 패딩 */
-.keywords {
-  font-weight: 600;
-  color: #333;
-  background-color: #f5f5f5; /* 연한 회색 배경 */
-  padding: 10px 15px;
-  border-radius: 8px;
-  display: inline-block; /* 내용이 길어져도 박스 형태로 유지 */
-  margin-bottom: 20px;
-}
+  .title {
+    font-size: 2.5rem;
+    margin-bottom: 30px;
+  }
 
-/* ⭐️ 테스트 일시 스타일: 차분한 색상과 크기 */
-.testDate {
-  font-size: 0.9rem;
-  color: #999;
-  margin-top: 20px;
-  font-weight: 500;
-}
+  .resultCard {
+    padding: 25px;
+  }
 
-/* 추가 정보 섹션의 p 태그 스타일 재조정 */
-.additionalInfo p {
-  font-size: 1rem;
-  line-height: 1.8;
-  color: #666;
-  margin-bottom: 15px;
+  .individualResultsContainer {
+    flex-direction: column;
+  }
+
+  .individualResultItem {
+    flex: 1 1 100%;
+  }
+
+  .overallAnalysis {
+    padding: 25px;
+  }
+
+  .startButton {
+    padding: 12px 25px;
+    font-size: 1rem;
+  }
 }
