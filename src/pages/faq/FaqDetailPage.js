@@ -130,8 +130,11 @@ function FaqDetailPage() {
               <button onClick={handleDelete}>삭제</button>
             </>
           )}
-          <button onClick={() => navigate("/faq")}>목록</button>
-
+          <button
+            onClick={() => navigate(role === "ADMIN" ? "/adminfaq" : "/faq")}
+          >
+            목록
+          </button>
           {isLoggedIn && userid === faq.userid && faq.status !== "CLOSED" && (
             <button className={styles.closeButton} onClick={handleCloseFaq}>
               상담 종료
