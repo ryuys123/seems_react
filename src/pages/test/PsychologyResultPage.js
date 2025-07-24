@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
-import { useParams, useLocation, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import UserHeader from "../../components/common/UserHeader";
 import styles from "./PsychologyResultPage.module.css";
+import { getPsychologicalTestResult } from "../../services/TestService";
 
 function PsychologyResultPage() {
   const { resultId } = useParams();
-  const location = useLocation();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -15,40 +15,36 @@ function PsychologyResultPage() {
 
   useEffect(() => {
     const fetchResult = async () => {
+      if (!resultId) {
+        setError("결과 ID가 제공되지 않았습니다.");
+        setLoading(false);
+        return;
+      }
+
+      // URL 쿼리 파라미터에서 testType을 가져옵니다.
+      const queryParams = new URLSearchParams(location.search);
+      const testType = queryParams.get('type');
+
+      if (!testType) {
+        setError("검사 유형(testType)이 제공되지 않았습니다.");
+        setLoading(false);
+        return;
+      }
+
       try {
         setLoading(true);
-        setError(null);
-
-        const params = new URLSearchParams(location.search);
-        const type = params.get("type");
-
-        if (!type || type.trim() === "") {
-          setError(
-            "결과를 불러오기 위한 검사 유형(type) 정보가 URL에 없습니다."
-          );
-          setLoading(false);
-          return;
-        }
-
-        const response = await axios.get(
-          `/seems/api/psychological-test/result/${resultId}?testType=${type}`
-        );
-
-        setResult(response.data);
+        const data = await getPsychologicalTestResult(resultId, testType);
+        setResult(data);
       } catch (err) {
-        console.error("결과를 불러오는데 실패했습니다:", err);
-        const errorMessage =
-          err.response?.data?.message || "서버 상태를 확인해주세요.";
-        setError(`결과를 불러오는 데 실패했습니다: ${errorMessage}`);
+        setError("결과를 불러오는 데 실패했습니다.");
+        console.error(err);
       } finally {
         setLoading(false);
       }
     };
 
-    if (resultId) {
-      fetchResult();
-    }
-  }, [resultId, location.search, navigate]);
+    fetchResult();
+  }, [resultId, location.search]);
 
   if (loading) {
     return (
@@ -64,7 +60,7 @@ function PsychologyResultPage() {
       <div className={styles.container}>
         <UserHeader />
         <p className={styles.errorText}>오류 발생: {error}</p>
-        <button onClick={() => navigate(-1)} className={styles.backButton}>
+        <button onClick={() => navigate("/SelectTestPage")} className={styles.backButton}>
           뒤로 가기
         </button>
       </div>
@@ -80,9 +76,8 @@ function PsychologyResultPage() {
     );
   }
 
-  // 👇 이 부분을 수정했습니다.
   const isScaleTest = result.testType === "PSYCHOLOGICAL_SCALE";
-  const isImageTest = result.testType === "IMAGE_TEST";
+  const isImageTest = result.testType === "PSYCHOLOGICAL_IMAGE" || result.testType === "IMAGE_TEST";
 
   return (
     <>
@@ -90,29 +85,17 @@ function PsychologyResultPage() {
       <div className={styles.container}>
         <h1 className={styles.title}>심리 검사 결과</h1>
         <div className={styles.resultCard}>
-          <p className={styles.subtitle}>검사 ID: {result.resultId}</p>
-          <p className={styles.subtitle}>사용자 ID: {result.userId}</p>
-          <p className={styles.subtitle}>검사 유형: {result.testType}</p>
-          {result.diagnosisCategory && (
-            <p className={styles.subtitle}>
-              검사 항목: {result.diagnosisCategory}
-            </p>
-          )}
-          <p className={styles.subtitle}>
-            검사 일시: {new Date(result.testDateTime).toLocaleString()}
-          </p>
-
           {isScaleTest && (
             <div className={styles.section}>
-              <h2>척도 기반 분석 결과</h2>
+              <h2>{result.diagnosisCategory} 검사 결과</h2>
               <p>
-                <strong>총점:</strong> {result.totalScore}
-              </p>
-              <p>
-                <strong>해석:</strong> {result.interpretationText}
+                <strong>총점:</strong> {result.totalScore}점
               </p>
               <p>
                 <strong>위험 수준:</strong> {result.riskLevel}
+              </p>
+              <p>
+                <strong>결과 해석:</strong> {result.interpretation}
               </p>
               <p>
                 <strong>제안:</strong> {result.suggestions}
@@ -122,9 +105,9 @@ function PsychologyResultPage() {
 
           {isImageTest && (
             <div className={styles.section}>
-              <h2>이미지를 통한 심리 분석 결과</h2>
+              <h2>이미지 심리 분석 결과</h2>
               <p>
-                <strong>AI 감정 분석:</strong> {result.aiSentiment} (
+                <strong>AI 감정 분석:</strong> {result.aiSentiment} (점수:{" "}
                 {result.aiSentimentScore})
               </p>
               <p>
@@ -148,7 +131,7 @@ function PsychologyResultPage() {
             </p>
           )}
         </div>
-        <button className={styles.backButton} onClick={() => navigate(-1)}>
+        <button className={styles.backButton} onClick={() => navigate("/SelectTestPage")}>
           뒤로 가기
         </button>
       </div>
