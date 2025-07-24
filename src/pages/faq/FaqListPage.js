@@ -24,7 +24,8 @@ function FaqListPage({ searchResults }) {
   const [error, setError] = useState(null); // 에러 상태 관리
   const ERROR_MESSAGE = "게시글을 불러오는 데 실패했습니다.";
 
-  const { isLoggedIn, role, secureApiRequest } = useContext(AuthContext); // AuthProvider 에서 가져오기
+  const { isLoggedIn, role, secureApiRequest, userid } =
+    useContext(AuthContext); // AuthProvider 에서 가져오기
 
   const navigate = useNavigate(); //페이지 이동을 위한 navigate 함수 선언함
 
@@ -32,9 +33,12 @@ function FaqListPage({ searchResults }) {
   const fetchBoards = async (page) => {
     try {
       setLoading(true); // 로딩 상태 시작
-      const response = await secureApiRequest(`/faq?page=${page}`, {
-        method: "GET",
-      }); // Spring Boot 서버 URL
+      const response = await secureApiRequest(
+        `/faq/my?page=${page}&userId=${userid}&role=${role}`,
+        {
+          method: "GET",
+        }
+      ); // Spring Boot 서버 URL
       setBoards(response.data.list); // 응답 데이터를 상태로 설정  //boards = response.data.list; 과 같음
       setPagingInfo(response.data.paging); //서버에서 제공하는 페이징 정보
       console.log(response.data.paging);
