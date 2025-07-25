@@ -3,8 +3,8 @@
 /* 전체 페이지 컨테이너: 따뜻하고 부드러운 배경 */
 .container {
   max-width: 1000px; /* 너비 확장 */
-  margin: 60px auto;
-  padding: 50px;
+  margin: 20px auto 0 auto; /* 상단 여백을 20px로 줄이고, 하단은 0으로 */
+  padding: 30px;           /* 내부 여백도 30px로 줄임 */
   background-color: #f8f8f8; /* 아주 연한 회색 */
   border-radius: 25px; /* 더 부드러운 모서리 */
   box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);

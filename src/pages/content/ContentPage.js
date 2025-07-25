@@ -1,9 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import styles from './ContentPage.module.css';
 import UserHeader from '../../components/common/UserHeader';
 import { getTodayEmotion } from '../../services/QuestService';
 import { getRecommendedContentsByEmotionId, fetchYoutubeMeta } from '../../services/ContentService';
+// 감정ID → 감정명/이모지 매핑 (프론트 하드코딩)
+const EMOTION_MAP = {
+  1: { emotionName: '행복', emoji: '😊' },
+  2: { emotionName: '슬픔', emoji: '😔' },
+  3: { emotionName: '화남', emoji: '😡' },
+  4: { emotionName: '평온', emoji: '😌' },
+  5: { emotionName: '불안', emoji: '😰' },
+  6: { emotionName: '피곤', emoji: '😴' },
+  7: { emotionName: '고민', emoji: '🤔' },
+  8: { emotionName: '자신감', emoji: '😎' },
+};
+function getEmotionInfoById(emotionId) {
+  return EMOTION_MAP[emotionId] || { emotionName: '감정 정보 없음', emoji: '❓' };
+}
 
 const YOUTUBE_API_KEY = 'AIzaSyD3Qeh7yajpSfot5QJ9io3Cm5zzCl5YTvc'; // 실제 발급받은 키 적용
 
@@ -31,10 +45,17 @@ const ContentPage = () => {
     return 'user001';
   });
 
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  let emotionIdFromAnalysis = params.get('emotionId');
+  if (!emotionIdFromAnalysis) {
+    emotionIdFromAnalysis = localStorage.getItem('latestAnalysisEmotionId');
+  }
+
   const [playingVideoId, setPlayingVideoId] = useState(null);
   const [youtubeContents, setYoutubeContents] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [todayEmotion, setTodayEmotion] = useState(null);
+  const [emotionInfo, setEmotionInfo] = useState(null); // 감정명/이모지 등 표시용
   const [error, setError] = useState(null);
   const [selectedTheme, setSelectedTheme] = useState('전체');
 
@@ -48,16 +69,25 @@ const ContentPage = () => {
           setLoading(false);
           return;
         }
-        // 오늘의 감정 조회
-        const emotionLog = await getTodayEmotion(userId);
-        setTodayEmotion(emotionLog);
-        if (!emotionLog || !emotionLog.emotion || !emotionLog.emotion.emotionId) {
-          setError('오늘의 감정 기록이 없습니다.');
-          setLoading(false);
-          return;
+        let emotionIdToUse = emotionIdFromAnalysis;
+        let emotionInfoToSet = null;
+        if (!emotionIdToUse) {
+          // 오늘의 감정 fallback
+          const emotionLog = await getTodayEmotion(userId);
+          if (!emotionLog || !emotionLog.emotion || !emotionLog.emotion.emotionId) {
+            setError('오늘의 감정 기록이 없습니다.');
+            setLoading(false);
+            return;
+          }
+          emotionIdToUse = emotionLog.emotion.emotionId;
+          emotionInfoToSet = emotionLog.emotion;
+        } else {
+          // 종합분석 emotionId로 감정 정보 조회 (프론트 하드코딩)
+          emotionInfoToSet = getEmotionInfoById(String(emotionIdToUse));
         }
+        setEmotionInfo(emotionInfoToSet);
         // 추천 유튜브 컨텐츠 조회
-        const contents = await getRecommendedContentsByEmotionId(emotionLog.emotion.emotionId);
+        const contents = await getRecommendedContentsByEmotionId(emotionIdToUse);
         // YouTube 메타데이터 보완
         const withMeta = await Promise.all(contents.map(async (item) => {
           if (!item.title || !item.description) {
@@ -74,7 +104,7 @@ const ContentPage = () => {
       }
     };
     fetchData();
-  }, [userId]);
+  }, [userId, emotionIdFromAnalysis]);
 
   return (
     <div>
@@ -85,16 +115,13 @@ const ContentPage = () => {
         </div>
         {/* 분석 결과 감정 요약 */}
         <div className={styles.summarySection}>
-          <div className={styles.emotionIcon}>{todayEmotion?.emotion?.emoji || '😊'}</div>
+          <div className={styles.emotionIcon}>{emotionInfo?.emoji || '😊'}</div>
           <div className={styles.summaryContent}>
-            <div className={styles.summaryTitle}>오늘의 감정</div>
+            <div className={styles.summaryTitle}>추천 기준 감정</div>
             <div className={styles.summaryText}>
-              {todayEmotion?.emotion?.emotionName
-                ? <b>{todayEmotion.emotion.emotionName}</b>
-                : '감정 기록 없음'}
-              {todayEmotion?.textContent && (
-                <><br/>{todayEmotion.textContent}</>
-              )}
+              {emotionInfo?.emotionName
+                ? <b>{emotionInfo.emotionName}</b>
+                : '감정 정보 없음'}
             </div>
           </div>
         </div>

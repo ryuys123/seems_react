@@ -228,10 +228,15 @@ export const deleteQuest = async (questId, userId) => {
   }
 }; 
 
-// 맞춤형 추천 퀘스트 조회 (userId 기반)
-export const getRecommendedQuests = async (userId) => {
+// 맞춤형 추천 퀘스트 조회 (userId 또는 emotionId 기반)
+export const getRecommendedQuests = async (userId, emotionId) => {
   try {
-    const response = await apiClient.get(`/api/quest-recommendations?userId=${userId}`);
+    let response;
+    if (emotionId) {
+      response = await apiClient.get(`/api/quest-recommendations?emotionId=${emotionId}`);
+    } else {
+      response = await apiClient.get(`/api/quest-recommendations?userId=${userId}`);
+    }
     return response.data;
   } catch (error) {
     console.error('추천 퀘스트 조회 에러:', error);
