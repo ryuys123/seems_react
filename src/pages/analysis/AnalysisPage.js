@@ -58,6 +58,13 @@ export default function AnalysisPage() {
     fetchTaskStatusAndResult();
   }, [userId]);
 
+  // 분석 결과가 갱신될 때마다 latestResult.emotionId를 localStorage에 저장하는 useEffect를 추가합니다.
+  useEffect(() => {
+    if (latestResult && latestResult.emotionId) {
+      localStorage.setItem('latestAnalysisEmotionId', latestResult.emotionId);
+    }
+  }, [latestResult]);
+
   // fetchLatestResult 함수는 이제 사용하지 않으므로 제거하거나 주석 처리합니다.
   
 
@@ -129,19 +136,21 @@ export default function AnalysisPage() {
   // 로딩 및 오류 상태 처리
   if (loading) {
     return (
-      <div className={styles.container}>
+      <>
         <UserHeader />
-        <div className={styles.resultCard}>
-          <p className={styles.analysisText}>
-            데이터를 불러오는 중입니다...
-          </p>
+        <div className={styles.container}>
+          <div className={styles.resultCard}>
+            <p className={styles.analysisText}>
+              데이터를 불러오는 중입니다...
+            </p>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   if (error) {
-    return <div className={styles.container}>{error}</div>;
+    return <><UserHeader /><div className={styles.container}>{error}</div></>;
   }
 
   // 최종 분석 결과가 있을 경우 (latestResult가 null이 아님)
@@ -150,143 +159,148 @@ export default function AnalysisPage() {
 
     // 분석 결과가 있을 때 표시할 내용
     return (
-      <div className={styles.container}>
+      <>
         <UserHeader />
-        <h1 className={styles.title}> 분석 </h1>
+        <div className={styles.container}>
+          <h1 className={styles.title}> 분석 </h1>
 
-        <div className={styles.resultCard}>
-          <h2>최종 심리 분석 결과</h2>
+          <div className={styles.resultCard}>
+            <h2>최종 심리 분석 결과</h2>
 
-          {/* 개별 검사 결과 표시 */}
-          {latestResult.individualResults && latestResult.individualResults.length > 0 && (
-            <>
-              <h3>개별 심리 검사 결과</h3>
-              <div className={styles.individualResults}>
-                {latestResult.individualResults.map((result, index) => {
-                  // 각 결과 객체는 하나의 키-값 쌍을 가짐 (예: latestCounselingSummary, latestPersonalityResult 등)
-                  const resultType = Object.keys(result)[0];
-                  const resultData = result[resultType];
+            {/* 개별 검사 결과 표시 */}
+            {latestResult.individualResults && latestResult.individualResults.length > 0 && (
+              <>
+                <h3>개별 심리 검사 결과</h3>
+                <div className={styles.individualResults}>
+                  {latestResult.individualResults.map((result, index) => {
+                    // 각 결과 객체는 하나의 키-값 쌍을 가짐 (예: latestCounselingSummary, latestPersonalityResult 등)
+                    const resultType = Object.keys(result)[0];
+                    const resultData = result[resultType];
 
-                  switch (resultType) {
-                    case 'latestCounselingSummary':
-                      return (
-                        <div key={index} className={styles.individualResultItem}>
-                          <h4>상담 내역 요약</h4>
-                          <p><strong>내용:</strong> {resultData.summaryContent}</p>
-                          {/* <p><strong>주제:</strong> {resultData.topic}</p>
-                          <p><strong>방식:</strong> {resultData.method}</p> */}
-                          {/* <p><strong>시간:</strong> {new Date(resultData.startTime).toLocaleString()} ~ {new Date(resultData.endTime).toLocaleString()}</p> */}
-                        </div>
-                      );
-                    case 'latestPersonalityResult':
-                      return (
-                        <div key={index} className={styles.individualResultItem}>
-                          <h4>성격 검사 결과 (MBTI)</h4>
-                          <p><strong>유형:</strong> {resultData.result}</p>
-                          <p><strong>설명:</strong> {resultData.description}</p>
-                        </div>
-                      );
-                    case 'latestImageResult':
-                      return (
-                        <div key={index} className={styles.individualResultItem}>
-                          <h4>이미지 심리 분석 결과</h4>
-                          <p><strong>감정:</strong> {resultData.aiSentiment} (점수: {resultData.aiSentimentScore})</p>
-                          <p><strong>창의력 점수:</strong> {resultData.aiCreativityScore}</p>
-                          <p><strong>핵심 키워드:</strong> {resultData.aiPerspectiveKeywords}</p>
-                          <p><strong>통찰 요약:</strong> {resultData.aiInsightSummary}</p>
-                          {/* <p><strong>제안:</strong> {resultData.suggestions}</p> */}
-                        </div>
-                      );
-                    case 'latestDepressionResult':
-                      return (
-                        <div key={index} className={styles.individualResultItem}>
-                          <h4>우울증 척도 검사 결과</h4>
-                          <p><strong>총점:</strong> {resultData.totalScore}점</p>
-                          <p><strong>해석:</strong> {resultData.interpretation}</p>
-                          <p><strong>위험 수준:</strong> {resultData.riskLevel}</p>
-                        </div>
-                      );
-                    case 'latestStressResult':
-                      return (
-                        <div key={index} className={styles.individualResultItem}>
-                          <h4>스트레스 척도 검사 결과</h4>
-                          <p><strong>총점:</strong> {resultData.totalScore}점</p>
-                          <p><strong>해석:</strong> {resultData.interpretation}</p>
-                          <p><strong>위험 수준:</strong> {resultData.riskLevel}</p>
-                        </div>
-                      );
-                    default:
-                      return null;
-                  }
-                })}
-              </div>
-            </>
-          )}
-
-          <div className={styles.overallAnalysis}>
-            <h3>AI 종합 분석</h3>
-            <p className={styles.analysisText}>{latestResult.analysisComment}</p>
-            {latestResult.dominantEmotion && (
-              <div className={styles.aiSuggestion}>
-                <strong>주요 감정:</strong> {latestResult.dominantEmotion}
-              </div>
+                    switch (resultType) {
+                      case 'latestCounselingSummary':
+                        return (
+                          <div key={index} className={styles.individualResultItem}>
+                            <h4>상담 내역 요약</h4>
+                            <p><strong>내용:</strong> {resultData.summaryContent}</p>
+                            {/* <p><strong>주제:</strong> {resultData.topic}</p>
+                            <p><strong>방식:</strong> {resultData.method}</p> */}
+                            {/* <p><strong>시간:</strong> {new Date(resultData.startTime).toLocaleString()} ~ {new Date(resultData.endTime).toLocaleString()}</p> */}
+                          </div>
+                        );
+                      case 'latestPersonalityResult':
+                        return (
+                          <div key={index} className={styles.individualResultItem}>
+                            <h4>성격 검사 결과 (MBTI)</h4>
+                            <p><strong>유형:</strong> {resultData.result}</p>
+                            <p><strong>설명:</strong> {resultData.description}</p>
+                          </div>
+                        );
+                      case 'latestImageResult':
+                        return (
+                          <div key={index} className={styles.individualResultItem}>
+                            <h4>이미지 심리 분석 결과</h4>
+                            <p><strong>감정:</strong> {resultData.aiSentiment} (점수: {resultData.aiSentimentScore})</p>
+                            <p><strong>창의력 점수:</strong> {resultData.aiCreativityScore}</p>
+                            <p><strong>핵심 키워드:</strong> {resultData.aiPerspectiveKeywords}</p>
+                            <p><strong>통찰 요약:</strong> {resultData.aiInsightSummary}</p>
+                            {/* <p><strong>제안:</strong> {resultData.suggestions}</p> */}
+                          </div>
+                        );
+                      case 'latestDepressionResult':
+                        return (
+                          <div key={index} className={styles.individualResultItem}>
+                            <h4>우울증 척도 검사 결과</h4>
+                            <p><strong>총점:</strong> {resultData.totalScore}점</p>
+                            <p><strong>해석:</strong> {resultData.interpretation}</p>
+                            <p><strong>위험 수준:</strong> {resultData.riskLevel}</p>
+                          </div>
+                        );
+                      case 'latestStressResult':
+                        return (
+                          <div key={index} className={styles.individualResultItem}>
+                            <h4>스트레스 척도 검사 결과</h4>
+                            <p><strong>총점:</strong> {resultData.totalScore}점</p>
+                            <p><strong>해석:</strong> {resultData.interpretation}</p>
+                            <p><strong>위험 수준:</strong> {resultData.riskLevel}</p>
+                          </div>
+                        );
+                      default:
+                        return null;
+                    }
+                  })}
+                </div>
+              </>
             )}
-            {latestResult.suggestions && (
-              <div className={styles.aiSuggestion}>
-                <strong>AI 제안:</strong> {latestResult.suggestions}
-              </div>
-            )}
-            {latestResult.dominantEmotion && (
-              <p className={styles.highlightBox}>
-                AI가 분석한 당신의 주요 감정! 이 감정을 극복하고 싶다면<br /> 맞춤형 퀘스트, 시뮬레이션, 컨텐츠를 활용해보세요.
-              </p>
-            )}
-            {/* <p>
-              <strong>분석 일시:</strong>
-              {new Date(latestResult.lastUpdated).toLocaleString()}
-            </p> */}
+
+            <div className={styles.overallAnalysis}>
+              <h3>AI 종합 분석</h3>
+              <p className={styles.analysisText}>{latestResult.analysisComment}</p>
+              {latestResult.dominantEmotion && (
+                <div className={styles.aiSuggestion}>
+                  <strong>주요 감정:</strong> {latestResult.dominantEmotion}
+                </div>
+              )}
+              {latestResult.suggestions && (
+                <div className={styles.aiSuggestion}>
+                  <strong>AI 제안:</strong> {latestResult.suggestions}
+                </div>
+              )}
+              {latestResult.dominantEmotion && (
+                <p className={styles.highlightBox}>
+                  AI가 분석한 당신의 주요 감정! 이 감정을 극복하고 싶다면<br /> 맞춤형 퀘스트, 시뮬레이션, 컨텐츠를 활용해보세요.
+                </p>
+              )}
+              {/* <p>
+                <strong>분석 일시:</strong>
+                {new Date(latestResult.lastUpdated).toLocaleString()}
+              </p> */}
+            </div>
+          </div>
+          <div className={styles.buttonContainer}>
+            <button
+              onClick={handleNewAnalysis}
+              className={styles.startButton}
+            >
+              새로 분석 시작하기
+            </button>
+            {/* 맞춤 콘텐츠 추천 바로가기 버튼 제거 */}
           </div>
         </div>
-        <div className={styles.buttonContainer}>
-          <button
-            onClick={handleNewAnalysis}
-            className={styles.startButton}
-          >
-            새로 분석 시작하기
-          </button>
-        </div>
-      </div>
+      </>
     );
   }
 
   // 최종 분석 결과가 없을 경우 (latestResult가 null이고 taskStatus가 로드됨)
   return (
-    <div className={styles.container}>
+    <>
       <UserHeader />
-      <div className={styles.resultCard}>
-        <p className={styles.analysisText}>
-          {taskStatus && areAllTasksCompleted(taskStatus)
-            ? "분석 시작 버튼을 눌러 통합 분석을 진행해주세요."
-            : "아직 분석 결과가 없습니다. 모든 심리 테스트에 참여해주세요."}
-        </p>
-        <div className={styles.taskStatus}>
-          <h3>과제 완료 상태:</h3>
-          <ul>
-            <li>상담: {taskStatus?.counselingCompleted ? "✅" : "❌"}</li>
-            <li>성격 검사: {taskStatus?.personalityTestCompleted ? "✅" : "❌"}</li>
-            <li>이미지 심리 검사: {taskStatus?.psychImageTestCompleted ? "✅" : "❌"}</li>
-            <li>우울증 검사: {taskStatus?.depressionTestCompleted ? "✅" : "❌"}</li>
-            <li>스트레스 검사: {taskStatus?.stressTestCompleted ? "✅" : "❌"}</li>
-          </ul>
-          <button
-            onClick={handleStartAnalysis}
-            disabled={!taskStatus || !areAllTasksCompleted(taskStatus) || analysisStarted}
-            className={styles.startButton}
-          >
-            {analysisStarted ? "분석 진행 중..." : "분석 시작"}
-          </button>
+      <div className={styles.container}>
+        <div className={styles.resultCard}>
+          <p className={styles.analysisText}>
+            {taskStatus && areAllTasksCompleted(taskStatus)
+              ? "분석 시작 버튼을 눌러 통합 분석을 진행해주세요."
+              : "아직 분석 결과가 없습니다. 모든 심리 테스트에 참여해주세요."}
+          </p>
+          <div className={styles.taskStatus}>
+            <h3>과제 완료 상태:</h3>
+            <ul>
+              <li>상담: {taskStatus?.counselingCompleted ? "✅" : "❌"}</li>
+              <li>성격 검사: {taskStatus?.personalityTestCompleted ? "✅" : "❌"}</li>
+              <li>이미지 심리 검사: {taskStatus?.psychImageTestCompleted ? "✅" : "❌"}</li>
+              <li>우울증 검사: {taskStatus?.depressionTestCompleted ? "✅" : "❌"}</li>
+              <li>스트레스 검사: {taskStatus?.stressTestCompleted ? "✅" : "❌"}</li>
+            </ul>
+            <button
+              onClick={handleStartAnalysis}
+              disabled={!taskStatus || !areAllTasksCompleted(taskStatus) || analysisStarted}
+              className={styles.startButton}
+            >
+              {analysisStarted ? "분석 진행 중..." : "분석 시작"}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
