@@ -426,13 +426,19 @@ const QuestPage = () => {
     }
   };
 
-  // 감정 기반 추천 퀘스트 불러오기 (userId 기반)
+  // 맞춤형 퀘스트 추천 불러오기 (분석 emotionId 우선)
   useEffect(() => {
     const fetchRecommendations = async () => {
       setRecommendLoading(true);
       setRecommendError(null);
       try {
-        const data = await getRecommendedQuests(userId);
+        // 분석 emotionId 우선 사용
+        const analysisEmotionId = localStorage.getItem('latestAnalysisEmotionId');
+        let data = await getRecommendedQuests(userId, analysisEmotionId);
+        // 최대 6개만, 랜덤하게 보여주기
+        if (Array.isArray(data)) {
+          data = data.sort(() => Math.random() - 0.5).slice(0, 6);
+        }
         setRecommendations(data);
       } catch (err) {
         setRecommendError('추천 퀘스트를 불러오지 못했습니다.');
@@ -1270,6 +1276,21 @@ const QuestPage = () => {
     requestAnimationFrame(animateCompleted);
   }, [userStats.completedQuests]);
 
+  // 감정ID → 감정명/이모지 매핑 (ContentPage와 동일하게 하드코딩)
+  const EMOTION_MAP = {
+    1: { emotionName: '행복', emoji: '😊' },
+    2: { emotionName: '슬픔', emoji: '😔' },
+    3: { emotionName: '화남', emoji: '😡' },
+    4: { emotionName: '평온', emoji: '😌' },
+    5: { emotionName: '불안', emoji: '😰' },
+    6: { emotionName: '피곤', emoji: '😴' },
+    7: { emotionName: '고민', emoji: '🤔' },
+    8: { emotionName: '자신감', emoji: '😎' },
+  };
+
+  const analysisEmotionId = localStorage.getItem('latestAnalysisEmotionId');
+  const analysisEmotion = EMOTION_MAP[Number(analysisEmotionId)];
+
   return (
     <div>
       <UserHeader/>
@@ -1369,52 +1390,20 @@ const QuestPage = () => {
                   당일 할당 퀘스트 모두 완료 시 연속일로 인정
                 </div>
               </div>
+              {/* 분석 기준 감정 카드로 대체 */}
               <div className={styles.statCard}>
-                <div className={styles.statLabel}>오늘의 감정</div>
-                {todayEmotionLoading ? (
-                  <div className={styles.statValue} style={{ fontSize: '1.2rem' }}>로딩중...</div>
-                ) : todayEmotionError ? (
-                  <div className={styles.statValue} style={{ fontSize: '1.2rem', color: '#e74c3c' }}>오류</div>
-                ) : todayEmotion && todayEmotion.emotion ? (
+                <div className={styles.statLabel}>분석 기준 감정</div>
+                {analysisEmotion ? (
                   <>
-                    <div style={{ 
-                      fontSize: '2.5rem', 
-                      margin: '12px 0',
-                      color: '#4b94d0',
-                      fontWeight: '900',
-                      animation: 'points-shine 2.5s infinite'
-                    }}>
-                      {todayEmotion.emotion.emoji || '❓'}
+                    <div style={{ fontSize: '2.5rem', margin: '12px 0', color: '#4b94d0', fontWeight: '900' }}>
+                      {analysisEmotion.emoji}
                     </div>
                     <div className={styles.statLabel} style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>
-                      {todayEmotion.emotion.emotionName || '감정명 없음'}
-                    </div>
-                    <div className={styles.statDescription}>
-                      {todayEmotion.textContent ? 
-                        (todayEmotion.textContent.length > 20 ? 
-                          todayEmotion.textContent.substring(0, 20) + '...' : 
-                          todayEmotion.textContent
-                        ) : 
-                        '감정 기록 없음'
-                      }
+                      {analysisEmotion.emotionName}
                     </div>
                   </>
                 ) : (
-                  <>
-                    <div style={{ 
-                      fontSize: '2rem', 
-                      margin: '12px 0',
-                      color: '#4b94d0',
-                      fontWeight: '900',
-                      animation: 'points-shine 2.5s infinite'
-                    }}>
-                      ❓
-                    </div>
-                    <div className={styles.statLabel}>감정 기록 없음</div>
-                    <div className={styles.statDescription}>
-                      감정을 기록해보세요
-                    </div>
-                  </>
+                  <div>분석 감정 없음</div>
                 )}
               </div>
             </div>
