@@ -1,8 +1,10 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useContext } from "react";
+import { AuthContext } from "../../AuthProvider";
 import styles from "./FaceLoginPage.module.css";
 import axios from "axios";
 
 const FaceLoginPage = () => {
+  const { updateTokens } = useContext(AuthContext);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const [step, setStep] = useState("idle"); // idle, camera, loading
@@ -45,6 +47,9 @@ const FaceLoginPage = () => {
           localStorage.setItem("refreshToken", response.data.refreshToken);
           localStorage.setItem("userId", response.data.userId);
           localStorage.setItem("userName", response.data.userName);
+          
+          // AuthProvider의 상태를 갱신
+          updateTokens(response.data.accessToken, response.data.refreshToken);
           
           alert("페이스 로그인 성공! 환영합니다, " + response.data.userName + "님!");
           // 성공 시 메인 페이지로 이동
