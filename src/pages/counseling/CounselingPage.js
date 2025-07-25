@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useContext, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../AuthProvider';
 import UserHeader from '../../components/common/UserHeader';
 import Footer from '../../components/common/Footer';
@@ -23,7 +24,7 @@ const getLlamaResponse = async (secureApiRequest, messages, currentCoreQuestionI
         "Content-Type": "application/json",
       },
       // 전체 대화 기록과 현재 핵심 질문 인덱스를 전송
-      body: JSON.stringify({ messages, current_core_question_index: currentCoreQuestionIndex }),
+      data: { messages, current_core_question_index: currentCoreQuestionIndex },
     });
 
     // secureApiRequest는 이미 응답 데이터를 반환하므로, 여기서 다시 .json()을 호출할 필요가 없습니다.
@@ -39,6 +40,7 @@ const getLlamaResponse = async (secureApiRequest, messages, currentCoreQuestionI
 
 const CounselingPage = () => {
   const { secureApiRequest } = useContext(AuthContext);
+  const navigate = useNavigate();
   // 상태 관리
   const [messages, setMessages] = useState([]);
   const messagesRef = useRef(messages); // Add this line
@@ -48,9 +50,13 @@ const CounselingPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const chatMessagesRef = useRef(null);
 
+  // 저장 관련 상태 추가
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState('');
+
   // 핵심 질문 관련 상태
   const [currentCoreQuestionIndex, setCurrentCoreQuestionIndex] = useState(0);
-  const [showEndOptions, setShowEndOptions] = useState(false);
+  const [showProceedButton, setShowProceedButton] = useState(false);
   const [isConsultationEnded, setIsConsultationEnded] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef(null);
@@ -176,11 +182,14 @@ const CounselingPage = () => {
 
   }, []);
 
-  const handleSaveHistory = async () => {
+  const handleSaveHistory = async (silent = false) => {
     if (messages.length <= 1) { // AI의 첫 메시지만 있는 경우 제외
-      alert('저장할 상담 내용이 없습니다.');
+      if (!silent) alert('저장할 상담 내용이 없습니다.');
       return;
     }
+
+    setIsSaving(true); // 저장 시작
+    setSaveMessage(silent ? '심리 검사로 이동하기 전 상담 내용을 저장 중입니다...' : '상담 내용을 저장 중입니다...');
 
     // 사용자 첫 메시지를 기반으로 제목 생성
     const userFirstMessage = messages.find(m => m.type === 'user');
@@ -203,15 +212,15 @@ const CounselingPage = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(requestBody),
+        data: requestBody,
       });
 
       // 성공적으로 저장되면, 새로운 기록을 history 상태에 추가
       // 백엔드에서 저장된 객체(id 포함)를 반환한다고 가정
-      const newHistoryEntry = response.data; 
+      const newHistoryEntry = response.data;
       // 기존 세션 업데이트 시 history 목록에서도 해당 항목 업데이트
       if (currentSessionId) {
-        setHistory(prevHistory => prevHistory.map(item => 
+        setHistory(prevHistory => prevHistory.map(item =>
           item.sessionId === currentSessionId ? newHistoryEntry : item
         ));
       } else {
@@ -220,11 +229,16 @@ const CounselingPage = () => {
 
       setCurrentSessionId(newHistoryEntry.sessionId); // 저장 후 현재 세션 ID 업데이트
 
-      alert(`상담 내용이 "${title}" 제목으로 저장되었습니다!`);
+      setSaveMessage('상담 내용이 성공적으로 저장되었습니다!');
+      if (!silent) alert(`상담 내용이 "${title}" 제목으로 저장되었습니다!`);
 
     } catch (error) {
       console.error('상담 기록 저장 중 오류 발생:', error);
-      alert('상담 내용을 저장하는 데 실패했습니다.');
+      setSaveMessage('상담 내용을 저장하는 데 실패했습니다.');
+      if (!silent) alert('상담 내용을 저장하는 데 실패했습니다.');
+    } finally {
+      setIsSaving(false); // 저장 완료 (성공/실패와 무관하게 로딩 해제)
+      setTimeout(() => setSaveMessage(''), 3000); // 3초 후 메시지 지움
     }
   };
 
@@ -234,7 +248,7 @@ const CounselingPage = () => {
     setCurrentSessionId(null); // 현재 세션 ID 초기화
     setInputValue(''); // 입력값 초기화
     setCurrentCoreQuestionIndex(0); // 핵심 질문 인덱스 초기화
-    setShowEndOptions(false); // 종료 옵션 숨기기
+    setShowProceedButton(false); // 진행 버튼 숨기기
     setIsConsultationEnded(false); // 상담 종료 상태 해제
     fetchInitialMessage(); // 초기 AI 메시지 다시 불러오기
   };
@@ -251,6 +265,23 @@ const CounselingPage = () => {
         console.log("불러온 메시지:", sessionToLoad.messages); // 추가된 로그
         setMessages(sessionToLoad.messages);
         setCurrentSessionId(sessionId); // 현재 세션 ID 업데이트
+
+        // 불러온 메시지 중 마지막 AI 메시지에 [PROCEED_TO_TEST] 토큰이 있는지 확인
+        const lastAIMessage = sessionToLoad.messages
+          .slice()
+          .reverse()
+          .find((msg) => msg.type === "ai");
+
+        if (lastAIMessage && lastAIMessage.text && lastAIMessage.text.includes("[PROCEED_TO_TEST]")) {
+          setShowProceedButton(true);
+          setIsConsultationEnded(true);
+          console.log("버튼 활성화: showProceedButton=", true, ", isConsultationEnded=", true);
+        } else {
+          setShowProceedButton(false);
+          setIsConsultationEnded(false);
+          console.log("버튼 비활성화: showProceedButton=", false, ", isConsultationEnded=", false);
+        }
+
         alert(`"${sessionToLoad.topic}" 상담 기록을 불러왔습니다.`);
       } else {
         throw new Error('불러올 상담 기록 데이터가 올바르지 않습니다.');
@@ -300,9 +331,20 @@ const CounselingPage = () => {
       console.groupEnd();
 
       let displayResponse = aiResponse;
-      if (aiResponse.includes('[END_OF_CONSULTATION_CHOICE]')) {
-        displayResponse = aiResponse.replace('[END_OF_CONSULTATION_CHOICE]', '').trim();
-        setShowEndOptions(true);
+      const token = '[PROCEED_TO_TEST]';
+      
+      if (aiResponse.includes(token)) {
+        // AI 응답의 양쪽 끝 공백을 먼저 제거하여 endsWith가 정확하게 작동하도록 함
+        const trimmedAiResponse = aiResponse.trim(); 
+        
+        if (trimmedAiResponse.endsWith(token)) {
+            // 토큰이 문자열의 끝에 있으면 해당 부분을 잘라내고 다시 trim
+            displayResponse = trimmedAiResponse.slice(0, trimmedAiResponse.length - token.length).trim();
+        } else {
+            // 토큰이 문자열 중간에 있거나 예상치 못한 경우 (fallback)
+            displayResponse = aiResponse.replace(token, '').trim();
+        }
+        setShowProceedButton(true);
         setIsConsultationEnded(true); // 입력창 비활성화를 위해 설정
       }
       
@@ -318,21 +360,23 @@ const CounselingPage = () => {
     }
   }, [inputValue, isLoading, isConsultationEnded, secureApiRequest, currentCoreQuestionIndex]);
 
-  // 상담 종료 또는 계속 버튼 핸들러
-  const handleEndConsultation = () => {
-    setMessages(prevMessages => [...prevMessages, { type: 'ai', text: '상담을 종료합니다. 오늘 대화해주셔서 감사합니다.' }]);
-    setIsConsultationEnded(true);
-    setShowEndOptions(false);
-    setInputValue(''); // 입력창 비우기
-  };
+  const handleGoToTest = async () => {
+    setIsSaving(true); // 저장 시작
+    setSaveMessage('심리 검사로 이동하기 전 상담 내용을 저장 중입니다...');
 
-  const handleContinueConsultation = () => {
-    setMessages(prevMessages => [...prevMessages, { type: 'ai', text: '상담을 계속합니다. 더 궁금한 점이나 나누고 싶은 이야기가 있으신가요?' }]);
-    setIsConsultationEnded(false); // 입력창 다시 활성화
-    setShowEndOptions(false);
-    setInputValue(''); // 입력창 비우기
-    // currentCoreQuestionIndex를 초기화하거나, 새로운 대화 흐름을 시작할 수 있음
-    // 여기서는 단순히 자유 대화 모드로 전환한다고 가정
+    // 1. 상담 내용을 먼저 자동으로 저장합니다.
+    await handleSaveHistory(true); // silent = true로 설정하여 alert를 띄우지 않음
+
+    // 2. 상담 내용을 local storage에 저장 (심리검사 페이지로 전달하기 위함)
+    localStorage.setItem('counselingData', JSON.stringify(messages));
+
+    setSaveMessage('저장 완료! 심리 검사 페이지로 이동합니다.');
+    setIsSaving(false); // 저장 완료
+    setTimeout(() => {
+      setSaveMessage('');
+      // 3. 심리 검사 페이지로 이동합니다.
+      navigate('/psychologyTestPage');
+    }, 1500); // 메시지를 1.5초 보여준 후 이동
   };
 
   const handleInputChange = (e) => {
@@ -367,26 +411,44 @@ const CounselingPage = () => {
             <h2>AI 심리스나이퍼</h2>
           </div>
           <div className={styles.chatMessages} ref={chatMessagesRef}>
-            {messages.map((msg, index) => (
-              <div key={index} className={`${styles.message} ${styles[msg.type]}`}>
-                {msg.text}
-              </div>
-            ))}
+            {messages.map((msg, index) => {
+              const displayMessageText = msg.text.replace(/\s*\[PROCEED_TO_TEST\]\s*$/, '').trim();
+              return (
+                <div key={index} className={`${styles.message} ${styles[msg.type]}`}>
+                  {displayMessageText}
+                </div>
+              );
+            })}
             {isLoading && (
               <div className={`${styles.message} ${styles.ai} ${styles.loading}`}>
                 AI가 답변을 생성 중입니다...
               </div>
             )}
+          {isSaving && ( // 저장 중 메시지 표시
+              <div
+                className={`${styles.message} ${styles.system} ${styles.saving}`}
+                style={{
+                  color: '#333', // 글자색 유지
+                  backgroundColor: '#b0b0b0', // 배경색을 약간 더 어두운 회색으로
+                  padding: '10px',
+                  textAlign: 'center',
+                  position: 'fixed',
+                  top: '0',
+                  left: '0',
+                  width: '100%',
+                  zIndex: '9999',
+                  display: 'block'
+                }}
+              >
+                {saveMessage}
+              </div>
+            )}
           </div>
           <div className={styles.suggestionChips}>
-            {showEndOptions ? (
-              <>
-                <button className={styles.suggestionChip} onClick={handleContinueConsultation}>상담 계속하기</button>
-                <button className={styles.suggestionChip} onClick={handleEndConsultation}>상담 마무리하기</button>
-              </>
+            {showProceedButton ? (
+              <button className={styles.suggestionChip} onClick={handleGoToTest} disabled={isSaving}>심리 검사 진행하기</button>
             ) : (
-              <>
-              </>
+              <></>
             )}
           </div>
           <div className={styles.chatInput}>
@@ -396,12 +458,12 @@ const CounselingPage = () => {
               value={inputValue}
               onChange={handleInputChange}
               onKeyPress={handleKeyPress}
-              disabled={isLoading || isConsultationEnded}
+              disabled={isLoading || isConsultationEnded || isSaving}
             />
-            <button className={`${styles.voiceBtn} ${isListening ? styles.voiceBtnActive : ''}`} title={isListening ? "듣는 중... 클릭하여 중지" : "음성 입력"} onClick={handleVoiceInput} disabled={isLoading || isConsultationEnded}>
+            <button className={`${styles.voiceBtn} ${isListening ? styles.voiceBtnActive : ''}`} title={isListening ? "듣는 중... 클릭하여 중지" : "음성 입력"} onClick={handleVoiceInput} disabled={isLoading || isConsultationEnded || isSaving}>
               <img src={isListening ? images.stop : images.mic} alt={isListening ? "정지" : "음성 입력"} />
             </button>
-            <button onClick={() => handleSendMessage()} disabled={isLoading || isConsultationEnded}>
+            <button onClick={() => handleSendMessage()} disabled={isLoading || isConsultationEnded || isSaving}>
               {isLoading ? '전송중' : '전송'}
             </button>
           </div>
@@ -421,10 +483,10 @@ const CounselingPage = () => {
               <li className={`${styles.noHistory} ${styles.historyItem}`}>저장된 상담 기록이 없습니다.</li>
             )}
           </ul>
-          <button className={styles.saveHistoryBtn} onClick={handleSaveHistory} disabled={isLoading}>
+          <button className={styles.saveHistoryBtn} onClick={handleSaveHistory} disabled={isLoading || isSaving}>
             상담 내용 저장
           </button>
-          <button className={styles.newConsultationBtn} onClick={handleStartNewConsultation} disabled={isLoading}>
+          <button className={styles.newConsultationBtn} onClick={handleStartNewConsultation} disabled={isLoading || isSaving}>
             새로운 상담 시작
           </button>
         </aside>
