@@ -11,34 +11,33 @@ function PsychologyTestPage() {
   const [userResponse, setUserResponse] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [testResult, setTestResult] = useState(null); // To store the final result
   const navigate = useNavigate();
 
+  // 이미지가 저장된 백엔드 서버의 기본 URL
   const BASE_IMAGE_URL = "http://localhost:8888/seems/images/";
 
   useEffect(() => {
+    const fetchQuestions = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await apiClient.get(
+          "/api/psychological-test/questions?count=3&testType=PSYCHOLOGICAL_IMAGE"
+        );
+        if (response.data && response.data.length > 0) {
+          setQuestions(response.data);
+        } else {
+          setError("질문을 불러올 수 없습니다.");
+        }
+      } catch (err) {
+        console.error("문항 목록을 불러오는데 실패했습니다:", err);
+        setError("문항을 불러오는 데 실패했습니다. 서버 상태를 확인해주세요.");
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchQuestions();
   }, []);
-
-  const fetchQuestions = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await apiClient.get(
-        "/api/psychological-test/questions?count=3&testType=PSYCHOLOGICAL_IMAGE"
-      );
-      if (response.data && response.data.length > 0) {
-        setQuestions(response.data);
-      } else {
-        setError("질문을 불러올 수 없습니다.");
-      }
-    } catch (err) {
-      console.error("문항 목록을 불러오는데 실패했습니다:", err);
-      setError("문항을 불러오는 데 실패했습니다. 서버 상태를 확인해주세요.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleResponseChange = (e) => {
     setUserResponse(e.target.value);
@@ -70,17 +69,28 @@ function PsychologyTestPage() {
 
     setLoading(true);
     try {
-      const response = await submitPsychologicalAnswer(answerData);
-      console.log("DEBUG: submitPsychologicalAnswer response:", response);
-      console.log("DEBUG: response.data:", response.data);
+      // submitPsychologicalAnswer는 axios 호출을 포함하는 서비스 함수라고 가정
+      const response = await apiClient.post(
+        "/api/psychological-test/submit-answer",
+        answerData
+      );
 
       if (currentStep < questions.length - 1) {
-        // Not the last step, just move to the next question
         setCurrentStep((prevStep) => prevStep + 1);
         setUserResponse("");
       } else {
-        // Last step, navigate to the result page with the test result
-        navigate(`/psychology-result/${response.resultId}?type=PSYCHOLOGICAL_IMAGE`, { state: { testResult: response } });
+        alert("검사가 완료되었습니다! AI가 분석한 최종 결과를 보여드릴게요.");
+
+        // ✨ 서버 응답 데이터는 response.data 안에 있습니다.
+        const resultId = response.data.resultId;
+        if (resultId) {
+          // ✨ 경로 오타 수정 및 response.data에서 가져온 resultId를 사용합니다.
+          navigate(
+            `/psychological-test/result/${resultId}?type=PSYCHOLOGICAL_IMAGE`
+          );
+        } else {
+          throw new Error("서버 응답에서 결과 ID를 찾을 수 없습니다.");
+        }
       }
     } catch (err) {
       console.error("답변 제출 실패:", err);
@@ -90,131 +100,86 @@ function PsychologyTestPage() {
     }
   };
 
-  const handleRestartTest = () => {
-    setQuestions([]);
-    setCurrentStep(0);
-    setUserResponse("");
-    setTestResult(null);
-    setError(null);
-    fetchQuestions();
-  };
-
-  const renderTest = () => {
-    if (loading && questions.length === 0) {
-        return (
-          <>
-            <UserHeader />
-            <div className={styles.loadingOverlay}>
-              <div className={styles.spinner}></div>
-              <p>질문을 불러오는 중입니다...</p>
-            </div>
-          </>
-        );
-    }
-
-    if (error) {
-        return (
-          <>
-            <UserHeader />
-            <div className={styles.container}>
-              <p className={styles.error}>{error}</p>
-            </div>
-          </>
-        );
-    }
-
-    const currentQuestion = questions[currentStep];
-    if (!currentQuestion) {
-        return (
-          <div className={styles.container}>
-            <UserHeader />
-            <p>표시할 문항이 없습니다.</p>
-          </div>
-        );
-    }
-
-    const imageUrlToDisplay = `${BASE_IMAGE_URL}${currentQuestion.imageUrl}`;
-    const isLastStep = currentStep === questions.length - 1;
-
+  if (loading && questions.length === 0) {
     return (
       <>
-        <h1 className={styles.title}>
-          이미지를 통한 심리 검사 ({currentStep + 1} / {questions.length})
-        </h1>
-        <p className={styles.description}>
-          제시된 이미지를 보고 떠오르는 생각이나 느낀 점을 자유롭게 작성해주세요.
-        </p>
-
-        {loading && (
-          <div className={styles.loadingOverlay}>
-            <div className={styles.spinner}></div>
-            <p>ai가 당신의 텍스트를 분석하고 있습니다. 잠시만 기다려주세요!</p>
-          </div>
-        )}
-
-        <div className={styles.questionCard}>
-          <img
-            src={imageUrlToDisplay}
-            alt="심리 검사 이미지"
-            className={styles.questionImage}
-          />
-          <p className={styles.questionText}>{currentQuestion.questionText}</p>
-        </div>
-
-        <textarea
-          className={styles.responseArea}
-          placeholder="여기에 느낀 점을 자유롭게 작성해주세요..."
-          value={userResponse}
-          onChange={handleResponseChange}
-          rows="10"
-        ></textarea>
-
-        <button
-          className={styles.submitButton}
-          onClick={handleSubmit}
-          disabled={loading}
-        >
-          {loading ? "처리 중..." : isLastStep ? "최종 결과 보기" : "다음"}
-        </button>
+        {" "}
+        <UserHeader />{" "}
+        <div className={styles.loadingOverlay}>
+          {" "}
+          <div className={styles.spinner}></div>{" "}
+          <p>질문을 불러오는 중입니다...</p>{" "}
+        </div>{" "}
       </>
     );
-  };
-
-  const renderResult = () => {
+  }
+  if (error) {
     return (
-      <div className={styles.resultCard}>
-        <h1 className={styles.title}>이미지 심리 검사 결과</h1>
-        <div className={styles.resultSection}>
-          <h2>주요 감정</h2>
-          <p>{testResult.aiSentiment} (점수: {testResult.aiSentimentScore})</p>
-        </div>
-        <div className={styles.resultSection}>
-          <h2>창의성/상상력 점수</h2>
-          <p>{testResult.aiCreativityScore}</p>
-        </div>
-        <div className={styles.resultSection}>
-          <h2>주요 키워드</h2>
-          <p>{testResult.aiPerspectiveKeywords}</p>
-        </div>
-        <div className={styles.resultSection}>
-          <h2>AI 통찰 요약</h2>
-          <p>{testResult.aiInsightSummary}</p>
-        </div>
-        <div className={styles.resultSection}>
-          <h2>제안</h2>
-          <p>{testResult.suggestions}</p>
-        </div>
-        <button onClick={handleRestartTest} className={styles.restartButton}>
-          다시 시작하기
-        </button>
+      <>
+        {" "}
+        <UserHeader />{" "}
+        <div className={styles.container}>
+          {" "}
+          <p className={styles.error}>{error}</p>{" "}
+        </div>{" "}
+      </>
+    );
+  }
+
+  const currentQuestion = questions[currentStep];
+  if (!currentQuestion) {
+    return (
+      <div className={styles.container}>
+        {" "}
+        <UserHeader /> <p>표시할 문항이 없습니다.</p>{" "}
       </div>
     );
-  };
+  }
+
+  const imageUrlToDisplay = `${BASE_IMAGE_URL}${currentQuestion.imageUrl}`;
+  const isLastStep = currentStep === questions.length - 1;
 
   return (
     <div className={styles.container}>
       <UserHeader />
-      {testResult ? renderResult() : renderTest()}
+      <h1 className={styles.title}>
+        이미지를 통한 심리 검사 ({currentStep + 1} / {questions.length})
+      </h1>
+      <p className={styles.description}>
+        제시된 이미지를 보고 떠오르는 생각이나 느낀 점을 자유롭게 작성해주세요.
+      </p>
+
+      {loading && (
+        <div className={styles.loadingOverlay}>
+          <div className={styles.spinner}></div>
+          <p>AI가 당신의 텍스트를 분석하고 있습니다. 잠시만 기다려주세요!</p>
+        </div>
+      )}
+
+      <div className={styles.questionCard}>
+        <img
+          src={imageUrlToDisplay}
+          alt="심리 검사 이미지"
+          className={styles.questionImage}
+        />
+        <p className={styles.questionText}>{currentQuestion.questionText}</p>
+      </div>
+
+      <textarea
+        className={styles.responseArea}
+        placeholder="여기에 느낀 점을 자유롭게 작성해주세요..."
+        value={userResponse}
+        onChange={handleResponseChange}
+        rows="10"
+      ></textarea>
+
+      <button
+        className={styles.submitButton}
+        onClick={handleSubmit}
+        disabled={loading}
+      >
+        {loading ? "처리 중..." : isLastStep ? "최종 결과 보기" : "다음"}
+      </button>
     </div>
   );
 }
