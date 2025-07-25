@@ -173,9 +173,9 @@ export default function AnalysisPage() {
                         <div key={index} className={styles.individualResultItem}>
                           <h4>상담 내역 요약</h4>
                           <p><strong>내용:</strong> {resultData.summaryContent}</p>
-                          <p><strong>주제:</strong> {resultData.topic}</p>
-                          <p><strong>방식:</strong> {resultData.method}</p>
-                          <p><strong>시간:</strong> {new Date(resultData.startTime).toLocaleString()} ~ {new Date(resultData.endTime).toLocaleString()}</p>
+                          {/* <p><strong>주제:</strong> {resultData.topic}</p>
+                          <p><strong>방식:</strong> {resultData.method}</p> */}
+                          {/* <p><strong>시간:</strong> {new Date(resultData.startTime).toLocaleString()} ~ {new Date(resultData.endTime).toLocaleString()}</p> */}
                         </div>
                       );
                     case 'latestPersonalityResult':
@@ -194,7 +194,7 @@ export default function AnalysisPage() {
                           <p><strong>창의력 점수:</strong> {resultData.aiCreativityScore}</p>
                           <p><strong>핵심 키워드:</strong> {resultData.aiPerspectiveKeywords}</p>
                           <p><strong>통찰 요약:</strong> {resultData.aiInsightSummary}</p>
-                          <p><strong>제안:</strong> {resultData.suggestions}</p>
+                          {/* <p><strong>제안:</strong> {resultData.suggestions}</p> */}
                         </div>
                       );
                     case 'latestDepressionResult':
@@ -226,15 +226,25 @@ export default function AnalysisPage() {
           <div className={styles.overallAnalysis}>
             <h3>AI 종합 분석</h3>
             <p className={styles.analysisText}>{latestResult.analysisComment}</p>
+            {latestResult.dominantEmotion && (
+              <div className={styles.aiSuggestion}>
+                <strong>주요 감정:</strong> {latestResult.dominantEmotion}
+              </div>
+            )}
             {latestResult.suggestions && (
               <div className={styles.aiSuggestion}>
                 <strong>AI 제안:</strong> {latestResult.suggestions}
               </div>
             )}
-            <p>
+            {latestResult.dominantEmotion && (
+              <p className={styles.highlightBox}>
+                AI가 분석한 당신의 주요 감정! 이 감정을 극복하고 싶다면<br /> 맞춤형 퀘스트, 시뮬레이션, 컨텐츠를 활용해보세요.
+              </p>
+            )}
+            {/* <p>
               <strong>분석 일시:</strong>
               {new Date(latestResult.lastUpdated).toLocaleString()}
-            </p>
+            </p> */}
           </div>
         </div>
         <div className={styles.buttonContainer}>

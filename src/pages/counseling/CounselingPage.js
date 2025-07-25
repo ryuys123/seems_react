@@ -50,6 +50,10 @@ const CounselingPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const chatMessagesRef = useRef(null);
 
+  // 저장 관련 상태 추가
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState('');
+
   // 핵심 질문 관련 상태
   const [currentCoreQuestionIndex, setCurrentCoreQuestionIndex] = useState(0);
   const [showProceedButton, setShowProceedButton] = useState(false);
@@ -184,6 +188,9 @@ const CounselingPage = () => {
       return;
     }
 
+    setIsSaving(true); // 저장 시작
+    setSaveMessage(silent ? '심리 검사로 이동하기 전 상담 내용을 저장 중입니다...' : '상담 내용을 저장 중입니다...');
+
     // 사용자 첫 메시지를 기반으로 제목 생성
     const userFirstMessage = messages.find(m => m.type === 'user');
     const title = userFirstMessage ? userFirstMessage.text.substring(0, 40) + '...' : '새로운 상담';
@@ -210,10 +217,10 @@ const CounselingPage = () => {
 
       // 성공적으로 저장되면, 새로운 기록을 history 상태에 추가
       // 백엔드에서 저장된 객체(id 포함)를 반환한다고 가정
-      const newHistoryEntry = response.data; 
+      const newHistoryEntry = response.data;
       // 기존 세션 업데이트 시 history 목록에서도 해당 항목 업데이트
       if (currentSessionId) {
-        setHistory(prevHistory => prevHistory.map(item => 
+        setHistory(prevHistory => prevHistory.map(item =>
           item.sessionId === currentSessionId ? newHistoryEntry : item
         ));
       } else {
@@ -222,11 +229,16 @@ const CounselingPage = () => {
 
       setCurrentSessionId(newHistoryEntry.sessionId); // 저장 후 현재 세션 ID 업데이트
 
+      setSaveMessage('상담 내용이 성공적으로 저장되었습니다!');
       if (!silent) alert(`상담 내용이 "${title}" 제목으로 저장되었습니다!`);
 
     } catch (error) {
       console.error('상담 기록 저장 중 오류 발생:', error);
+      setSaveMessage('상담 내용을 저장하는 데 실패했습니다.');
       if (!silent) alert('상담 내용을 저장하는 데 실패했습니다.');
+    } finally {
+      setIsSaving(false); // 저장 완료 (성공/실패와 무관하게 로딩 해제)
+      setTimeout(() => setSaveMessage(''), 3000); // 3초 후 메시지 지움
     }
   };
 
@@ -349,14 +361,22 @@ const CounselingPage = () => {
   }, [inputValue, isLoading, isConsultationEnded, secureApiRequest, currentCoreQuestionIndex]);
 
   const handleGoToTest = async () => {
+    setIsSaving(true); // 저장 시작
+    setSaveMessage('심리 검사로 이동하기 전 상담 내용을 저장 중입니다...');
+
     // 1. 상담 내용을 먼저 자동으로 저장합니다.
     await handleSaveHistory(true); // silent = true로 설정하여 alert를 띄우지 않음
 
     // 2. 상담 내용을 local storage에 저장 (심리검사 페이지로 전달하기 위함)
     localStorage.setItem('counselingData', JSON.stringify(messages));
 
-    // 3. 심리 검사 페이지로 이동합니다.
-    navigate('/psychologyTestPage');
+    setSaveMessage('저장 완료! 심리 검사 페이지로 이동합니다.');
+    setIsSaving(false); // 저장 완료
+    setTimeout(() => {
+      setSaveMessage('');
+      // 3. 심리 검사 페이지로 이동합니다.
+      navigate('/psychologyTestPage');
+    }, 1500); // 메시지를 1.5초 보여준 후 이동
   };
 
   const handleInputChange = (e) => {
@@ -404,10 +424,29 @@ const CounselingPage = () => {
                 AI가 답변을 생성 중입니다...
               </div>
             )}
+          {isSaving && ( // 저장 중 메시지 표시
+              <div
+                className={`${styles.message} ${styles.system} ${styles.saving}`}
+                style={{
+                  color: '#333', // 글자색 유지
+                  backgroundColor: '#b0b0b0', // 배경색을 약간 더 어두운 회색으로
+                  padding: '10px',
+                  textAlign: 'center',
+                  position: 'fixed',
+                  top: '0',
+                  left: '0',
+                  width: '100%',
+                  zIndex: '9999',
+                  display: 'block'
+                }}
+              >
+                {saveMessage}
+              </div>
+            )}
           </div>
           <div className={styles.suggestionChips}>
             {showProceedButton ? (
-              <button className={styles.suggestionChip} onClick={handleGoToTest}>심리 검사 진행하기</button>
+              <button className={styles.suggestionChip} onClick={handleGoToTest} disabled={isSaving}>심리 검사 진행하기</button>
             ) : (
               <></>
             )}
@@ -419,12 +458,12 @@ const CounselingPage = () => {
               value={inputValue}
               onChange={handleInputChange}
               onKeyPress={handleKeyPress}
-              disabled={isLoading || isConsultationEnded}
+              disabled={isLoading || isConsultationEnded || isSaving}
             />
-            <button className={`${styles.voiceBtn} ${isListening ? styles.voiceBtnActive : ''}`} title={isListening ? "듣는 중... 클릭하여 중지" : "음성 입력"} onClick={handleVoiceInput} disabled={isLoading || isConsultationEnded}>
+            <button className={`${styles.voiceBtn} ${isListening ? styles.voiceBtnActive : ''}`} title={isListening ? "듣는 중... 클릭하여 중지" : "음성 입력"} onClick={handleVoiceInput} disabled={isLoading || isConsultationEnded || isSaving}>
               <img src={isListening ? images.stop : images.mic} alt={isListening ? "정지" : "음성 입력"} />
             </button>
-            <button onClick={() => handleSendMessage()} disabled={isLoading || isConsultationEnded}>
+            <button onClick={() => handleSendMessage()} disabled={isLoading || isConsultationEnded || isSaving}>
               {isLoading ? '전송중' : '전송'}
             </button>
           </div>
@@ -444,10 +483,10 @@ const CounselingPage = () => {
               <li className={`${styles.noHistory} ${styles.historyItem}`}>저장된 상담 기록이 없습니다.</li>
             )}
           </ul>
-          <button className={styles.saveHistoryBtn} onClick={handleSaveHistory} disabled={isLoading}>
+          <button className={styles.saveHistoryBtn} onClick={handleSaveHistory} disabled={isLoading || isSaving}>
             상담 내용 저장
           </button>
-          <button className={styles.newConsultationBtn} onClick={handleStartNewConsultation} disabled={isLoading}>
+          <button className={styles.newConsultationBtn} onClick={handleStartNewConsultation} disabled={isLoading || isSaving}>
             새로운 상담 시작
           </button>
         </aside>
