@@ -119,6 +119,21 @@
   color: #354f52;
 }
 
+.highlightBox {
+  background-color: #e6f7ff; /* 주변과 어울리는 밝은 파란색 계열 */
+  padding: 18px;
+  border-radius: 10px;
+  margin-top: 25px;
+  text-align: center;
+  font-weight: bold;
+  color: #2c3e50; /* 진한 글씨색 */
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid #cceeff; /* 연한 테두리 */
+  font-size: 1.1em;
+  line-height: 1.6;
+}
+
+
 .overallAnalysis .testDate {
   font-size: 0.9rem;
   color: #999;
