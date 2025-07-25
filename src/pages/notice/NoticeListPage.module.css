@@ -96,8 +96,7 @@ body {
   margin-right: 8px;
 }
 
-/* 일단 임시로 검색쪽 css 만들어둠 
-검색 영역 스타일 */
+/*검색 영역 스타일 */
 .searchContainer {
   margin-bottom: 24px;
   padding: 20px;

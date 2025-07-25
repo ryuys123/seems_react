@@ -7,11 +7,11 @@ const PwFindSelectPage = () => {
   const navigate = useNavigate();
 
   const handleIdVerification = () => {
-    navigate('/pwfindid');
+    navigate('/pwfindphone');
   };
 
   const handleEmailVerification = () => {
-    navigate('/pwfindemail');
+    navigate('/pwfindphone');
   };
 
   return (

@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useContext } from 'react';
 import UserHeader from '../../components/common/UserHeader';
+import { AuthContext } from '../../AuthProvider';
+import apiClient from '../../utils/axios';
 import bannerImage from '../../assets/images/banner_1 (1).png';
 import graphImage from '../../assets/images/graph_1.png';
 import styles from './UserDashboard.module.css';
@@ -8,6 +11,82 @@ import Footer from '../../components/common/Footer';
 
 const UserDashboard = () => {
   const navigate = useNavigate();
+  const { userid } = useContext(AuthContext);
+  const [todayEmotion, setTodayEmotion] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // ✅ 오늘의 감정 데이터 가져오기
+  useEffect(() => {
+    const fetchTodayEmotion = async () => {
+      if (!userid) {
+        setIsLoading(false);
+        return;
+      }
+      
+      try {
+        // 기존 API 호출: /api/emotion-logs/{userId}
+        const response = await apiClient.get(`/api/emotion-logs/${userid}`);
+        
+        if (response.data && response.data.length > 0) {
+          // 오늘 날짜의 감정 기록 찾기
+          const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+          
+          const todayRecord = response.data.find(log => {
+            const logDate = new Date(log.createdAt).toISOString().split('T')[0];
+            return logDate === today;
+          });
+          
+          if (todayRecord) {
+            setTodayEmotion({
+              emotion: todayRecord.emotion.name, // 감정 이름
+              content: todayRecord.textContent,
+              createdAt: todayRecord.createdAt
+            });
+          }
+        }
+      } catch (error) {
+        console.log('감정 데이터 조회 실패:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTodayEmotion();
+  }, [userid]);
+
+  // ✅ 감정 아이콘 매핑
+  const getEmotionIcon = (emotion) => {
+    const emotionIcons = {
+      'happy': '😄',
+      'sad': '😢', 
+      'angry': '😠',
+      'excited': '🤩',
+      'calm': '😌',
+      'anxious': '😰',
+      'love': '🥰',
+      'surprised': '😲',
+      'tired': '😴',
+      'confused': '😕'
+    };
+    return emotionIcons[emotion] || '😐';
+  };
+
+  // ✅ 감정 한글 이름 매핑
+  const getEmotionName = (emotion) => {
+    const emotionNames = {
+      'happy': '기쁨',
+      'sad': '슬픔', 
+      'angry': '화남',
+      'excited': '신남',
+      'calm': '평온',
+      'anxious': '불안',
+      'love': '사랑',
+      'surprised': '놀람',
+      'tired': '피곤',
+      'confused': '혼란'
+    };
+    return emotionNames[emotion] || '감정';
+  };
 
   const handleQuickStart = () => {
     navigate('/counseling');
@@ -98,9 +177,53 @@ const UserDashboard = () => {
         <section className={styles.summarySection}>
           <div className={styles.summaryCard}>
             <div className={styles.summaryTitle}>오늘의 감정</div>
-            <div className={styles.summaryEmoji}>😄</div>
-            <div style={{color: '#888', fontSize: '1.1rem', marginBottom: '8px'}}>기쁨</div>
-            <button className={styles.summaryBtn} onClick={() => handleSummaryClick('/emotionrecord')}>상세 보기</button>
+            {isLoading ? (
+              <div style={{textAlign: 'center', padding: '20px'}}>
+                <div>로딩 중...</div>
+              </div>
+            ) : todayEmotion ? (
+              <>
+                <div className={styles.summaryEmoji} style={{fontSize: '3rem'}}>
+                  {getEmotionIcon(todayEmotion.emotion)}
+                </div>
+                <div style={{color: '#888', fontSize: '1.1rem', marginBottom: '8px'}}>
+                  {getEmotionName(todayEmotion.emotion)}
+                </div>
+                <div style={{
+                  color: '#666', 
+                  fontSize: '0.9rem', 
+                  marginBottom: '12px',
+                  maxHeight: '60px',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical'
+                }}>
+                  {todayEmotion.content}
+                </div>
+                <div style={{
+                  color: '#999', 
+                  fontSize: '0.8rem', 
+                  marginBottom: '8px'
+                }}>
+                  {new Date(todayEmotion.createdAt).toLocaleTimeString()}
+                </div>
+              </>
+            ) : (
+              <>
+                <div className={styles.summaryEmoji} style={{fontSize: '3rem'}}>📝</div>
+                <div style={{color: '#888', fontSize: '1.1rem', marginBottom: '8px'}}>
+                  기록 없음
+                </div>
+                <div style={{color: '#666', fontSize: '0.9rem', marginBottom: '12px'}}>
+                  오늘의 감정을 기록해보세요
+                </div>
+              </>
+            )}
+            <button className={styles.summaryBtn} onClick={() => handleSummaryClick('/emotionrecord')}>
+              {todayEmotion ? '상세 보기' : '기록하기'}
+            </button>
           </div>
           <div className={styles.summaryCard}>
             <div className={styles.summaryTitle}>감정 변화 그래프</div>

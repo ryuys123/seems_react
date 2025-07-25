@@ -5,12 +5,12 @@ import apiClient from "../../utils/axios"; // 공지 목록 조회용
 import { AuthContext } from "../../AuthProvider"; //공유자원 가져오기 위함
 import styles from "./NoticeListPage.module.css"; // css 사용
 import UserHeader from "../../components/common/UserHeader"; // 헤더
+import AdminHeader from "../../components/common/AdminHeader"; // 관리자헤더
 import PagingView from "../../components/common/PagingView"; //목록 아래 페이징 출력 처리용
 
 function NoticeListPage({ searchResults }) {
-  // 나중에 로그인기능 완료되면 주석 풀기
-  //   // 글쓰기 버튼 표시를 위해 로그인상태와 role 정보 가져오기
-  //   const { isLoggedIn, role } = useContext(AuthContext); //AuthProvider 에서 가져오기
+  // 글쓰기 버튼 표시를 위해 로그인상태와 role 정보 가져오기
+  const { isLoggedIn, role } = useContext(AuthContext); //AuthProvider 에서 가져오기
 
   // 이 페이지에서 사용할 로컬 상태변수 준비
   const [notices, setNotices] = useState([]); // 서버로 부터 받은 공지 목록 데이터 저장할 상태
@@ -157,7 +157,7 @@ function NoticeListPage({ searchResults }) {
 
   return (
     <div className={styles.noticeContainer}>
-      <UserHeader />
+      <>{role === "ADMIN" ? <AdminHeader /> : <UserHeader />}</>{" "}
       <main className={styles.main}>
         <h1 className={styles.pageTitle}>공지사항</h1>
 
@@ -210,11 +210,11 @@ function NoticeListPage({ searchResults }) {
 
         {/* 글쓰기 버튼 : role 이 'ADMIN' 일 때만 보여지게 함 */}
         <div className={styles.buttonGroup}>
-          {/* {isLoggedIn && role === "ADMIN" && ( */}
-          <button className={styles.button} onClick={handleWriteClick}>
-            글쓰기
-          </button>
-          {/* )} */}
+          {isLoggedIn && role === "ADMIN" && (
+            <button className={styles.button} onClick={handleWriteClick}>
+              글쓰기
+            </button>
+          )}
           <button className={styles.button} onClick={handleListButtonClick}>
             목록
           </button>
@@ -265,7 +265,6 @@ function NoticeListPage({ searchResults }) {
           </tbody>
         </table>
       </main>
-
       <PagingView
         currentPage={pagingInfo.currentPage || 1}
         totalPage={pagingInfo.maxPage || 1}

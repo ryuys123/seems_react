@@ -1,107 +1,125 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import styles from './AdminDashboard.module.css';
-import logoSeems from '../../assets/images/logo_seems.png';
-import AdminHeader from '../../components/common/AdminHeader';
+// src/pages/admin/AdminDashboard.js  : 관리자 대시보드 페이지
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import styles from "./AdminDashboard.module.css";
+import logoSeems from "../../assets/images/logo_seems.png";
+import AdminHeader from "../../components/common/AdminHeader";
 
 function AdminDashboard() {
-  const [activeSection, setActiveSection] = useState('dashboard');
+  const [activeSection, setActiveSection] = useState("dashboard");
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [showUserModal, setShowUserModal] = useState(false);
   const [showNoticeModal, setShowNoticeModal] = useState(false);
   const [showLogModal, setShowLogModal] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
+  const [toastMessage, setToastMessage] = useState("");
   const [showToast, setShowToast] = useState(false);
-  
+
   const navigate = useNavigate();
 
   useEffect(() => {
     // Chart.js 초기화
-    if (typeof window !== 'undefined' && window.Chart) {
+    if (typeof window !== "undefined" && window.Chart) {
       initializeCharts();
     }
   }, []);
 
   const initializeCharts = () => {
     // 방문자 통계 차트
-    const visitorCtx = document.getElementById('visitorChart');
+    const visitorCtx = document.getElementById("visitorChart");
     if (visitorCtx) {
-      new window.Chart(visitorCtx.getContext('2d'), {
-        type: 'line',
+      new window.Chart(visitorCtx.getContext("2d"), {
+        type: "line",
         data: {
-          labels: ['3/14', '3/15', '3/16', '3/17', '3/18', '3/19', '3/20'],
-          datasets: [{
-            label: '방문자 수',
-            data: [120, 145, 132, 168, 189, 156, 178],
-            borderColor: '#4b94d0',
-            backgroundColor: 'rgba(75, 148, 208, 0.1)',
-            borderWidth: 3,
-            fill: true,
-            tension: 0.4
-          }]
+          labels: ["3/14", "3/15", "3/16", "3/17", "3/18", "3/19", "3/20"],
+          datasets: [
+            {
+              label: "방문자 수",
+              data: [120, 145, 132, 168, 189, 156, 178],
+              borderColor: "#4b94d0",
+              backgroundColor: "rgba(75, 148, 208, 0.1)",
+              borderWidth: 3,
+              fill: true,
+              tension: 0.4,
+            },
+          ],
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
             legend: {
-              display: false
-            }
+              display: false,
+            },
           },
           scales: {
             y: {
               beginAtZero: true,
               grid: {
-                color: 'rgba(0,0,0,0.1)'
-              }
+                color: "rgba(0,0,0,0.1)",
+              },
             },
             x: {
               grid: {
-                display: false
-              }
-            }
-          }
-        }
+                display: false,
+              },
+            },
+          },
+        },
       });
     }
 
     // 시간대별 접속 현황 차트
-    const hourlyCtx = document.getElementById('hourlyChart');
+    const hourlyCtx = document.getElementById("hourlyChart");
     if (hourlyCtx) {
-      new window.Chart(hourlyCtx.getContext('2d'), {
-        type: 'bar',
+      new window.Chart(hourlyCtx.getContext("2d"), {
+        type: "bar",
         data: {
-          labels: ['00시', '02시', '04시', '06시', '08시', '10시', '12시', '14시', '16시', '18시', '20시', '22시'],
-          datasets: [{
-            label: '접속자 수',
-            data: [5, 3, 2, 8, 25, 45, 67, 89, 78, 92, 76, 34],
-            backgroundColor: '#4b94d0',
-            borderColor: '#3d7ab0',
-            borderWidth: 1
-          }]
+          labels: [
+            "00시",
+            "02시",
+            "04시",
+            "06시",
+            "08시",
+            "10시",
+            "12시",
+            "14시",
+            "16시",
+            "18시",
+            "20시",
+            "22시",
+          ],
+          datasets: [
+            {
+              label: "접속자 수",
+              data: [5, 3, 2, 8, 25, 45, 67, 89, 78, 92, 76, 34],
+              backgroundColor: "#4b94d0",
+              borderColor: "#3d7ab0",
+              borderWidth: 1,
+            },
+          ],
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
             legend: {
-              display: false
-            }
+              display: false,
+            },
           },
           scales: {
             y: {
               beginAtZero: true,
               grid: {
-                color: 'rgba(0,0,0,0.1)'
-              }
+                color: "rgba(0,0,0,0.1)",
+              },
             },
             x: {
               grid: {
-                display: false
-              }
-            }
-          }
-        }
+                display: false,
+              },
+            },
+          },
+        },
       });
     }
   };
@@ -132,13 +150,13 @@ function AdminDashboard() {
 
   const closeModal = (modalType) => {
     switch (modalType) {
-      case 'user':
+      case "user":
         setShowUserModal(false);
         break;
-      case 'notice':
+      case "notice":
         setShowNoticeModal(false);
         break;
-      case 'log':
+      case "log":
         setShowLogModal(false);
         break;
       default:
@@ -147,17 +165,17 @@ function AdminDashboard() {
   };
 
   const resetFilters = () => {
-    displayToast('필터가 초기화되었습니다.');
+    displayToast("필터가 초기화되었습니다.");
   };
 
   const applyFilters = () => {
-    displayToast('검색 필터가 적용되었습니다.');
+    displayToast("검색 필터가 적용되었습니다.");
   };
 
   const showBulkActions = () => {
     const selectedCount = selectedUsers.length;
     if (selectedCount === 0) {
-      displayToast('선택된 사용자가 없습니다.');
+      displayToast("선택된 사용자가 없습니다.");
       return;
     }
     displayToast(`${selectedCount}명의 사용자가 선택되었습니다.`);
@@ -165,26 +183,26 @@ function AdminDashboard() {
 
   const toggleAllUsers = (checked) => {
     if (checked) {
-      setSelectedUsers(['user123', 'user456', 'user789']);
+      setSelectedUsers(["user123", "user456", "user789"]);
     } else {
       setSelectedUsers([]);
     }
   };
 
   const viewFAQ = (faqId) => {
-    window.open(`/faq?id=${faqId}`, '_blank');
+    window.open(`/faq?id=${faqId}`, "_blank");
   };
 
   return (
     <div className={styles.adminDashboard}>
-      <AdminHeader/>
+      <AdminHeader />
 
       <main className={styles.main}>
         {/* 대시보드 섹션 */}
-        {activeSection === 'dashboard' && (
+        {activeSection === "dashboard" && (
           <section className={styles.dashboardSection}>
             <h1 className={styles.pageTitle}>관리자 대시보드</h1>
-            
+
             {/* 통계 카드 */}
             <div className={styles.statsGrid}>
               <div className={styles.statCard}>
@@ -205,7 +223,9 @@ function AdminDashboard() {
               <div className={styles.statCard}>
                 <div className={styles.statTitle}>평균 체류시간</div>
                 <div className={styles.statValue}>23분</div>
-                <div className={`${styles.statChange} ${styles.negative}`}>-2% 이번 주</div>
+                <div className={`${styles.statChange} ${styles.negative}`}>
+                  -2% 이번 주
+                </div>
               </div>
             </div>
 
@@ -214,7 +234,9 @@ function AdminDashboard() {
               <div className={styles.chartHeader}>
                 <h2 className={styles.chartTitle}>방문자 통계</h2>
                 <div className={styles.chartFilters}>
-                  <button className={`${styles.filterBtn} ${styles.active}`}>일별</button>
+                  <button className={`${styles.filterBtn} ${styles.active}`}>
+                    일별
+                  </button>
                   <button className={styles.filterBtn}>주별</button>
                   <button className={styles.filterBtn}>월별</button>
                 </div>
@@ -237,10 +259,10 @@ function AdminDashboard() {
         )}
 
         {/* 사용자 관리 섹션 */}
-        {activeSection === 'users' && (
+        {activeSection === "users" && (
           <section className={styles.usersSection}>
             <h1 className={styles.pageTitle}>사용자 관리</h1>
-            
+
             <div className={styles.chartContainer}>
               <div className={styles.chartHeader}>
                 <h2 className={styles.chartTitle}>상세 검색</h2>
@@ -256,11 +278,19 @@ function AdminDashboard() {
                 </div>
                 <div className={styles.formGroup}>
                   <label className={styles.formLabel}>검색어</label>
-                  <input type="text" className={styles.formInput} placeholder="검색어를 입력하세요" />
+                  <input
+                    type="text"
+                    className={styles.formInput}
+                    placeholder="검색어를 입력하세요"
+                  />
                 </div>
                 <div className={styles.formGroup}>
                   <label className={styles.formLabel}>가입일</label>
-                  <input type="text" className={styles.formInput} placeholder="가입일 기간 선택" />
+                  <input
+                    type="text"
+                    className={styles.formInput}
+                    placeholder="가입일 기간 선택"
+                  />
                 </div>
                 <div className={styles.formGroup}>
                   <label className={styles.formLabel}>회원 상태</label>
@@ -288,7 +318,10 @@ function AdminDashboard() {
                 </div>
               </div>
               <div className={styles.filterButtons}>
-                <button className={`${styles.actionBtn} ${styles.resetBtn}`} onClick={resetFilters}>
+                <button
+                  className={`${styles.actionBtn} ${styles.resetBtn}`}
+                  onClick={resetFilters}
+                >
                   필터 초기화
                 </button>
                 <button className={styles.actionBtn} onClick={applyFilters}>
@@ -299,12 +332,17 @@ function AdminDashboard() {
 
             <div className={styles.searchBar}>
               <div className={styles.bulkActions}>
-                <button className={`${styles.actionBtn} ${styles.bulkBtn}`} onClick={showBulkActions}>
+                <button
+                  className={`${styles.actionBtn} ${styles.bulkBtn}`}
+                  onClick={showBulkActions}
+                >
                   일괄 작업
                 </button>
               </div>
               <div className={styles.searchInfo}>
-                <span>총 사용자: <strong>1,234</strong>명</span>
+                <span>
+                  총 사용자: <strong>1,234</strong>명
+                </span>
                 <select className={styles.formSelect}>
                   <option>10개씩 보기</option>
                   <option>20개씩 보기</option>
@@ -319,8 +357,8 @@ function AdminDashboard() {
                 <thead>
                   <tr>
                     <th>
-                      <input 
-                        type="checkbox" 
+                      <input
+                        type="checkbox"
                         onChange={(e) => toggleAllUsers(e.target.checked)}
                       />
                     </th>
@@ -337,14 +375,16 @@ function AdminDashboard() {
                 <tbody>
                   <tr>
                     <td>
-                      <input 
-                        type="checkbox" 
-                        checked={selectedUsers.includes('user123')}
+                      <input
+                        type="checkbox"
+                        checked={selectedUsers.includes("user123")}
                         onChange={(e) => {
                           if (e.target.checked) {
-                            setSelectedUsers([...selectedUsers, 'user123']);
+                            setSelectedUsers([...selectedUsers, "user123"]);
                           } else {
-                            setSelectedUsers(selectedUsers.filter(id => id !== 'user123'));
+                            setSelectedUsers(
+                              selectedUsers.filter((id) => id !== "user123")
+                            );
                           }
                         }}
                       />
@@ -355,19 +395,28 @@ function AdminDashboard() {
                     <td>일반</td>
                     <td>2024-03-15</td>
                     <td>2024-03-20 15:30</td>
-                    <td><span className={`${styles.badge} ${styles.info}`}>활성</span></td>
                     <td>
-                      <button className={styles.actionBtn} onClick={handleUserDetail}>
+                      <span className={`${styles.badge} ${styles.info}`}>
+                        활성
+                      </span>
+                    </td>
+                    <td>
+                      <button
+                        className={styles.actionBtn}
+                        onClick={handleUserDetail}
+                      >
                         상세
                       </button>
                     </td>
                   </tr>
                 </tbody>
               </table>
-              
+
               <div className={styles.pagination}>
                 <button className={styles.pageBtn}>&lt;</button>
-                <button className={`${styles.pageBtn} ${styles.active}`}>1</button>
+                <button className={`${styles.pageBtn} ${styles.active}`}>
+                  1
+                </button>
                 <button className={styles.pageBtn}>2</button>
                 <button className={styles.pageBtn}>3</button>
                 <button className={styles.pageBtn}>4</button>
@@ -379,10 +428,10 @@ function AdminDashboard() {
         )}
 
         {/* 콘텐츠 관리 섹션 */}
-        {activeSection === 'contents' && (
+        {activeSection === "contents" && (
           <section className={styles.contentsSection}>
             <h1 className={styles.pageTitle}>콘텐츠 관리</h1>
-            
+
             <div className={styles.tableContainer}>
               <div className={styles.chartHeader}>
                 <h2 className={styles.chartTitle}>공지사항</h2>
@@ -420,10 +469,10 @@ function AdminDashboard() {
                 <h2 className={styles.chartTitle}>FAQ 게시판 관리</h2>
               </div>
               <div className={styles.searchBar}>
-                <input 
-                  type="text" 
-                  className={styles.searchInput} 
-                  placeholder="질문 제목 또는 내용으로 검색..." 
+                <input
+                  type="text"
+                  className={styles.searchInput}
+                  placeholder="질문 제목 또는 내용으로 검색..."
                 />
                 <button className={styles.actionBtn}>검색</button>
               </div>
@@ -444,9 +493,16 @@ function AdminDashboard() {
                     <td>비밀번호를 잊어버렸어요</td>
                     <td>user123</td>
                     <td>2024-03-15</td>
-                    <td><span className={`${styles.badge} ${styles.info}`}>답변완료</span></td>
                     <td>
-                      <button className={styles.actionBtn} onClick={() => viewFAQ('faq1')}>
+                      <span className={`${styles.badge} ${styles.info}`}>
+                        답변완료
+                      </span>
+                    </td>
+                    <td>
+                      <button
+                        className={styles.actionBtn}
+                        onClick={() => viewFAQ("faq1")}
+                      >
                         상세보기
                       </button>
                     </td>
@@ -456,9 +512,16 @@ function AdminDashboard() {
                     <td>감정 기록은 어떻게 하나요?</td>
                     <td>user456</td>
                     <td>2024-03-10</td>
-                    <td><span className={`${styles.badge} ${styles.info}`}>답변완료</span></td>
                     <td>
-                      <button className={styles.actionBtn} onClick={() => viewFAQ('faq2')}>
+                      <span className={`${styles.badge} ${styles.info}`}>
+                        답변완료
+                      </span>
+                    </td>
+                    <td>
+                      <button
+                        className={styles.actionBtn}
+                        onClick={() => viewFAQ("faq2")}
+                      >
                         상세보기
                       </button>
                     </td>
@@ -468,19 +531,28 @@ function AdminDashboard() {
                     <td>구독 취소는 언제까지 가능한가요?</td>
                     <td>user789</td>
                     <td>2024-03-08</td>
-                    <td><span className={`${styles.badge} ${styles.warning}`}>답변대기</span></td>
                     <td>
-                      <button className={styles.actionBtn} onClick={() => viewFAQ('faq3')}>
+                      <span className={`${styles.badge} ${styles.warning}`}>
+                        답변대기
+                      </span>
+                    </td>
+                    <td>
+                      <button
+                        className={styles.actionBtn}
+                        onClick={() => viewFAQ("faq3")}
+                      >
                         상세보기
                       </button>
                     </td>
                   </tr>
                 </tbody>
               </table>
-              
+
               <div className={styles.pagination}>
                 <button className={styles.pageBtn}>&lt;</button>
-                <button className={`${styles.pageBtn} ${styles.active}`}>1</button>
+                <button className={`${styles.pageBtn} ${styles.active}`}>
+                  1
+                </button>
                 <button className={styles.pageBtn}>2</button>
                 <button className={styles.pageBtn}>3</button>
                 <button className={styles.pageBtn}>&gt;</button>
@@ -490,10 +562,10 @@ function AdminDashboard() {
         )}
 
         {/* 시스템 로그 섹션 */}
-        {activeSection === 'logs' && (
+        {activeSection === "logs" && (
           <section className={styles.logsSection}>
             <h1 className={styles.pageTitle}>시스템 로그</h1>
-            
+
             <div className={styles.chartContainer}>
               <div className={styles.chartHeader}>
                 <h2 className={styles.chartTitle}>로그 필터</h2>
@@ -533,10 +605,10 @@ function AdminDashboard() {
             </div>
 
             <div className={styles.searchBar}>
-              <input 
-                type="text" 
-                className={styles.searchInput} 
-                placeholder="사용자, 변경 항목, IP 주소로 검색..." 
+              <input
+                type="text"
+                className={styles.searchInput}
+                placeholder="사용자, 변경 항목, IP 주소로 검색..."
               />
               <button className={styles.actionBtn}>검색</button>
               <button className={`${styles.actionBtn} ${styles.exportBtn}`}>
@@ -562,13 +634,20 @@ function AdminDashboard() {
                   <tr>
                     <td>2024-03-20 14:30:15</td>
                     <td>사용자</td>
-                    <td><span className={`${styles.badge} ${styles.info}`}>INFO</span></td>
+                    <td>
+                      <span className={`${styles.badge} ${styles.info}`}>
+                        INFO
+                      </span>
+                    </td>
                     <td>admin</td>
                     <td>192.168.1.100</td>
                     <td>사용자 정보</td>
                     <td>이메일 변경</td>
                     <td>
-                      <button className={styles.actionBtn} onClick={handleLogDetail}>
+                      <button
+                        className={styles.actionBtn}
+                        onClick={handleLogDetail}
+                      >
                         보기
                       </button>
                     </td>
@@ -576,13 +655,20 @@ function AdminDashboard() {
                   <tr>
                     <td>2024-03-20 14:28:45</td>
                     <td>보안</td>
-                    <td><span className={`${styles.badge} ${styles.warning}`}>WARNING</span></td>
+                    <td>
+                      <span className={`${styles.badge} ${styles.warning}`}>
+                        WARNING
+                      </span>
+                    </td>
                     <td>system</td>
                     <td>192.168.1.105</td>
                     <td>로그인 시도</td>
                     <td>비밀번호 5회 실패</td>
                     <td>
-                      <button className={styles.actionBtn} onClick={handleLogDetail}>
+                      <button
+                        className={styles.actionBtn}
+                        onClick={handleLogDetail}
+                      >
                         보기
                       </button>
                     </td>
@@ -590,13 +676,20 @@ function AdminDashboard() {
                   <tr>
                     <td>2024-03-20 14:25:30</td>
                     <td>시스템</td>
-                    <td><span className={`${styles.badge} ${styles.error}`}>ERROR</span></td>
+                    <td>
+                      <span className={`${styles.badge} ${styles.error}`}>
+                        ERROR
+                      </span>
+                    </td>
                     <td>system</td>
                     <td>192.168.1.1</td>
                     <td>데이터베이스</td>
                     <td>연결 오류 발생</td>
                     <td>
-                      <button className={styles.actionBtn} onClick={handleLogDetail}>
+                      <button
+                        className={styles.actionBtn}
+                        onClick={handleLogDetail}
+                      >
                         보기
                       </button>
                     </td>
@@ -614,21 +707,37 @@ function AdminDashboard() {
           <div className={styles.modalContent}>
             <div className={styles.modalHeader}>
               <h2 className={styles.modalTitle}>사용자 상세 정보</h2>
-              <button className={styles.closeBtn} onClick={() => closeModal('user')}>
+              <button
+                className={styles.closeBtn}
+                onClick={() => closeModal("user")}
+              >
                 &times;
               </button>
             </div>
             <div className={styles.formGroup}>
               <label className={styles.formLabel}>이름</label>
-              <input type="text" className={styles.formInput} defaultValue="홍길동" />
+              <input
+                type="text"
+                className={styles.formInput}
+                defaultValue="홍길동"
+              />
             </div>
             <div className={styles.formGroup}>
               <label className={styles.formLabel}>이메일</label>
-              <input type="email" className={styles.formInput} defaultValue="hong@example.com" />
+              <input
+                type="email"
+                className={styles.formInput}
+                defaultValue="hong@example.com"
+              />
             </div>
             <div className={styles.formGroup}>
               <label className={styles.formLabel}>가입일</label>
-              <input type="text" className={styles.formInput} defaultValue="2024-03-15" readOnly />
+              <input
+                type="text"
+                className={styles.formInput}
+                defaultValue="2024-03-15"
+                readOnly
+              />
             </div>
             <div className={styles.formGroup}>
               <label className={styles.formLabel}>상태</label>
@@ -638,7 +747,7 @@ function AdminDashboard() {
                 <option>정지</option>
               </select>
             </div>
-            <button className={styles.actionBtn} style={{ width: '100%' }}>
+            <button className={styles.actionBtn} style={{ width: "100%" }}>
               저장
             </button>
           </div>
@@ -651,19 +760,26 @@ function AdminDashboard() {
           <div className={styles.modalContent}>
             <div className={styles.modalHeader}>
               <h2 className={styles.modalTitle}>새 공지 작성</h2>
-              <button className={styles.closeBtn} onClick={() => closeModal('notice')}>
+              <button
+                className={styles.closeBtn}
+                onClick={() => closeModal("notice")}
+              >
                 &times;
               </button>
             </div>
             <div className={styles.formGroup}>
               <label className={styles.formLabel}>제목</label>
-              <input type="text" className={styles.formInput} placeholder="공지 제목을 입력하세요" />
+              <input
+                type="text"
+                className={styles.formInput}
+                placeholder="공지 제목을 입력하세요"
+              />
             </div>
             <div className={styles.formGroup}>
               <label className={styles.formLabel}>내용</label>
-              <textarea 
-                className={styles.formInput} 
-                style={{ height: '200px' }} 
+              <textarea
+                className={styles.formInput}
+                style={{ height: "200px" }}
                 placeholder="공지 내용을 입력하세요"
               />
             </div>
@@ -675,7 +791,7 @@ function AdminDashboard() {
                 <option>관리자</option>
               </select>
             </div>
-            <button className={styles.actionBtn} style={{ width: '100%' }}>
+            <button className={styles.actionBtn} style={{ width: "100%" }}>
               작성
             </button>
           </div>
@@ -688,44 +804,72 @@ function AdminDashboard() {
           <div className={styles.modalContent}>
             <div className={styles.modalHeader}>
               <h2 className={styles.modalTitle}>로그 상세 정보</h2>
-              <button className={styles.closeBtn} onClick={() => closeModal('log')}>
+              <button
+                className={styles.closeBtn}
+                onClick={() => closeModal("log")}
+              >
                 &times;
               </button>
             </div>
             <div className={styles.formGroup}>
               <label className={styles.formLabel}>발생 시간</label>
-              <input type="text" className={styles.formInput} readOnly defaultValue="2024-03-20 14:30:15" />
+              <input
+                type="text"
+                className={styles.formInput}
+                readOnly
+                defaultValue="2024-03-20 14:30:15"
+              />
             </div>
             <div className={styles.formGroup}>
               <label className={styles.formLabel}>로그 ID</label>
-              <input type="text" className={styles.formInput} readOnly defaultValue="LOG_123456789" />
+              <input
+                type="text"
+                className={styles.formInput}
+                readOnly
+                defaultValue="LOG_123456789"
+              />
             </div>
             <div className={styles.formGroup}>
               <label className={styles.formLabel}>세션 ID</label>
-              <input type="text" className={styles.formInput} readOnly defaultValue="SESSION_987654321" />
+              <input
+                type="text"
+                className={styles.formInput}
+                readOnly
+                defaultValue="SESSION_987654321"
+              />
             </div>
             <div className={styles.formGroup}>
               <label className={styles.formLabel}>사용자 에이전트</label>
-              <input type="text" className={styles.formInput} readOnly defaultValue="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" />
+              <input
+                type="text"
+                className={styles.formInput}
+                readOnly
+                defaultValue="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+              />
             </div>
             <div className={styles.formGroup}>
               <label className={styles.formLabel}>요청 URL</label>
-              <input type="text" className={styles.formInput} readOnly defaultValue="/api/users/update" />
+              <input
+                type="text"
+                className={styles.formInput}
+                readOnly
+                defaultValue="/api/users/update"
+              />
             </div>
             <div className={styles.formGroup}>
               <label className={styles.formLabel}>상세 내용</label>
-              <textarea 
-                className={styles.formInput} 
-                style={{ height: '150px' }} 
-                readOnly 
+              <textarea
+                className={styles.formInput}
+                style={{ height: "150px" }}
+                readOnly
                 defaultValue="사용자 정보 업데이트 중 발생한 이벤트에 대한 상세 설명입니다.\n- 이전 이메일: old@example.com\n- 새 이메일: new@example.com"
               />
             </div>
             <div className={styles.formGroup}>
               <label className={styles.formLabel}>스택 트레이스</label>
               <pre className={styles.stackTrace}>
-                Error: Database connection failed{'\n'}
-                at Database.connect (/src/db.js:42){'\n'}
+                Error: Database connection failed{"\n"}
+                at Database.connect (/src/db.js:42){"\n"}
                 at async Server.start (/src/server.js:12)
               </pre>
             </div>
@@ -734,13 +878,9 @@ function AdminDashboard() {
       )}
 
       {/* 토스트 메시지 */}
-      {showToast && (
-        <div className={styles.toast}>
-          {toastMessage}
-        </div>
-      )}
+      {showToast && <div className={styles.toast}>{toastMessage}</div>}
     </div>
   );
 }
 
-export default AdminDashboard; 
+export default AdminDashboard;
