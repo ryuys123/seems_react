@@ -113,18 +113,19 @@ function UserHeader() {
             <Link to="/simulation" className={styles.navLink}>
               시뮬레이션
             </Link>
-            <Link to="/content" className={styles.navLink}>
-              컨텐츠
+            <Link to="/quest" className={styles.navLink}>
+              퀘스트
             </Link>
+            <Link to="/content" className={styles.navLink}>
+              콘텐츠
+            </Link>
+            
           </div>
 
           {/* 기록록 */}
           <div className={styles.navGroup}>
             <Link to="/emotionrecord" className={styles.navLink}>
               기록
-            </Link>
-            <Link to="/quest" className={styles.navLink}>
-              퀘스트
             </Link>
           </div>
 
