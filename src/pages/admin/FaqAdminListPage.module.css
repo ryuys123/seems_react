@@ -1,0 +1,156 @@
+:root {
+  --main-blue: #4b94d0;
+  --main-bg: #f8f5ed;
+  --main-accent: #ef770c;
+  --card-bg: #fff;
+  --border-radius: 18px;
+  --shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
+}
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 32px 16px;
+}
+.pageTitle {
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--main-blue);
+  margin-top: 50px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+/*검색 영역 스타일 */
+.searchContainer {
+  margin-bottom: 24px;
+  padding: 20px;
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+}
+
+.searchForm {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: nowrap;
+}
+
+.searchSelect {
+  flex: 0.2;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  background: white;
+  min-width: 100px;
+}
+
+.searchInput {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  min-width: 200px;
+  flex: 1;
+  max-width: 300px;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--main-blue);
+  box-shadow: 0 0 0 2px rgba(75, 148, 208, 0.2);
+}
+
+.searchButton {
+  background: var(--main-blue);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.searchButton:hover {
+  background: var(--main-accent);
+}
+
+.listbutton {
+  background: var(--main-blue);
+  color: #fff;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-left: 8px;
+}
+.listbutton:hover {
+  background: var(--main-accent);
+}
+
+.tableWrapper {
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  padding: 0;
+  margin: 0 auto;
+  width: 100%;
+  overflow: hidden;
+}
+.faqTable {
+  width: 100%;
+  margin-top: 20px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.faqTable th,
+.faqTable td {
+  padding: 16px 10px;
+  text-align: center;
+  font-size: 0.95rem;
+}
+.faqTable th {
+  background: #f5f8fa;
+  color: var(--main-blue);
+  font-weight: bold;
+}
+.faqRow {
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.faqRow:hover {
+  background: #f0f7fd;
+}
+.statusDone {
+  background: #e6f7e6;
+  color: #1a7f37;
+  border-radius: 6px;
+  padding: 3px 9px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  display: inline-block;
+}
+.statusWait {
+  background: #fff4e6;
+  color: #ef770c;
+  border-radius: 6px;
+  padding: 3px 9px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  display: inline-block;
+}
+.statusClosed {
+  background: #ffe6e6;
+  color: #e53935;
+  border-radius: 6px;
+  padding: 3px 9px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  display: inline-block;
+}

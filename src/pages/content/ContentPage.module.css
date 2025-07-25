@@ -79,11 +79,18 @@ body {
 }
 
 .main {
-  max-width: 1400px;
+  max-width: 1800px;
   margin: 0 auto;
   padding: 32px 16px;
   background: var(--main-bg);
   min-height: 100vh;
+}
+
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
 }
 
 .pageTitle {
@@ -98,13 +105,34 @@ body {
   letter-spacing: -1px;
 }
 
-.summarySection, .contentSection {
+.summarySection {
   background: var(--card-bg);
   border-radius: var(--border-radius);
   box-shadow: var(--shadow);
   padding: 32px 28px 24px 28px;
   margin-bottom: 32px;
   transition: box-shadow 0.2s, transform 0.2s;
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.contentContainer {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+  margin-bottom: 32px;
+  align-items: start;
+}
+
+.youtubeSection, .otherContentSection {
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  padding: 32px 28px 24px 28px;
+  transition: box-shadow 0.2s, transform 0.2s;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 .summarySection:hover, .contentCard:hover {
   box-shadow: var(--shadow-hover);
@@ -148,22 +176,24 @@ body {
 }
 
 .contentList {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-  gap: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .contentCard {
   background: #fff;
   border-radius: 18px;
   box-shadow: 0 4px 24px 0 rgba(0,0,0,0.08);
-  padding: 28px 24px 24px 24px;
+  padding: 24px 20px 20px 20px;
   border: 1px solid rgba(75, 148, 208, 0.1);
   display: flex;
   flex-direction: column;
   gap: 12px;
-  min-height: 220px;
+  min-height: 180px;
   transition: box-shadow 0.2s, transform 0.2s;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .contentType {
@@ -183,6 +213,9 @@ body {
   font-weight: 800;
   color: var(--main-dark);
   margin-bottom: 4px;
+  min-height: 2.6em;
+  display: flex;
+  align-items: flex-end;
 }
 
 .contentDesc {
@@ -215,16 +248,16 @@ body {
 
 .youtubeGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
   margin-bottom: 24px;
-  justify-items: center;
+  align-items: start;
 }
 
 .youtubeCard {
-  width: 320px;
-  min-height: 260px;
-  padding: 16px 12px 16px 12px;
+  width: 100%;
+  min-height: 280px;
+  padding: 20px 16px 16px 16px;
   background: #fff;
   border-radius: 18px;
   box-shadow: 0 4px 24px 0 rgba(0,0,0,0.08);
@@ -235,24 +268,45 @@ body {
   transition: box-shadow 0.2s, transform 0.2s;
   position: relative;
   cursor: pointer;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 .youtubeCard:hover {
   box-shadow: var(--shadow-hover);
   transform: translateY(-4px) scale(1.03);
 }
-
-.youtubeThumbWrap {
-  position: relative;
+.themeBadge {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  background: var(--main-blue);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 999px;
+  box-shadow: 0 2px 8px #4b94d033;
+  z-index: 2;
+  pointer-events: none;
+  letter-spacing: 0.5px;
+  opacity: 0.92;
+}
+.youtubeThumbWrap,
+.youtubePlayerWrap {
+  aspect-ratio: 16/9;
+  width: 100%;
+  height: auto;
+  min-height: 180px;
   border-radius: 12px;
   overflow: hidden;
   background: #000;
   margin-bottom: 10px;
-  cursor: pointer;
-  transition: box-shadow 0.2s;
+  position: relative;
 }
+
 .youtubeThumb {
   width: 100%;
-  height: 180px;
+  height: 100%;
   object-fit: cover;
   display: block;
   border-radius: 12px;
@@ -284,38 +338,104 @@ body {
   box-shadow: 0 4px 16px #ef770c55;
 }
 .youtubePlayerWrap {
+  /* 위에서 통합 처리 */
+}
+
+.youtubePlayerWrap iframe {
   width: 100%;
-  height: 180px;
+  height: 100%;
+  border: 0;
   border-radius: 12px;
-  overflow: hidden;
-  margin-bottom: 10px;
-  background: #000;
+  display: block;
 }
 
-@media (max-width: 1024px) {
-  .youtubeGrid {
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  }
-  .youtubeCard {
-    width: 100%;
-    min-width: 0;
-  }
+/* 테마 필터 탭 스타일 개선 */
+.themeTabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  justify-content: flex-start;
 }
-@media (max-width: 600px) {
-  .youtubeGrid {
+.filterTab, .themeTabBtn {
+  background: #f3f6fa;
+  color: var(--main-blue);
+  border: none;
+  border-radius: 999px;
+  padding: 8px 22px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+  box-shadow: 0 2px 8px #4b94d011;
+  outline: none;
+}
+.filterTab:hover, .themeTabBtn:hover {
+  background: #e3f0fd;
+  color: var(--main-dark);
+}
+.activeTab {
+  background: var(--main-blue);
+  color: #fff !important;
+  box-shadow: 0 4px 16px #4b94d033;
+}
+
+@media (max-width: 1200px) {
+  .contentContainer {
     grid-template-columns: 1fr;
+    gap: 24px;
   }
-  .youtubeCard {
-    width: 100%;
+  
+  .youtubeGrid {
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  }
+  
+  .contentList {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   }
 }
-
 @media (max-width: 768px) {
+  .main {
+    padding: 16px 12px;
+  }
+  
+  .pageTitle {
+    font-size: 2rem;
+    margin-bottom: 24px;
+  }
+  
   .summarySection {
     flex-direction: column;
     gap: 16px;
+    padding: 24px 20px;
   }
-  .contentList {
+  
+  .contentContainer {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .youtubeGrid {
     grid-template-columns: 1fr;
   }
+  
+  .contentList {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .contentCard {
+    padding: 20px 16px;
+  }
+  
+  .youtubeCard {
+    padding: 16px 12px;
+  }
+  
+  .youtubeThumb, .youtubePlayerWrap {
+    height: 180px;
+  }
 }
+
+
+

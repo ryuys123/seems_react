@@ -1,175 +1,172 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import styles from './ContentPage.module.css';
 import UserHeader from '../../components/common/UserHeader';
+import { getTodayEmotion } from '../../services/QuestService';
+import { getRecommendedContentsByEmotionId, fetchYoutubeMeta } from '../../services/ContentService';
+
+const YOUTUBE_API_KEY = 'AIzaSyD3Qeh7yajpSfot5QJ9io3Cm5zzCl5YTvc'; // 실제 발급받은 키 적용
+
+const themeList = ['전체', '음악', '게임', '요리', '자연'];
 
 const ContentPage = () => {
-  const [playingVideoId, setPlayingVideoId] = useState(null);
-
-  const contents = [
-    {
-      id: 1,
-      type: '유튜브 영상',
-      title: '마음이 편안해지는 명상 음악',
-      description: '스트레스를 완화하고 집중력을 높여주는 1시간 명상 음악입니다.',
-      videoId: '2OEL4P1Rz04'
-    },
-    {
-      id: 2,
-      type: '음악',
-      title: '잔잔한 피아노 연주곡',
-      description: '마음이 지칠 때 듣기 좋은 따뜻한 피아노 선율.',
-      media: (
-        <audio controls style={{ width: '100%' }}>
-          <source src={require("../../assets/audio/audio1.mp3")} type="audio/mp3" />
-          브라우저가 오디오 태그를 지원하지 않습니다.
-        </audio>
-      )
-    },
-    {
-      id: 3,
-      type: '글귀',
-      title: '오늘의 위로',
-      description: '힘들 때 마음을 다독여주는 따뜻한 한마디.',
-      quote: '"지금 이 순간도 충분히 잘하고 있어요. 당신의 마음을 응원합니다."'
-    },
-    {
-      id: 4,
-      type: '유튜브 영상',
-      title: '긍정 에너지 충전 영상',
-      description: '하루를 힘차게 시작할 수 있는 긍정 메시지 영상입니다.',
-      videoId: 'UPXUG8q4jKU'
-    },
-    {
-      id: 5,
-      type: '유튜브 영상',
-      title: '힐링 자연 풍경 영상',
-      description: '자연의 소리와 풍경으로 마음을 치유하세요.',
-      videoId: '5qap5aO4i9A'
-    },
-    {
-      id: 6,
-      type: '유튜브 영상',
-      title: '집중력 향상 브레인 뮤직',
-      description: '공부/업무에 도움되는 집중력 향상 음악.',
-      videoId: 'DWcJFNfaw9c'
-    },
-    {
-      id: 7,
-      type: '음악',
-      title: '기분 좋아지는 기타 연주',
-      description: '상쾌한 하루를 위한 기타 연주곡.',
-      media: (
-        <audio controls style={{ width: '100%' }}>
-          <source src="/assets/audio/audio2.mp3" type="audio/mp3" />
-          브라우저가 오디오 태그를 지원하지 않습니다.
-        </audio>
-      )
-    },
-    {
-      id: 8,
-      type: '글귀',
-      title: '긍정의 한마디',
-      description: '하루를 밝게 시작하는 긍정의 메시지.',
-      quote: '"오늘도 충분히 잘하고 있어요!"'
-    },
-    {
-      id: 9,
-      type: '음악',
-      title: '마음 안정 ASMR',
-      description: '편안한 밤을 위한 ASMR 사운드.',
-      media: (
-        <audio controls style={{ width: '100%' }}>
-          <source src={require("../../assets/audio/audio1.mp3")} type="audio/mp3" />
-          브라우저가 오디오 태그를 지원하지 않습니다.
-        </audio>
-      )
-    },
-    {
-      id: 10,
-      type: '글귀',
-      title: '오늘의 다짐',
-      description: '스스로를 격려하는 다짐의 글.',
-      quote: '"내일의 나는 오늘의 나보다 더 성장할 거야."'
+  // QuestPage.js와 동일한 robust userId 추출
+  const [userId] = useState(() => {
+    const userInfo = localStorage.getItem('userInfo');
+    if (userInfo) {
+      try {
+        const parsed = JSON.parse(userInfo);
+        if (parsed.userId) return parsed.userId;
+      } catch {}
     }
-  ];
+    const accessToken = localStorage.getItem('accessToken');
+    if (accessToken) {
+      try {
+        const payload = JSON.parse(atob(accessToken.split('.')[1]));
+        return payload.userId || payload.sub || payload.user_id || payload.userid;
+      } catch {}
+    }
+    const loggedInUserId = localStorage.getItem('loggedInUserId');
+    if (loggedInUserId) return loggedInUserId;
+    return 'user001';
+  });
 
-  // 유튜브 영상만 분리
-  const youtubeContents = contents.filter(c => c.type === '유튜브 영상');
-  const otherContents = contents.filter(c => c.type !== '유튜브 영상');
+  const [playingVideoId, setPlayingVideoId] = useState(null);
+  const [youtubeContents, setYoutubeContents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [todayEmotion, setTodayEmotion] = useState(null);
+  const [error, setError] = useState(null);
+  const [selectedTheme, setSelectedTheme] = useState('전체');
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        if (!userId) {
+          setError('로그인이 필요합니다.');
+          setLoading(false);
+          return;
+        }
+        // 오늘의 감정 조회
+        const emotionLog = await getTodayEmotion(userId);
+        setTodayEmotion(emotionLog);
+        if (!emotionLog || !emotionLog.emotion || !emotionLog.emotion.emotionId) {
+          setError('오늘의 감정 기록이 없습니다.');
+          setLoading(false);
+          return;
+        }
+        // 추천 유튜브 컨텐츠 조회
+        const contents = await getRecommendedContentsByEmotionId(emotionLog.emotion.emotionId);
+        // YouTube 메타데이터 보완
+        const withMeta = await Promise.all(contents.map(async (item) => {
+          if (!item.title || !item.description) {
+            const meta = await fetchYoutubeMeta(item.youtubeId, YOUTUBE_API_KEY);
+            return { ...item, ...meta };
+          }
+          return item;
+        }));
+        setYoutubeContents(withMeta);
+      } catch (err) {
+        setError('콘텐츠 추천을 불러오는 중 오류가 발생했습니다.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [userId]);
 
   return (
     <div>
       <UserHeader/>
-
       <main className={styles.main}>
-        <h1 className={styles.pageTitle}>맞춤 콘텐츠 추천</h1>
-        
+        <div className={styles.pageHeader}>
+        <h1 className={styles.pageTitle}>콘텐츠</h1>
+        </div>
         {/* 분석 결과 감정 요약 */}
         <div className={styles.summarySection}>
-          <div className={styles.emotionIcon}>😊</div>
+          <div className={styles.emotionIcon}>{todayEmotion?.emotion?.emoji || '😊'}</div>
           <div className={styles.summaryContent}>
-            <div className={styles.summaryTitle}>오늘의 감정 상태 요약</div>
+            <div className={styles.summaryTitle}>오늘의 감정</div>
             <div className={styles.summaryText}>
-              최근 상담 및 심리 분석 결과, <b>스트레스</b>가 다소 높고 <b>기분</b>이 저하된 상태입니다.<br />
-              마음의 안정을 위한 휴식과 긍정적인 자극이 필요해 보여요.
+              {todayEmotion?.emotion?.emotionName
+                ? <b>{todayEmotion.emotion.emotionName}</b>
+                : '감정 기록 없음'}
+              {todayEmotion?.textContent && (
+                <><br/>{todayEmotion.textContent}</>
+              )}
             </div>
           </div>
         </div>
-
-        {/* 유튜브 영상 그리드 */}
-        <div className={styles.contentSection}>
-          <div className={styles.contentHeader}>유튜브 영상 추천</div>
-          <div className={styles.youtubeGrid}>
-            {youtubeContents.map(content => (
-              <div key={content.id} className={styles.youtubeCard}>
-                {playingVideoId === content.videoId ? (
-                  <div className={styles.youtubePlayerWrap}>
-                    <iframe
-                      width="100%"
-                      height="200"
-                      src={`https://www.youtube.com/embed/${content.videoId}?autoplay=1`}
-                      title={content.title}
-                      frameBorder="0"
-                      allowFullScreen
-                    />
-                  </div>
-                ) : (
-                  <div className={styles.youtubeThumbWrap} onClick={() => setPlayingVideoId(content.videoId)}>
-                    <img
-                      src={`https://img.youtube.com/vi/${content.videoId}/hqdefault.jpg`}
-                      alt={content.title}
-                      className={styles.youtubeThumb}
-                    />
-                    <div className={styles.youtubePlayBtn}>▶</div>
-                  </div>
-                )}
-                <div className={styles.contentTitle}>{content.title}</div>
-                <div className={styles.contentDesc}>{content.description}</div>
-              </div>
+        {/* 콘텐츠 섹션 - PC 최적화 레이아웃 */}
+        <div className={styles.contentContainer}>
+          {/* 유튜브 영상 섹션 */}
+          <div className={styles.youtubeSection}>
+          <div className={styles.contentHeader}>맞춤 콘텐츠 추천</div>
+          {/* 테마별 탭/버튼 */}
+          <div className={styles.themeTabs}>
+            {themeList.map(theme => (
+              <button
+                key={theme}
+                className={`${styles.themeTabBtn} ${selectedTheme === theme ? styles.activeTab : ''}`}
+                onClick={() => setSelectedTheme(theme)}
+              >
+                {theme}
+              </button>
             ))}
           </div>
-        </div>
-
-        {/* 콘텐츠 추천 리스트 */}
-        <div className={styles.contentSection}>
-          <div className={styles.contentHeader}>오늘의 추천 콘텐츠</div>
-          <div className={styles.contentList}>
-            {otherContents.map(content => (
-              <div key={content.id} className={styles.contentCard}>
-                <div className={styles.contentType}>{content.type}</div>
-                <div className={styles.contentTitle}>{content.title}</div>
-                <div className={styles.contentDesc}>{content.description}</div>
-                {content.media && (
-                  <div className={styles.contentMedia}>
-                    {content.media}
+          {loading ? (
+            <div>로딩 중...</div>
+          ) : error ? (
+            <div style={{color:'red'}}>{error}</div>
+          ) : (
+            <div className={styles.youtubeGrid}>
+              {youtubeContents
+                .filter(content => {
+                  if (selectedTheme === '전체') return true;
+                  if (!content.theme) return false;
+                  return content.theme.trim().toLowerCase() === selectedTheme.trim().toLowerCase();
+                })
+                .length === 0 ? (
+                <div>추천 유튜브 영상이 없습니다.</div>
+              ) : youtubeContents
+                .filter(content => {
+                  if (selectedTheme === '전체') return true;
+                  if (!content.theme) return false;
+                  return content.theme.trim().toLowerCase() === selectedTheme.trim().toLowerCase();
+                })
+                .map(content => (
+                  <div key={content.contentId} className={styles.youtubeCard}>
+                    <div className={styles.themeBadge}>
+                      {content.theme || '테마 없음'}
+                    </div>
+                    {playingVideoId === content.youtubeId ? (
+                      <div className={styles.youtubePlayerWrap}>
+                        <iframe
+                          width="100%"
+                          height="220"
+                          src={`https://www.youtube.com/embed/${content.youtubeId}?autoplay=1`}
+                          title={content.title}
+                          frameBorder="0"
+                          allowFullScreen
+                        />
+                      </div>
+                    ) : (
+                      <div className={styles.youtubeThumbWrap} onClick={() => setPlayingVideoId(content.youtubeId)}>
+                        <img
+                          src={content.thumbnail || `https://img.youtube.com/vi/${content.youtubeId}/hqdefault.jpg`}
+                          alt={content.title}
+                          className={styles.youtubeThumb}
+                        />
+                        <div className={styles.youtubePlayBtn}>▶</div>
+                      </div>
+                    )}
+                    {/* 제목만 노출, 설명 제거 */}
+                    <div className={styles.contentTitle}>{content.title || '제목 없음'}</div>
                   </div>
-                )}
-                {content.quote && (
-                  <div className={styles.contentQuote}>{content.quote}</div>
-                )}
-              </div>
-            ))}
+                ))}
+            </div>
+          )}
           </div>
         </div>
       </main>
