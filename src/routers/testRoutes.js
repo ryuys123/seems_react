@@ -32,7 +32,7 @@ const testRoutes = [
     element: <StressTestPage />,
   },
   {
-    path: "/psychology-result/:resultId", // :resultId 추가
+    path: "/psychological-test/result/:resultId",
     element: <PsychologyResultPage />,
   },
   {

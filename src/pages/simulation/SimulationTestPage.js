@@ -1,106 +1,176 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styles from "./SimulationTestPage.module.css";
-import axios from "axios"; // 간결한 API 호출을 위해 axios 사용
-
-const API_BASE_URL = "http://localhost:8888/seems/api/simulation"; // 백엔드 주소
+import apiClient from "../../utils/axios"; // axios 대신 apiClient 사용
+import UserHeader from "../../components/common/UserHeader";
 
 export default function SimulationTestPage() {
   const { state } = useLocation();
   const navigate = useNavigate();
 
-  // SelectSimulationPage에서 전달받은 초기 데이터
+  // ✨ 1. state에서 데이터를 먼저 추출합니다.
   const { scenario, settingId, question: initialQuestion } = state || {};
 
-  const [currentQuestion, setCurrentQuestion] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // ✨ 2. 추출한 scenario 객체에서 isCustom 플래그를 확인합니다.
+  const isCustom = scenario?.isCustom || false;
 
-  // 1. 페이지 시작 시, 초기 데이터 설정
+  const [currentStep, setCurrentStep] = useState(initialQuestion);
+  const [history, setHistory] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isEnded, setIsEnded] = useState(false);
+  const [finalResult, setFinalResult] = useState(null);
+
   useEffect(() => {
-    if (!scenario || !settingId || !initialQuestion) {
-      alert("시뮬레이션 정보가 올바르지 않습니다. 메인 페이지로 돌아갑니다.");
-      navigate("/simulation"); // SelectSimulationPage의 경로로 수정
-      return;
-    }
-    setCurrentQuestion(initialQuestion);
-    setIsLoading(false);
-  }, [scenario, settingId, initialQuestion, navigate]);
+    console.log("--- SimulationTestPage Mount/Update ---");
+    console.log("State received:", state); // 초기 state 확인
+    console.log("Is Custom (from state):", isCustom); // isCustom 값 확인
+    console.log("Current Step State:", currentStep); // currentStep의 전체 내용 확인
 
-  // 2. 사용자가 선택지를 클릭했을 때 호출되는 핵심 함수
+    if (!scenario || !settingId || !currentStep) {
+      alert("시뮬레이션 정보가 올바르지 않습니다. 선택 페이지로 돌아갑니다.");
+      navigate("/SelectSimulationPage"); // 올바른 선택 페이지 경로로 수정
+    }
+  }, [scenario, settingId, currentStep, navigate]);
+
+  // ✨ 3. 사용자가 선택지를 클릭했을 때 호출되는 핵심 함수 (로직 통합)
   const handleSelect = async (option) => {
-    console.log("선택한 옵션:", option); // 여기 추가
     setIsLoading(true);
+    const newHistoryEntry = {
+      // narrative 또는 questionText가 없을 경우 대체 텍스트를 사용 (디버깅용)
+      narrative:
+        currentStep.narrative || currentStep.questionText || "내용 없음",
+      userChoice: option.text,
+    };
+    const updatedHistory = [...history, newHistoryEntry];
+    setHistory(updatedHistory);
 
     try {
-      // 2-1. /progress API 호출하여 사용자의 선택을 백엔드에 전송
-      const response = await axios.post(`${API_BASE_URL}/progress`, {
-        settingId: settingId,
-        questionNumber: currentQuestion.questionNumber,
-        choiceText: option.text,
-        selectedTrait: option.trait,
-      });
-
-      const nextStep = response.data;
-
-      // 2-2. 백엔드로부터 받은 종료 신호 확인 (isSimulationEnded)
-      if (nextStep && nextStep.isSimulationEnded) {
-        // 2-3. 시뮬레이션이 끝났으면, 최종 결과 요청
-        handleSimulationCompletion();
+      let response;
+      if (isCustom) {
+        // '극복 시뮬레이션'의 다음 단계 API 호출
+        response = await apiClient.post("/api/simulation/continue/coping", {
+          history: updatedHistory,
+          choiceText: option.text,
+        });
       } else {
-        // 2-4. 다음 질문이 있으면 상태 업데이트
-        setCurrentQuestion(nextStep);
+        // '일반 시뮬레이션'의 다음 단계 API 호출
+        response = await apiClient.post(`/api/simulation/progress`, {
+          settingId: settingId,
+          questionNumber: currentStep.questionNumber,
+          choiceText: option.text,
+          selectedTrait: option.trait,
+        });
+      }
+
+      const nextStepData = response.data;
+
+      if (nextStepData.isSimulationEnded) {
+        endSimulation(updatedHistory);
+      } else {
+        setCurrentStep(nextStepData);
       }
     } catch (error) {
       console.error("Error progressing simulation:", error);
-      alert("진행 중 오류가 발생했습니다. 다시 시도해 주세요.");
+      alert("진행 중 오류가 발생했습니다.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  // 3. 시뮬레이션 완료 및 결과 분석 API 호출
-  const handleSimulationCompletion = async () => {
+  // 시뮬레이션 완료 및 결과 분석 API 호출
+  const endSimulation = async (finalHistory) => {
+    setIsLoading(true);
     try {
-      const response = await axios.post(
-        `${API_BASE_URL}/complete/${settingId}`
-      );
-      const resultData = response.data;
+      const endpoint = isCustom
+        ? "/api/simulation/end/coping"
+        : `/api/simulation/result/${settingId}`;
+      const payload = isCustom ? { history: finalHistory } : {};
+      const response = await apiClient.post(endpoint, payload);
 
-      // 3-1. 최종 결과를 받아 결과 페이지로 이동
-      navigate("/simulation/result", {
-        state: { analysisResult: resultData, scenarioTitle: scenario.title },
-      });
+      setFinalResult(response.data);
+      setIsEnded(true);
     } catch (error) {
-      console.error("Error completing simulation:", error);
-      alert("결과 분석 중 오류가 발생했습니다.");
+      console.error("최종 결과 분석 중 오류:", error);
+      alert("최종 결과를 분석하는 데 실패했습니다.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // 로딩 중이거나 질문 데이터가 없으면 로딩 화면 표시
-  if (isLoading || !currentQuestion) {
+  if (!currentStep) {
     return (
-      <div className={styles.loadingContainer}>시뮬레이션을 불러오는 중...</div>
+      <div className={styles.container}>
+        <UserHeader />
+        <p>시뮬레이션을 불러오는 중...</p>
+      </div>
     );
   }
 
-  // 메인 UI 렌더링
   return (
     <div className={styles.container}>
-      <h2 className={styles.title}>{scenario.title}</h2>
+      <UserHeader />
+      <div className={styles.simulationCard}>
+        <h1 className={styles.title}>{scenario.title}</h1>
 
-      <p className={styles.questionText}>{currentQuestion.questionText}</p>
+        {isLoading && (
+          <div className={styles.loadingOverlay}>
+            {/* 로딩 스피너 등 */}
+            <p>AI가 다음 상황을 생성 중입니다...</p>
+          </div>
+        )}
 
-      <div className={styles.optionsWrapper}>
-        {currentQuestion.options?.map((opt, idx) => (
-          <button
-            key={idx}
-            className={styles.optionButton}
-            onClick={() => handleSelect(opt)}
-            disabled={isLoading}
-          >
-            {opt.text}
-          </button>
-        ))}
+        {isEnded ? (
+          <div className={styles.finalResult}>
+            <h2>시뮬레이션 완료</h2>
+            <p>
+              <strong>종합 분석:</strong> {finalResult?.resultSummary}
+            </p>
+            <p>
+              <strong>최종 제안:</strong>{" "}
+              {finalResult?.finalSuggestion || finalResult?.resultTitle}
+            </p>
+            <button onClick={() => navigate("/SelectSimulationPage")}>
+              다른 시뮬레이션 하기
+            </button>
+          </div>
+        ) : (
+          <>
+            {/* ✨ 4. isCustom 플래그에 따라 다른 UI 렌더링 */}
+            {isCustom ? (
+              // '극복 시뮬레이션'용 UI
+              <div className={styles.narrativeSection}>
+                {/* narrative가 있으면 표시, 없으면 경고 메시지 (디버깅용) */}
+                <p className={styles.narrative}>
+                  {currentStep.narrative || "ERROR: narrative 데이터 없음"}
+                </p>
+                {currentStep.internalThought && (
+                  <p className={styles.internalThought}>
+                    "{currentStep.internalThought}"
+                  </p>
+                )}
+              </div>
+            ) : (
+              // '일반 시뮬레이션'용 UI
+              // questionText가 없으면 경고 메시지 (디버깅용)
+              <p className={styles.questionText}>
+                {currentStep.questionText || "ERROR: questionText 데이터 없음"}
+              </p>
+            )}
+
+            <div className={styles.optionsWrapper}>
+              {currentStep.options?.map((opt, idx) => (
+                <button
+                  key={idx}
+                  className={styles.optionButton}
+                  onClick={() => handleSelect(opt)}
+                  disabled={isLoading}
+                >
+                  {opt.text}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
