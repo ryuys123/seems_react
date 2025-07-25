@@ -193,3 +193,4 @@ function FaqListPage({ searchResults }) {
 }
 
 export default FaqListPage;
+
