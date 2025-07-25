@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start; /* 상단 정렬로 변경 */
   min-height: 100vh;
   background-color: #f8f9fa;
   padding: 20px;
@@ -10,21 +10,52 @@
   text-align: center;
 }
 
-.loadingContainer {
+.userHeader {
+  /* UserHeader를 위한 공간 확보 */
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.simulationCard {
+  background-color: #ffffff;
+  border-radius: 15px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  padding: 40px;
+  width: 100%;
+  max-width: 900px; /* 카드 최대 너비 증가 */
+  margin-top: 40px; /* UserHeader 아래로 간격 */
+  margin-bottom: 40px; /* 하단 여백 추가 */
   display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.loadingOverlay {
+  position: absolute; /* 카드 내부에서 오버레이 되도록 변경 */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh;
+  border-radius: 15px;
+  z-index: 10; /* 다른 요소 위에 표시 */
   font-size: 1.5rem;
-  color: #555;
+  color: #8e44ad;
+  font-weight: bold;
 }
 
 .title {
-  font-size: 2.2rem;
+  font-size: 2.5rem; /* 제목 크기 키움 */
   color: #343a40;
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem; /* 제목 아래 간격 증가 */
+  font-weight: 700;
 }
 
+/* 일반 시뮬레이션 질문 텍스트 */
 .questionText {
   font-size: 1.6rem;
   font-weight: 500;
@@ -33,47 +64,180 @@
   max-width: 700px;
   margin-bottom: 3rem;
   min-height: 100px; /* 질문 길이에 따른 레이아웃 변경 최소화 */
+  display: flex; /* 텍스트 중앙 정렬을 위해 flex 추가 */
+  align-items: center;
+  justify-content: center;
+}
+
+/* 극복 시뮬레이션 내러티브 및 생각 영역 */
+.narrativeSection {
+  margin-bottom: 3rem;
+  width: 100%;
+  max-width: 800px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.narrative {
+  font-size: 1.3rem; /* 스토리 텍스트 크기 */
+  color: #555;
+  line-height: 1.7;
+  margin-bottom: 1.5rem; /* 스토리와 생각 사이 간격 */
+  text-align: left; /* 스토리 텍스트 좌측 정렬 */
+  width: 100%; /* 너비 100% */
+}
+
+.internalThought {
+  font-size: 1.4rem; /* 생각/질문 텍스트 크기 */
+  font-style: italic; /* 이탤릭체 */
+  color: #8e44ad; /* 보라색 계열로 강조 */
+  line-height: 1.6;
+  text-align: center; /* 중앙 정렬 */
+  padding: 15px 25px; /* 패딩 추가 */
+  background-color: #f0e6fa; /* 배경색 추가 */
+  border-radius: 10px;
+  border-left: 5px solid #8e44ad; /* 왼쪽 테두리 추가 */
+  margin-top: 1rem; /* narrative와 간격 */
+  width: fit-content; /* 내용에 맞춰 너비 조절 */
+  max-width: 90%; /* 최대 너비 제한 */
 }
 
 .optionsWrapper {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(300px, 1fr)
+  ); /* 유연한 그리드 */
+  gap: 25px; /* 간격 증가 */
   width: 100%;
-  max-width: 800px;
+  max-width: 850px; /* 옵션 영역 최대 너비 증가 */
+  margin-top: 2rem; /* 위쪽 여백 추가 */
 }
 
 .optionButton {
   background-color: #ffffff;
   border: 1px solid #dee2e6;
-  border-radius: 12px;
-  padding: 25px;
-  font-size: 1.1rem;
+  border-radius: 15px; /* 모서리 둥글게 */
+  padding: 30px; /* 패딩 증가 */
+  font-size: 1.2rem; /* 폰트 크기 키움 */
   cursor: pointer;
-  transition: all 0.2s ease-in-out;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease-in-out; /* 전환 효과 부드럽게 */
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08); /* 그림자 효과 강화 */
+  color: #495057; /* 기본 텍스트 색상 */
+  font-weight: 600; /* 폰트 두께 */
+  text-align: center; /* 텍스트 중앙 정렬 */
+  display: flex; /* 내용이 길어져도 중앙 정렬 유지 */
+  align-items: center;
+  justify-content: center;
+  min-height: 120px; /* 최소 높이 설정 */
 }
 
 .optionButton:hover:not(:disabled) {
   border-color: #8e44ad;
-  transform: translateY(-5px);
-  box-shadow: 0 6px 20px rgba(142, 68, 173, 0.15);
+  transform: translateY(-8px); /* 더 크게 움직이도록 */
+  box-shadow: 0 10px 30px rgba(142, 68, 173, 0.25); /* 그림자 효과 강화 */
   color: #8e44ad;
+  background-color: #f7f2fb; /* 호버 시 배경색 변경 */
 }
 
 .optionButton:disabled {
-  opacity: 0.7;
+  opacity: 0.6; /* 비활성화 시 투명도 조절 */
   cursor: not-allowed;
+  background-color: #f1f3f5; /* 비활성화 시 배경색 */
+  color: #adb5bd; /* 비활성화 시 텍스트 색상 */
+  box-shadow: none; /* 비활성화 시 그림자 제거 */
+}
+
+.finalResult {
+  padding: 30px;
+  background-color: #e6f7ff; /* 다른 시뮬레이션과 차별화된 색상 */
+  border-radius: 15px;
+  width: 100%;
+  max-width: 700px;
+  margin-top: 30px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  text-align: left;
+}
+
+.finalResult h2 {
+  font-size: 2rem;
+  color: #2c3e50;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.finalResult p {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: #34495e;
+  margin-bottom: 15px;
+}
+
+.finalResult strong {
+  color: #8e44ad;
+  font-weight: 700;
+}
+
+.finalResult button {
+  background-color: #8e44ad;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 25px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  margin-top: 25px;
+  transition: background-color 0.2s ease-in-out;
+  display: block; /* 버튼을 블록 요소로 만들어 중앙 정렬 용이하게 */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.finalResult button:hover {
+  background-color: #6c3483;
 }
 
 @media (max-width: 768px) {
-  .optionsWrapper {
-    grid-template-columns: 1fr;
+  .simulationCard {
+    padding: 25px;
+    margin-top: 20px;
   }
   .title {
     font-size: 1.8rem;
+    margin-bottom: 1.5rem;
   }
   .questionText {
     font-size: 1.3rem;
+    margin-bottom: 2rem;
+    min-height: 80px;
+  }
+  .narrative {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+  }
+  .internalThought {
+    font-size: 1.2rem;
+    padding: 10px 15px;
+  }
+  .optionsWrapper {
+    grid-template-columns: 1fr;
+    gap: 15px;
+    margin-top: 1.5rem;
+  }
+  .optionButton {
+    padding: 20px;
+    font-size: 1rem;
+    min-height: 100px;
+  }
+  .finalResult h2 {
+    font-size: 1.6rem;
+  }
+  .finalResult p {
+    font-size: 1rem;
+  }
+  .finalResult button {
+    font-size: 1rem;
+    padding: 10px 20px;
   }
 }

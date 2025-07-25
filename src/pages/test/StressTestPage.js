@@ -1,216 +1,207 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import UserHeader from "../../components/common/UserHeader";
-import styles from "./StressTestPage.module.css";
-import { submitScaleTest } from "../../services/TestService";
-import apiClient from "../../utils/axios";
+import styles from "./StressTestPage.module.css"; // StressTestPage용 CSS
+
+// 스트레스 검사용 답변 선택지 (0~4점 척도)
+const answerOptions = [
+  { label: "전혀 없음", value: 0 },
+  { label: "거의 없음", value: 1 },
+  { label: "때때로 있음", value: 2 },
+  { label: "자주 있음", value: 3 },
+  { label: "매우 자주 있음", value: 4 },
+];
 
 function StressTestPage() {
   const navigate = useNavigate();
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [testResult, setTestResult] = useState(null); // State to hold the test result
-
+  const topOfPageRef = useRef(null);
+  const questionsPerPage = 5;
   const testCategory = "STRESS_SCALE";
 
-  const answerLabels = {
-    1: "전혀 아님",
-    2: "거의 없음",
-    3: "가끔",
-    4: "자주",
-    5: "매우 자주",
-  };
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      setIsLoading(true);
+      try {
+        const response = await axios.get(
+          `/seems/api/psychological-test/questions/by-category?category=${testCategory}`
+        );
+        setQuestions(response.data);
+      } catch (error) {
+        console.error("스트레스 검사 문항을 불러오는 데 실패했습니다.", error);
+        setError("문항을 불러오는 데 실패했습니다.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchQuestions();
+  }, [testCategory]);
 
   useEffect(() => {
-    fetchQuestions();
-  }, []);
-
-  const fetchQuestions = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await apiClient.get(
-        `/api/psychological-test/questions?count=10&testType=${testCategory}`
-      );
-      if (Array.isArray(response.data)) {
-        setQuestions(response.data);
-      } else {
-        setError("질문 데이터를 불러오는 데 실패했습니다.");
-        setQuestions([]);
-      }
-    } catch (err) {
-      console.error(`Failed to fetch ${testCategory} questions:`, err);
-      setError("문항을 불러오는 데 실패했습니다. 서버 상태를 확인해주세요.");
-    } finally {
-      setLoading(false);
+    if (topOfPageRef.current) {
+      topOfPageRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
     }
-  };
+  }, [currentPage]);
 
   const handleAnswerChange = (questionId, value) => {
-    setAnswers((prevAnswers) => ({
-      ...prevAnswers,
-      [questionId]: value,
-    }));
+    setAnswers((prev) => ({ ...prev, [questionId]: value }));
   };
 
-  const handleNextQuestion = () => {
-    if (answers[questions[currentQuestionIndex]?.questionId] === undefined) {
-      alert("현재 문항에 답변을 선택해주세요.");
+  const handleNextPage = () => {
+    const startIndex = currentPage * questionsPerPage;
+    const currentQuestions = questions.slice(
+      startIndex,
+      startIndex + questionsPerPage
+    );
+    const allAnswered = currentQuestions.every(
+      (q) => answers[q.questionId] !== undefined
+    );
+
+    if (!allAnswered) {
+      alert("현재 페이지의 모든 문항에 답변해주세요.");
       return;
     }
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
+
+    const totalPages = Math.ceil(questions.length / questionsPerPage);
+    if (currentPage < totalPages - 1) {
+      setCurrentPage((prev) => prev + 1);
     } else {
       handleSubmitTest();
     }
   };
 
-  const handleSubmitTest = async () => {
-    if (Object.keys(answers).length !== questions.length) {
-      alert("모든 문항에 답변해주세요!");
-      return;
+  const handlePreviousPage = () => {
+    if (currentPage > 0) {
+      setCurrentPage((prev) => prev - 1);
     }
+  };
 
+  const handleSubmitTest = async () => {
     const currentUserId = localStorage.getItem("loggedInUserId");
     if (!currentUserId) {
-      alert("로그인 정보가 없습니다. 다시 로그인해주세요.");
-      navigate("/login");
+      alert("로그인 정보가 없습니다.");
       return;
     }
 
     const submissionData = {
       userId: currentUserId,
       testCategory: testCategory,
-      answers: questions.map((q) => ({
-        questionId: q.questionId,
-        answerValue: answers[q.questionId],
+      answers: Object.keys(answers).map((questionId) => ({
+        questionId: parseInt(questionId, 10),
+        answerValue: answers[questionId],
       })),
     };
 
     try {
-      setLoading(true);
-      const result = await submitScaleTest(submissionData);
-      alert("스트레스 검사가 완료되었습니다!");
-      navigate(`/psychology-result/${result.resultId}?type=${testCategory}`);
-    } catch (err) {
-      console.error(
-        "검사 제출 실패:",
-        err.response ? err.response.data : err.message
+      const token = localStorage.getItem("accessToken");
+      const response = await axios.post(
+        "/seems/api/psychological-test/scale",
+        submissionData,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
       );
-      setError("검사 제출 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
-    } finally {
-      setLoading(false);
+      alert("검사가 완료되었습니다.");
+      const resultId = response.data.resultId;
+      navigate(`/psychological-test/result/${resultId}?type=${testCategory}`);
+    } catch (err) {
+      console.error("검사 제출 실패:", err);
+      setError("검사 제출 중 오류가 발생했습니다.");
     }
   };
 
-  const handleRestartTest = () => {
-    setAnswers({});
-    setCurrentQuestionIndex(0);
-    setTestResult(null);
-    setError(null);
-    fetchQuestions();
-  };
-
-  const renderTest = () => {
-    if (questions.length === 0) {
-      return <p>표시할 스트레스 검사 문항이 없습니다. 관리자에게 문의하세요.</p>;
-    }
-
-    const currentQuestion = questions[currentQuestionIndex];
-
+  if (isLoading)
     return (
+      <div className={styles.container}>
+        <UserHeader />
+        <p>로딩 중...</p>
+      </div>
+    );
+  if (error)
+    return (
+      <div className={styles.container}>
+        <UserHeader />
+        <p className={styles.errorText}>{error}</p>
+      </div>
+    );
+  if (questions.length === 0)
+    return (
+      <div className={styles.container}>
+        <UserHeader />
+        <p>표시할 문항이 없습니다.</p>
+      </div>
+    );
+
+  const totalPages = Math.ceil(questions.length / questionsPerPage);
+  const startIndex = currentPage * questionsPerPage;
+  const currentQuestions = questions.slice(
+    startIndex,
+    startIndex + questionsPerPage
+  );
+
+  return (
+    <div className={styles.container} ref={topOfPageRef}>
+      <UserHeader />
       <div className={styles.testCard}>
-        <h1 className={styles.title}>스트레스 검사</h1>
-        <p className={styles.description}>
-          아래 문항을 읽고 지난 한 달간의 경험에 가장 가깝다고 생각하는 답변을
-          선택해주세요.
-        </p>
-
-        <div className={styles.questionCounter}>
-          {currentQuestionIndex + 1} / {questions.length}
-        </div>
-        <p className={styles.questionText}>{currentQuestion.questionText}</p>
-
-        <div className={styles.answerOptions}>
-          {[1, 2, 3, 4, 5].map((value) => (
-            <label key={value} className={styles.answerOption}>
-              <input
-                type="radio"
-                name={`question_${currentQuestion.questionId}`}
-                value={value}
-                checked={answers[currentQuestion.questionId] === value}
-                onChange={() =>
-                  handleAnswerChange(currentQuestion.questionId, value)
-                }
-              />
-              <span>{answerLabels[value]}</span>
-            </label>
+        <div>
+          <h1 className={styles.title}>스트레스 체크</h1>
+          <p className={styles.description}>
+            최근 한 달간의 경험에 가장 가깝다고 생각하는 답변을 선택해주세요.
+          </p>
+          <div className={styles.progress}>
+            Page {currentPage + 1} / {totalPages}
+          </div>
+          {currentQuestions.map((q, index) => (
+            <div key={q.questionId} className={styles.questionBlock}>
+              <p className={styles.questionText}>
+                {startIndex + index + 1}. {q.questionText}
+              </p>
+              <div className={styles.answerOptions}>
+                {answerOptions.map((opt) => (
+                  <label
+                    key={opt.value}
+                    className={`${styles.answerOption} ${answers[q.questionId] === opt.value ? styles.active : ""}`}
+                  >
+                    <input
+                      type="radio"
+                      name={`question_${q.questionId}`}
+                      value={opt.value}
+                      checked={answers[q.questionId] === opt.value}
+                      onChange={() =>
+                        handleAnswerChange(q.questionId, opt.value)
+                      }
+                    />
+                    <span>{opt.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
           ))}
         </div>
 
         <div className={styles.navigationButtons}>
           <button
-            onClick={() => setCurrentQuestionIndex((prev) => prev - 1)}
-            disabled={currentQuestionIndex === 0}
+            onClick={handlePreviousPage}
+            disabled={currentPage === 0}
             className={styles.navButton}
           >
             이전
           </button>
-          <button onClick={handleNextQuestion} className={styles.navButton}>
-            {currentQuestionIndex === questions.length - 1
-              ? "검사 완료"
-              : "다음"}
+          <button onClick={handleNextPage} className={styles.navButton}>
+            {currentPage === totalPages - 1 ? "결과 보기" : "다음"}
           </button>
         </div>
       </div>
-    );
-  };
-
-  const renderResult = () => {
-    return (
-      <div className={styles.resultCard}>
-        <h1 className={styles.title}>스트레스 검사 결과</h1>
-        <div className={styles.resultSection}>
-          <h2>총점</h2>
-          <p>{testResult.totalScore}점</p>
-        </div>
-        <div className={styles.resultSection}>
-          <h2>위험도</h2>
-          <p>{testResult.riskLevel}</p>
-        </div>
-        <div className={styles.resultSection}>
-          <h2>결과 해석</h2>
-          <p>{testResult.interpretation}</p>
-        </div>
-        <div className={styles.resultSection}>
-          <h2>제안</h2>
-          <p>{testResult.suggestions}</p>
-        </div>
-        <button onClick={handleRestartTest} className={styles.restartButton}>
-          다시 시작하기
-        </button>
-      </div>
-    );
-  };
-
-  return (
-    <div className={styles.container}>
-      <UserHeader />
-      {loading ? (
-        <p>처리 중입니다...</p>
-      ) : error ? (
-        <p className={styles.errorText}>오류 발생: {error}</p>
-      ) : testResult ? (
-        renderResult()
-      ) : (
-        renderTest()
-      )}
     </div>
   );
 }
 
 export default StressTestPage;
-
