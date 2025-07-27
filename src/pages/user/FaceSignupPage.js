@@ -10,6 +10,10 @@ const FaceSignupPage = () => {
   const navigate = useNavigate();
   const signupInfo = location.state || {}; // 전달받은 회원정보
   const { userid } = useContext(AuthContext);
+  
+  console.log('FaceSignupPage 마운트 - location.state:', location.state);
+  console.log('FaceSignupPage 마운트 - signupInfo:', signupInfo);
+  console.log('FaceSignupPage 마운트 - AuthContext userid:', userid);
 
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -41,7 +45,9 @@ const FaceSignupPage = () => {
       try {
         // 값 확인용 콘솔 출력
         console.log('signupInfo:', signupInfo);
-        console.log('userId:', signupInfo.userId || userid);
+        console.log('AuthContext userid:', userid);
+        console.log('전달받은 userId:', signupInfo.userId);
+        console.log('최종 사용할 userId:', signupInfo.userId || userid);
         console.log('userName:', signupInfo.userName);
         console.log('userPwd:', signupInfo.userPwd);
         console.log('phone:', signupInfo.phone);
@@ -49,29 +55,55 @@ const FaceSignupPage = () => {
         console.log("페이스 회원가입 요청 시작...");
         console.log("회원정보:", signupInfo);
         
-        const requestData = {
-          userId: signupInfo.userId || userid,
-          username: signupInfo.userName,
-          password: signupInfo.userPwd,
-          phone: signupInfo.phone,
-          faceImageData: faceImageData,
-        };
+        // 기존 사용자 페이스 연동인지 신규 회원가입인지 확인
+        const isExistingUser = signupInfo.userId && !signupInfo.userPwd;
+        
+        let requestData;
+        let apiEndpoint;
+        
+        if (isExistingUser) {
+          // 기존 사용자 페이스 연동
+          requestData = {
+            userId: signupInfo.userId || userid,
+            faceImageData: faceImageData,
+          };
+          apiEndpoint = "http://localhost:8888/seems/api/face/link";
+          console.log("기존 사용자 페이스 연동 요청");
+        } else {
+          // 신규 회원가입 + 페이스 등록
+          requestData = {
+            userId: signupInfo.userId || userid,
+            username: signupInfo.userName,
+            password: signupInfo.userPwd,
+            phone: signupInfo.phone,
+            faceImageData: faceImageData,
+          };
+          apiEndpoint = "http://localhost:8888/seems/api/face/signup";
+          console.log("신규 회원가입 + 페이스 등록 요청");
+        }
         
         console.log("요청 데이터:", requestData);
+        console.log("API 엔드포인트:", apiEndpoint);
         
-        const response = await axios.post("http://localhost:8888/seems/api/face/signup", requestData);
+        const response = await axios.post(apiEndpoint, requestData);
         
         console.log("페이스 회원가입 응답:", response.data);
         setRegisterResult(response.data);
         
         if (response.data.success) {
-          alert("페이스 회원가입 성공! 이제 페이스로그인을 사용할 수 있습니다.");
-          // 성공 시 대시보드로 이동
+          alert("페이스 등록 성공! 이제 페이스로그인을 사용할 수 있습니다.");
+          // 성공 시 마이페이지로 이동 (기존 사용자의 경우)
           setTimeout(() => {
-            navigate('/');
+            if (signupInfo.userId) {
+              // 기존 사용자가 페이스 연동을 위해 온 경우
+              navigate('/userprofile');
+            } else {
+              // 신규 회원가입의 경우
+              navigate('/');
+            }
           }, 1500);
         } else {
-          alert("페이스 회원가입 실패: " + (response.data.message || "다시 시도하세요."));
+          alert("페이스 등록 실패: " + (response.data.message || "다시 시도하세요."));
         }
       } catch (error) {
         console.error("페이스 회원가입 오류:", error);
@@ -93,10 +125,13 @@ const FaceSignupPage = () => {
     }
   };
 
+  // 기존 사용자 페이스 연동인지 신규 회원가입인지 확인
+  const isExistingUser = signupInfo.userId && !signupInfo.userPwd;
+  
   return (
     <div className={styles.faceSignupContainer}>
-      <h2>페이스 회원가입</h2>
-      <p>회원가입과 함께 얼굴을 등록하여 페이스 로그인을 사용할 수 있습니다.</p>
+      <h2>{isExistingUser ? '페이스 연동' : '페이스 회원가입'}</h2>
+      <p>{isExistingUser ? '얼굴을 등록하여 페이스 로그인을 사용할 수 있습니다.' : '회원가입과 함께 얼굴을 등록하여 페이스 로그인을 사용할 수 있습니다.'}</p>
       
       <div style={{ marginBottom: '20px', padding: '10px', backgroundColor: '#f5f5f5' }}>
         <h4>회원정보 확인</h4>
@@ -124,13 +159,13 @@ const FaceSignupPage = () => {
           <img src={capturedImage} alt="캡처" width={160} />
         </div>
       )}
-      <button
-        onClick={handleButtonClick}
-        disabled={step === "loading"}
-        className={styles.signupButton}
-      >
-        {step === "idle" && "페이스 회원가입 시작"}
-        {step === "camera" && "캡처 및 회원가입"}
+              <button
+          onClick={handleButtonClick}
+          disabled={step === "loading"}
+          className={styles.signupButton}
+        >
+          {step === "idle" && (isExistingUser ? "페이스 연동 시작" : "페이스 회원가입 시작")}
+          {step === "camera" && (isExistingUser ? "캡처 및 연동" : "캡처 및 회원가입")}
         {step === "loading" && "처리 중..."}
       </button>
       {registerResult && (

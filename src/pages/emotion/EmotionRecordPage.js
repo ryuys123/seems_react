@@ -8,7 +8,7 @@ const EmotionRecordPage = () => {
   const [recordText, setRecordText] = useState("");
   const [emotions, setEmotions] = useState([]);
   const [emotionLogs, setEmotionLogs] = useState([]); // 감정 기록 상태 추가
-  const { isLoggedIn, userid, secureApiRequest } = useContext(AuthContext);
+  const { isLoggedIn, userid, secureApiRequest, updateTodayEmotion } = useContext(AuthContext);
 
   // 음성 인식 상태 및 참조 추가
   const [isListening, setIsListening] = useState(false);
@@ -241,14 +241,64 @@ const EmotionRecordPage = () => {
       alert("기록이 성공적으로 제출되었습니다!");
       setSelectedEmotion(null);
       setRecordText("");
+      
       // 기록 제출 후 최신 기록을 다시 불러옴
-      // fetchEmotionLogs(); // 이 함수는 useEffect 내부에 있으므로 직접 호출 불가
-      // 대신, emotionLogs 상태를 직접 업데이트하거나, useEffect의 의존성 배열을 활용하여 재실행 유도
-      // 여기서는 간단하게 다시 불러오는 로직을 추가
       const response = await secureApiRequest(
         `http://localhost:8888/seems/api/emotion-logs/${userid}`
       );
       setEmotionLogs(response.data);
+      
+      // 전역 상태 업데이트 (대시보드 동기화)
+      if (response.data && response.data.length > 0) {
+        const today = new Date().toISOString().split('T')[0];
+        const todayRecord = response.data.find(log => {
+          const logDate = new Date(log.createdAt).toISOString().split('T')[0];
+          return logDate === today;
+        });
+        
+        console.log('감정 기록 제출 후 응답 데이터:', response.data);
+        console.log('오늘 날짜:', today);
+        console.log('오늘 기록:', todayRecord);
+        console.log('todayRecord.emotion:', todayRecord?.emotion);
+        console.log('todayRecord.emotion 전체 구조:', JSON.stringify(todayRecord?.emotion, null, 2));
+        
+        if (todayRecord) {
+          // emotion 데이터 구조 확인 및 안전한 접근
+          let emotionName = 'unknown';
+          console.log('감정 이름 추출 과정:');
+          console.log('- todayRecord.emotion:', todayRecord.emotion);
+          console.log('- todayRecord.emotion.emotionName:', todayRecord.emotion?.emotionName);
+          console.log('- todayRecord.emotion.name:', todayRecord.emotion?.name);
+          console.log('- todayRecord.emotionName:', todayRecord.emotionName);
+          
+          if (todayRecord.emotion && todayRecord.emotion.emotionName) {
+            emotionName = todayRecord.emotion.emotionName;
+            console.log('- emotion.emotionName 사용:', emotionName);
+          } else if (todayRecord.emotion && todayRecord.emotion.name) {
+            emotionName = todayRecord.emotion.name;
+            console.log('- emotion.name 사용:', emotionName);
+          } else if (todayRecord.emotionName) {
+            emotionName = todayRecord.emotionName;
+            console.log('- emotionName 사용:', emotionName);
+          } else if (todayRecord.emotion) {
+            emotionName = todayRecord.emotion;
+            console.log('- emotion 직접 사용:', emotionName);
+          }
+          
+          const emotionData = {
+            emotion: emotionName,
+            content: todayRecord.textContent,
+            createdAt: todayRecord.createdAt
+          };
+          console.log('전역 상태에 업데이트할 감정 데이터:', emotionData);
+          updateTodayEmotion(emotionData);
+          console.log('전역 상태 업데이트 완료');
+        } else {
+          console.log('오늘 날짜의 감정 기록을 찾을 수 없음');
+        }
+      } else {
+        console.log('감정 기록 데이터가 없음');
+      }
     } catch (error) {
       console.error("기록 제출 실패:", error);
       alert("기록 제출에 실패했습니다.");
