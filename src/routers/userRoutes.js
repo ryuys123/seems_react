@@ -92,11 +92,11 @@ const userRoutes = [
     element: <SocialLoginCallback />,
   },
   {
-    path: '/user/facelogin',
+    path: '/facelogin',
     element: <FaceLoginPage />,
   },
   {
-    path: '/user/facesignup',
+    path: '/facesignup',
     element: <FaceSignupPage />,
   }
 ];

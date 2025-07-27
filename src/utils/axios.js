@@ -17,8 +17,8 @@ apiClient.interceptors.request.use(
   (config) => {
     // axios 로 요청시 같이 전송보낼 토큰 지정 처리
     // 로그인 성공시 저장해 놓은 localStorage 에서 토큰을 꺼냄
-    const accessToken = localStorage.getItem(TOKEN_CONFIG.accessTokenKey);
-    const refreshToken = localStorage.getItem(TOKEN_CONFIG.refreshTokenKey);
+    const accessToken = localStorage.getItem("accessToken");
+    const refreshToken = localStorage.getItem("refreshToken");
 
     if (accessToken && refreshToken) {
       config.headers["Authorization"] = `Bearer ${accessToken}`; //빽틱 사용해야 함

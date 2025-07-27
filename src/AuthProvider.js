@@ -9,6 +9,7 @@
 import { createContext, useState, useEffect } from "react";
 import apiClient from "./utils/axios";
 
+
 // 전역(global) 사용을 위해 함수 밖에서 선언함
 // Context 생성 : 외부 컴포넌트가 import 해서 사용할 수 있도록 export 지정함
 export const AuthContext = createContext();
@@ -52,33 +53,44 @@ export const AuthProvider = ({ children }) => {
 
   // 브라우저에 이 컴포넌트가 랜더링될 때 (로드되어서 출력) 작동되는 훅임
   // window.onload = function(){ 페이지 출력될 때 자동 실행하는 코드 구문};  과 같은 기능을 수행하는 훅임
-  // 처리 기능 : 마운트시 토큰 검사
+  // 처리 기능 : 마운트시 로그인 상태 확인 및 설정
   useEffect(() => {
-    // 초기화 시 토큰 확인 및 상태 설정
+    // 페이지 로드 시 저장된 토큰이 있으면 로그인 상태 복원
     const accessToken = localStorage.getItem("accessToken");
     const refreshToken = localStorage.getItem("refreshToken");
-    const parsedToken = parseAccessToken(accessToken);
-    console.log("useEffect에서 파싱된 토큰:", parsedToken);
-    console.log("useEffect : ", accessToken, refreshToken);
-
-    if (accessToken && refreshToken && parsedToken) {
-      console.log("useEffect 실행 : ", parsedToken);
-      console.log("-----------------------------");
-
-      // if (parsedToken) {
-      setAuthInfo({
-        isLoggedIn: true,
-        role: parsedToken.role,
-        userid: parsedToken.sub,
-        username: parsedToken.name, // ✅ 서버 필드명과 일치
-        // });
-        // } else {
-        // 토큰 파싱이 실패한 경우 로그아웃 처리
-        // logoutAndRedirect();
-        // }
-      });
+    
+    if (accessToken && refreshToken) {
+      const parsedToken = parseAccessToken(accessToken);
+      if (parsedToken) {
+        setAuthInfo({
+          isLoggedIn: true,
+          role: parsedToken.role,
+          username: parsedToken.name,
+        });
+        console.log("AuthProvider: 저장된 토큰으로 로그인 상태 복원 완료");
+      } else {
+        // 토큰 파싱 실패 시 초기화
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+        localStorage.removeItem("loggedInUserId");
+        localStorage.removeItem("userName");
+        localStorage.removeItem("userId");
+        localStorage.removeItem("email");
+        localStorage.removeItem("role");
+        setAuthInfo({ isLoggedIn: false, role: "", username: "" });
+        console.log("AuthProvider: 토큰 파싱 실패로 로그인 상태 초기화");
+      }
     } else {
+      // 토큰이 없으면 초기화
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("loggedInUserId");
+      localStorage.removeItem("userName");
+      localStorage.removeItem("userId");
+      localStorage.removeItem("email");
+      localStorage.removeItem("role");
       setAuthInfo({ isLoggedIn: false, role: "", username: "" });
+      console.log("AuthProvider: 토큰 없음으로 로그인 상태 초기화");
     }
   }, []); //useEffect
 
@@ -98,6 +110,9 @@ export const AuthProvider = ({ children }) => {
 
   // 로그인 성공시 공통 토큰 저장 처리 및 상태 업데이트 함수
   const updateTokens = (accessToken, refreshToken) => {
+    console.log("updateTokens 호출됨 - accessToken:", accessToken);
+    console.log("updateTokens 호출됨 - refreshToken:", refreshToken);
+    
     if (accessToken) {
       localStorage.setItem("accessToken", accessToken);
       localStorage.setItem("refreshToken", refreshToken);
@@ -107,20 +122,23 @@ export const AuthProvider = ({ children }) => {
       );
 
       const parsedToken = parseAccessToken(accessToken);
-      console.log("AuthProvider updateTokens : ", parsedToken);
+      console.log("AuthProvider updateTokens 파싱 결과: ", parsedToken);
 
       if (parsedToken) {
+        console.log("토큰 파싱 성공 - role:", parsedToken.role, "name:", parsedToken.name);
         setAuthInfo({
           isLoggedIn: true,
           role: parsedToken.role,
           username: parsedToken.name, // ✅ 서버 필드명과 일치
         });
-        // console.log("authInfo : ", authInfo);
-        console.log("로그인 성공");
+        console.log("로그인 성공 - authInfo 업데이트 완료");
       } else {
+        console.log("토큰 파싱 실패 - 로그아웃 처리");
         // 파싱 실패시 로그아웃 처리
         logoutAndRedirect();
       }
+    } else {
+      console.log("updateTokens - accessToken이 없음");
     }
 
     if (refreshToken) {

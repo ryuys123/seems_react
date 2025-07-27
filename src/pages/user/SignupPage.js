@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './SignupPage.module.css';
 import logoSeems from '../../assets/images/logo_seems.png';
@@ -6,6 +6,9 @@ import naverIcon from '../../assets/images/naver.png';
 import kakaoIcon from '../../assets/images/kakao.png';
 import apiClient from '../../utils/axios';
 import FaceModal from '../../components/modal/FaceModal';
+import AdditionInfo from '../../components/modal/AdditionInfo';
+import { AuthContext } from '../../AuthProvider';
+
 
 // 회원가입 페이지 컴포넌트
   function SignupPage() {
@@ -26,8 +29,11 @@ import FaceModal from '../../components/modal/FaceModal';
   const [previewUrl, setPreviewUrl] = useState(null);
   const [showFaceModal, setShowFaceModal] = useState(false);
   const [pendingFormData, setPendingFormData] = useState(null);
+  const [showAdditionInfoModal, setShowAdditionInfoModal] = useState(false);
+  const [socialUserInfo, setSocialUserInfo] = useState(null);
 
   const navigate = useNavigate();
+  const { updateTokens } = useContext(AuthContext);
 
   //previewUrl과 formData.id는 서로 다른 상태 변수이기 때문에,
   // 다음처럼 useEffect를 두 개로 분리하는 것이 가장 바람직함:
@@ -58,9 +64,16 @@ import FaceModal from '../../components/modal/FaceModal';
 
       //첨부된 사진 미리보기 처리
       if (upfile) {
-        setPreviewUrl(URL.createObjectURL(upfile)); // previewUrl = url; 과 같음
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          setPreviewUrl(evt.target.result);
+          // Base64 데이터를 formData에 저장
+          setFormData(prev => ({ ...prev, profileImage: evt.target.result }));
+        };
+        reader.readAsDataURL(upfile);
       } else {
-        setPreviewUrl(null); // previewUrl = null; 과 같음
+        setPreviewUrl(null);
+        setFormData(prev => ({ ...prev, profileImage: '' }));
       }
     } else {
       setFormData({ ...formData, [name]: value });
@@ -133,16 +146,11 @@ import FaceModal from '../../components/modal/FaceModal';
     }
 
 
-    //전송보낼 FormData 객체 생성함
-    const combinedFormData = new FormData();
-    //input 의 값들과 첨부파일을 append 처리함
-    Object.keys(formData).forEach((key) => {
-      combinedFormData.append(key, formData[key]);
-    });
-
-    if (photoFile) {
-      combinedFormData.append('profileImage', photoFile); // 서버 컨트롤러 파라미터와 일치!
-    }
+    // Base64 데이터를 JSON으로 전송
+    const requestData = {
+      ...formData,
+      profileImage: formData.profileImage || ''
+    };
 
     setPendingFormData({ ...formData }); // 회원정보 임시 저장
     setShowFaceModal(true); // 모달 오픈
@@ -150,25 +158,23 @@ import FaceModal from '../../components/modal/FaceModal';
 
   const handleFaceRegister = () => {
     setShowFaceModal(false);
-    navigate('/user/facesignup', { state: pendingFormData });
+    navigate('/facesignup', { state: pendingFormData });
   };
 
   const handleSkipFace = async () => {
     setShowFaceModal(false);
     try {
-      const combinedFormData = new FormData();
-      Object.keys(formData).forEach((key) => {
-        combinedFormData.append(key, formData[key]);
-      });
-      if (photoFile) {
-        combinedFormData.append('profileImage', photoFile); // 반드시 추가!
-      }
-      // photoFile(얼굴 이미지) 없이 전송
+      // Base64 데이터를 JSON으로 전송
+      const requestData = {
+        ...formData,
+        profileImage: formData.profileImage || ''
+      };
+      
       const response = await apiClient.post(
         '/user/signup',
-        combinedFormData,
+        requestData,
         {
-          headers: { 'Content-Type': 'multipart/form-data' },
+          headers: { 'Content-Type': 'application/json' },
         }
       );
       if (response.status === 200) {
@@ -214,15 +220,84 @@ import FaceModal from '../../components/modal/FaceModal';
     }
   };
 
-  const handleSocialSignup = (provider) => {
-    // 소셜 회원가입 로직 구현
-    console.log(`${provider} 회원가입 시도`);
-  };
-
   const handleLoginClick = () => {
     // 로그인 페이지로 이동
     console.log('로그인 페이지로 이동');
     navigate('/');
+  };
+
+  // 팝업 창에서 소셜 로그인/회원가입 성공 시 메인 창에서 처리
+  React.useEffect(() => {
+    const handleMessage = (event) => {
+      console.log('받은 메시지:', event.data); // 디버깅용 로그 추가
+      try {
+        if (event.data && event.data.type === "social-login-success" && event.data.token) {
+        // 기존 사용자인 경우 - 바로 로그인 처리
+        if (event.data.isExistingUser) {
+          // 1. 토큰 저장 (key를 'accessToken'으로 변경)
+          // 1. AuthProvider의 updateTokens 함수 호출하여 authInfo 업데이트 (토큰 저장도 함께 처리)
+          updateTokens(event.data.token, event.data.refreshToken || "");
+          // 2. 사용자 정보 저장
+          localStorage.setItem("userName", event.data.userName || "");
+          localStorage.setItem("userId", event.data.userId || "");
+          localStorage.setItem("email", event.data.email || event.data.socialEmail || "");
+          localStorage.setItem("role", event.data.role || "");
+          // 3. 대시보드로 이동
+          navigate("/userdashboard");
+        } else {
+          // 신규 사용자인 경우 - 추가 정보 입력 모달 열기
+                      setSocialUserInfo({
+              socialId: event.data.socialId,
+              provider: event.data.provider,
+              email: event.data.email || event.data.socialEmail,
+              userName: event.data.userName,
+              profileImage: event.data.profileImage
+            });
+          setShowAdditionInfoModal(true);
+        }
+      }
+    } catch (error) {
+      console.error('메시지 처리 중 오류 발생:', error);
+    }
+    };
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, []);
+
+  const handleSocialSignup = (provider) => {
+    // 소셜 회원가입 로직 구현
+    console.log(`${provider} 회원가입 시도`);
+    
+    // Spring Security OAuth2 엔드포인트로 직접 이동 (포트 8888 사용)
+    switch (provider) {
+      case "google":
+        window.location.href = "http://localhost:8888/seems/oauth2/authorization/google";
+        break;
+      case "kakao":
+        window.location.href = "http://localhost:8888/seems/oauth2/authorization/kakao";
+        break;
+      case "naver":
+        window.location.href = "http://localhost:8888/seems/oauth2/authorization/naver";
+        break;
+      default:
+        console.log(`지원하지 않는 소셜 로그인: ${provider}`);
+    }
+  };
+
+  // 팝업 열기 함수
+  const openSocialPopup = (provider) => {
+    const popupWidth = 500;
+    const popupHeight = 700;
+    const left = window.screenX + (window.outerWidth - popupWidth) / 2;
+    const top = window.screenY + (window.outerHeight - popupHeight) / 2;
+    const popup = window.open(
+      `http://localhost:8888/seems/oauth2/authorization/${provider}`,
+      `${provider}Login`,
+      `width=${popupWidth},height=${popupHeight},left=${left},top=${top},resizable=yes,scrollbars=yes`
+    );
+    if (!popup) {
+      alert("팝업이 차단되었습니다. 팝업 허용 후 다시 시도해주세요.");
+    }
   };
 
   return (
@@ -243,7 +318,7 @@ import FaceModal from '../../components/modal/FaceModal';
       <form className={styles.signupForm} onSubmit={handleSubmit}>
         <div className={styles.profileImgWrap}>
           <img 
-            src={previewUrl || photoFile} 
+            src={previewUrl || logoSeems} 
             alt="프로필 이미지" 
             className={styles.profileImg}
           />
@@ -390,6 +465,21 @@ import FaceModal from '../../components/modal/FaceModal';
         onClose={() => setShowFaceModal(false)}
       />
       
+      <AdditionInfo
+        open={showAdditionInfoModal}
+        socialUserInfo={socialUserInfo}
+        onSubmit={(userData) => {
+          // 추가 정보 저장 성공 시 토큰 저장 및 대시보드로 이동
+          localStorage.setItem("accessToken", userData.accessToken);
+          localStorage.setItem("userName", userData.userName);
+          localStorage.setItem("userId", userData.userId);
+          localStorage.setItem("email", userData.email || userData.socialEmail);
+          localStorage.setItem("role", userData.role);
+          navigate("/userdashboard");
+        }}
+        onClose={() => setShowAdditionInfoModal(false)}
+      />
+      
       <div className={styles.loginLink}>
         이미 계정이 있으신가요?
         <span 
@@ -408,7 +498,7 @@ import FaceModal from '../../components/modal/FaceModal';
       <div className={styles.socialSignup}>
         <button 
           className={`${styles.socialBtn} ${styles.google}`}
-          onClick={() => handleSocialSignup('google')}
+          onClick={() => openSocialPopup('google')}
         >
           <img 
             src="https://img.icons8.com/color/24/000000/google-logo.png" 
@@ -420,7 +510,7 @@ import FaceModal from '../../components/modal/FaceModal';
         
         <button 
           className={`${styles.socialBtn} ${styles.naver}`}
-          onClick={() => handleSocialSignup('naver')}
+          onClick={() => openSocialPopup('naver')}
         >
           <img 
             src={naverIcon} 
@@ -432,7 +522,7 @@ import FaceModal from '../../components/modal/FaceModal';
         
         <button 
           className={`${styles.socialBtn} ${styles.kakao}`}
-          onClick={() => handleSocialSignup('kakao')}
+          onClick={() => openSocialPopup('kakao')}
         >
           <img 
             src={kakaoIcon} 
