@@ -41,7 +41,7 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => {
     // 요청이 성공해서, ok 가 전송왔을 때 공통 처리 내용 작성함
-    console.log("Axios 응답 성공 : ", response);
+    // console.log("Axios 응답 성공 : ", response); // 로그 제거
 
     // 응답 헤더에서 새로운 토큰이 있는지 확인
     const newAccessToken = response.headers["authorization"]?.split(" ")[1];
@@ -112,9 +112,23 @@ apiClient.interceptors.response.use(
           return true;
         } catch (error) {
           console.error("토큰 재발급 실패:", error);
-          // 재발급 실패 시 로그인 페이지로 리다이렉트
-          localStorage.clear();
-          window.location.href = "/";
+          
+          // 세션 연장 확인 알림창
+          const shouldExtendSession = window.confirm(
+            "세션이 만료되었습니다.\n\n세션을 연장하시겠습니까?\n\n확인: 다시 로그인\n취소: 현재 페이지 유지"
+          );
+          
+          if (shouldExtendSession) {
+            // 사용자가 세션 연장을 원하는 경우
+            localStorage.clear();
+            window.location.href = "/";
+          } else {
+            // 사용자가 세션 연장을 원하지 않는 경우
+            console.log("사용자가 세션 연장을 거부했습니다.");
+            // 현재 페이지 유지 (로그아웃 상태로)
+            localStorage.clear();
+          }
+          
           return false;
         }
       }

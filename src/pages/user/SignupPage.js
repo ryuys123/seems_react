@@ -31,9 +31,31 @@ import { AuthContext } from '../../AuthProvider';
   const [pendingFormData, setPendingFormData] = useState(null);
   const [showAdditionInfoModal, setShowAdditionInfoModal] = useState(false);
   const [socialUserInfo, setSocialUserInfo] = useState(null);
+  
+  // 비밀번호 조건 검증 상태
+  const [passwordValidation, setPasswordValidation] = useState({
+    length: false,      // 8자 이상 16자 이하
+    upperCase: false,   // 영문 대문자 포함
+    lowerCase: false,   // 영문 소문자 포함
+    number: false,      // 숫자 포함
+    specialChar: false  // 특수문자 포함
+  });
 
   const navigate = useNavigate();
   const { updateTokens } = useContext(AuthContext);
+
+  // 비밀번호 조건 검증 함수
+  const validatePassword = (password) => {
+    const validation = {
+      length: password.length >= 8 && password.length <= 16,
+      upperCase: /[A-Z]/.test(password),
+      lowerCase: /[a-z]/.test(password),
+      number: /[0-9]/.test(password),
+      specialChar: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)
+    };
+    setPasswordValidation(validation);
+    return Object.values(validation).every(Boolean);
+  };
 
   //previewUrl과 formData.id는 서로 다른 상태 변수이기 때문에,
   // 다음처럼 useEffect를 두 개로 분리하는 것이 가장 바람직함:
@@ -77,6 +99,11 @@ import { AuthContext } from '../../AuthProvider';
       }
     } else {
       setFormData({ ...formData, [name]: value });
+      
+      // 비밀번호 입력 시 실시간 검증
+      if (name === 'userPwd') {
+        validatePassword(value);
+      }
     }
   };
 
@@ -108,6 +135,12 @@ import { AuthContext } from '../../AuthProvider';
 
   //전송 전에 input 값 유효성 검사 처리
   const validate = () => {
+    // 비밀번호 조건 검증
+    if (!Object.values(passwordValidation).every(Boolean)) {
+      alert('비밀번호가 모든 조건을 만족하지 않습니다. 비밀번호 조건을 확인해주세요.');
+      return false;
+    }
+
     //암호와 암호 확인이 일치하는지 확인
     if (formData.userPwd !== formData.confirmPwd) {
       alert('비밀번호와 비밀번호 확인이 일치하지 않습니다. 다시 입력하세요.');
@@ -381,6 +414,53 @@ import { AuthContext } from '../../AuthProvider';
             onChange={handleChange}
             required
           />
+          
+          {/* 비밀번호 조건 체크리스트 */}
+          {formData.userPwd && (
+            <div className={styles.passwordValidation}>
+              <div className={styles.validationTitle}>비밀번호 조건</div>
+              <div className={styles.validationList}>
+                <div className={`${styles.validationItem} ${passwordValidation.length ? styles.valid : styles.invalid}`}>
+                  <span className={styles.validationIcon}>
+                    {passwordValidation.length ? '✅' : '❌'}
+                  </span>
+                  8자 이상 16자 이하
+                </div>
+                <div className={`${styles.validationItem} ${passwordValidation.upperCase ? styles.valid : styles.invalid}`}>
+                  <span className={styles.validationIcon}>
+                    {passwordValidation.upperCase ? '✅' : '❌'}
+                  </span>
+                  영문 대문자 포함
+                </div>
+                <div className={`${styles.validationItem} ${passwordValidation.lowerCase ? styles.valid : styles.invalid}`}>
+                  <span className={styles.validationIcon}>
+                    {passwordValidation.lowerCase ? '✅' : '❌'}
+                  </span>
+                  영문 소문자 포함
+                </div>
+                <div className={`${styles.validationItem} ${passwordValidation.number ? styles.valid : styles.invalid}`}>
+                  <span className={styles.validationIcon}>
+                    {passwordValidation.number ? '✅' : '❌'}
+                  </span>
+                  숫자 포함
+                </div>
+                <div className={`${styles.validationItem} ${passwordValidation.specialChar ? styles.valid : styles.invalid}`}>
+                  <span className={styles.validationIcon}>
+                    {passwordValidation.specialChar ? '✅' : '❌'}
+                  </span>
+                  특수문자 포함 (!@#$%^&*)
+                </div>
+              </div>
+              
+              {/* 전체 조건 만족 시 강도 표시 */}
+              {Object.values(passwordValidation).every(Boolean) && (
+                <div className={styles.passwordStrength}>
+                  <span className={styles.strengthIcon}>🔒</span>
+                  <span className={styles.strengthText}>강력한 비밀번호</span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
         
         <div className={styles.formGroup}>
