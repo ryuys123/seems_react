@@ -11,39 +11,19 @@ import Footer from '../../components/common/Footer';
 
 const UserDashboard = () => {
   const navigate = useNavigate();
-  const { userid } = useContext(AuthContext);
-  const [todayEmotion, setTodayEmotion] = useState(null);
+  const { userid, todayEmotion, fetchTodayEmotion } = useContext(AuthContext);
   const [isLoading, setIsLoading] = useState(true);
 
-  // ✅ 오늘의 감정 데이터 가져오기
+  // ✅ 오늘의 감정 데이터 가져오기 (전역 상태 사용)
   useEffect(() => {
-    const fetchTodayEmotion = async () => {
+    const loadTodayEmotion = async () => {
       if (!userid) {
         setIsLoading(false);
         return;
       }
       
       try {
-        // 기존 API 호출: /api/emotion-logs/{userId}
-        const response = await apiClient.get(`/api/emotion-logs/${userid}`);
-        
-        if (response.data && response.data.length > 0) {
-          // 오늘 날짜의 감정 기록 찾기
-          const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-          
-          const todayRecord = response.data.find(log => {
-            const logDate = new Date(log.createdAt).toISOString().split('T')[0];
-            return logDate === today;
-          });
-          
-          if (todayRecord) {
-            setTodayEmotion({
-              emotion: todayRecord.emotion.name, // 감정 이름
-              content: todayRecord.textContent,
-              createdAt: todayRecord.createdAt
-            });
-          }
-        }
+        await fetchTodayEmotion();
       } catch (error) {
         console.log('감정 데이터 조회 실패:', error);
       } finally {
@@ -51,12 +31,29 @@ const UserDashboard = () => {
       }
     };
 
-    fetchTodayEmotion();
-  }, [userid]);
+    loadTodayEmotion();
+  }, [userid]); // fetchTodayEmotion 의존성 제거
 
-  // ✅ 감정 아이콘 매핑
+  // 디버깅: todayEmotion 상태 변화 감지
+  useEffect(() => {
+    console.log('대시보드 todayEmotion 변경:', todayEmotion);
+  }, [todayEmotion]);
+
+  // ✅ 감정 아이콘 매핑 (한글 감정명 기준)
   const getEmotionIcon = (emotion) => {
     const emotionIcons = {
+      // 한글 감정명
+      '기쁨': '😄',
+      '슬픔': '😢', 
+      '화남': '😠',
+      '신남': '🤩',
+      '평온': '😌',
+      '불안': '😰',
+      '사랑': '🥰',
+      '놀람': '😲',
+      '피곤': '😴',
+      '혼란': '😕',
+      // 영어 감정명 (호환성)
       'happy': '😄',
       'sad': '😢', 
       'angry': '😠',
@@ -68,12 +65,14 @@ const UserDashboard = () => {
       'tired': '😴',
       'confused': '😕'
     };
+    console.log('getEmotionIcon 호출됨 - emotion:', emotion, '아이콘:', emotionIcons[emotion]);
     return emotionIcons[emotion] || '😐';
   };
 
-  // ✅ 감정 한글 이름 매핑
+  // ✅ 감정 한글 이름 매핑 (이미 한글인 경우 그대로 반환)
   const getEmotionName = (emotion) => {
     const emotionNames = {
+      // 영어 → 한글 변환
       'happy': '기쁨',
       'sad': '슬픔', 
       'angry': '화남',
@@ -85,7 +84,8 @@ const UserDashboard = () => {
       'tired': '피곤',
       'confused': '혼란'
     };
-    return emotionNames[emotion] || '감정';
+    // 이미 한글인 경우 그대로 반환, 영어인 경우 변환
+    return emotionNames[emotion] || emotion || '감정';
   };
 
   const handleQuickStart = () => {
@@ -231,7 +231,7 @@ const UserDashboard = () => {
             <button className={styles.summaryBtn} onClick={() => handleSummaryClick('/analysis')}>상세 보기</button>
           </div>
           <div className={styles.summaryCard}>
-            <div className={styles.summaryTitle}>상담/기록 요약</div>
+            <div className={styles.summaryTitle}>상담/검사 내역</div>
             <ul style={{margin: 0, padding: 0, listStyle: 'none'}}>
               <li>최근 상담: 2024-06-01</li>
               <li>최근 기록: 2024-06-02</li>

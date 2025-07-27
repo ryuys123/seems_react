@@ -6,7 +6,7 @@
 // 4. 로그아웃 및 리다이렉션 : 토큰 만료시 로그아웃 처리
 // 5. 안전한 서버측 api 요청 : 비동기 요청시 인증 토큰 포함해서 요청 수행 처리
 
-import { createContext, useState, useEffect } from "react";
+import { createContext, useState, useEffect, useCallback } from "react";
 import apiClient from "./utils/axios";
 
 
@@ -51,6 +51,9 @@ export const AuthProvider = ({ children }) => {
     username: "",
   });
 
+  // 감정 데이터 전역 상태 추가
+  const [todayEmotion, setTodayEmotion] = useState(null);
+
   // 브라우저에 이 컴포넌트가 랜더링될 때 (로드되어서 출력) 작동되는 훅임
   // window.onload = function(){ 페이지 출력될 때 자동 실행하는 코드 구문};  과 같은 기능을 수행하는 훅임
   // 처리 기능 : 마운트시 로그인 상태 확인 및 설정
@@ -65,6 +68,7 @@ export const AuthProvider = ({ children }) => {
         setAuthInfo({
           isLoggedIn: true,
           role: parsedToken.role,
+          userid: parsedToken.sub || parsedToken.userId || localStorage.getItem('userId') || localStorage.getItem('loggedInUserId') || "", // JWT에서 userid 추출, 없으면 localStorage에서
           username: parsedToken.name,
         });
         console.log("AuthProvider: 저장된 토큰으로 로그인 상태 복원 완료");
@@ -77,7 +81,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem("userId");
         localStorage.removeItem("email");
         localStorage.removeItem("role");
-        setAuthInfo({ isLoggedIn: false, role: "", username: "" });
+        setAuthInfo({ isLoggedIn: false, role: "", userid: "", username: "" });
         console.log("AuthProvider: 토큰 파싱 실패로 로그인 상태 초기화");
       }
     } else {
@@ -89,7 +93,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem("userId");
       localStorage.removeItem("email");
       localStorage.removeItem("role");
-      setAuthInfo({ isLoggedIn: false, role: "", username: "" });
+      setAuthInfo({ isLoggedIn: false, role: "", userid: "", username: "" });
       console.log("AuthProvider: 토큰 없음으로 로그인 상태 초기화");
     }
   }, []); //useEffect
@@ -104,7 +108,7 @@ export const AuthProvider = ({ children }) => {
     if (!authInfo.isLoggedIn) return;
 
     localStorage.clear();
-    setAuthInfo({ isLoggedIn: false, role: "", username: "" });
+    setAuthInfo({ isLoggedIn: false, role: "", userid: "", username: "" });
     window.location.href = "/";
   }; // logoutAndRedirect
 
@@ -129,6 +133,7 @@ export const AuthProvider = ({ children }) => {
         setAuthInfo({
           isLoggedIn: true,
           role: parsedToken.role,
+          userid: parsedToken.sub || parsedToken.userId || "", // JWT에서 userid 추출
           username: parsedToken.name, // ✅ 서버 필드명과 일치
         });
         console.log("로그인 성공 - authInfo 업데이트 완료");
@@ -284,6 +289,57 @@ export const AuthProvider = ({ children }) => {
     }
   }; // handleReissueTokens
 
+  // 감정 데이터 관련 함수들
+  const fetchTodayEmotion = useCallback(async () => {
+    if (!authInfo.userid) return null;
+    
+    try {
+      const response = await apiClient.get(`/api/emotion-logs/${authInfo.userid}`);
+      
+      if (response.data && response.data.length > 0) {
+        const today = new Date().toISOString().split('T')[0];
+        
+        const todayRecord = response.data.find(log => {
+          const logDate = new Date(log.createdAt).toISOString().split('T')[0];
+          return logDate === today;
+        });
+        
+        if (todayRecord) {
+          // emotion 데이터 구조 확인 및 안전한 접근
+          let emotionName = 'unknown';
+          if (todayRecord.emotion && todayRecord.emotion.emotionName) {
+            emotionName = todayRecord.emotion.emotionName;
+          } else if (todayRecord.emotion && todayRecord.emotion.name) {
+            emotionName = todayRecord.emotion.name;
+          } else if (todayRecord.emotionName) {
+            emotionName = todayRecord.emotionName;
+          } else if (todayRecord.emotion) {
+            emotionName = todayRecord.emotion;
+          }
+          
+          const emotionData = {
+            emotion: emotionName,
+            content: todayRecord.textContent,
+            createdAt: todayRecord.createdAt
+          };
+          setTodayEmotion(emotionData);
+          return emotionData;
+        }
+      }
+      setTodayEmotion(null);
+      return null;
+    } catch (error) {
+      console.error('오늘의 감정 데이터 조회 실패:', error);
+      setTodayEmotion(null);
+      return null;
+    }
+  }, [authInfo.userid]);
+
+  const updateTodayEmotion = (emotionData) => {
+    console.log('AuthProvider: 전역 감정 상태 업데이트:', emotionData);
+    setTodayEmotion(emotionData);
+  };
+
   // 다른 컴포넌트에 제공할 함수나 데이터는 반드시 AuthContext.Provider 의 value 에 추가해 놓아야 함
   // authInfo 작성하면 다른 컴포넌트에서 사용시 authInfo 로만 사용할 수 있음, authInfo.isLoggedIn
   // ...authInfo 작성하면 다름 컴포넌트에서 사용시, isLoggedIn 으로 바로 사용 가능함
@@ -295,6 +351,9 @@ export const AuthProvider = ({ children }) => {
         secureApiRequest,
         logoutAndRedirect,
         updateTokens,
+        todayEmotion,
+        fetchTodayEmotion,
+        updateTodayEmotion,
       }}
     >
       {children}
