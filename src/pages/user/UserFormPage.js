@@ -1,9 +1,10 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import UserHeader from '../../components/common/UserHeader';
 import logoSeems from '../../assets/images/logo_seems.png';
 import styles from './UserFormPage.module.css';
 import apiClient from '../../utils/axios';
+import { AuthContext } from '../../AuthProvider';
 
 const initialForm = {
   name: '',
@@ -22,6 +23,7 @@ const UserFormPage = () => {
   const [errors, setErrors] = useState({});
   const [showPasswordFields, setShowPasswordFields] = useState(false);
   const [loading, setLoading] = useState(true);
+  const { updateTokens } = useContext(AuthContext);
 
   // 사용자 정보 불러오기 (마운트 시)
   useEffect(() => {
@@ -51,21 +53,36 @@ const UserFormPage = () => {
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value || '',
-    }));
+    setFormData((prev) => {
+      const updated = {
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value || '',
+      };
+      console.log('formData 변경됨:', updated);
+      return updated;
+    });
   };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
+    console.log('파일 선택됨:', file);
+    
     if (file) {
       const reader = new FileReader();
       reader.onload = (evt) => {
-        setProfileImage(evt.target.result);
-        setFormData((prev) => ({ ...prev, profileImage: evt.target.result }));
+        const base64Data = evt.target.result;
+        console.log('Base64 데이터 생성됨:', base64Data.substring(0, 50) + '...');
+        setProfileImage(base64Data);
+        // base64 데이터를 formData에 저장 (서버 전송용)
+        setFormData((prev) => {
+          const updated = { ...prev, profileImage: base64Data };
+          console.log('formData 업데이트됨:', updated);
+          return updated;
+        });
       };
       reader.readAsDataURL(file);
+    } else {
+      console.log('파일이 선택되지 않음');
     }
   };
 
@@ -86,13 +103,49 @@ const UserFormPage = () => {
     const validation = validate();
     setErrors(validation);
     if (Object.keys(validation).length > 0) return;
+    
+    console.log('프로필 수정 요청 시작');
+    console.log('현재 formData:', formData);
+    console.log('프로필 이미지 데이터:', formData.profileImage ? formData.profileImage.substring(0, 50) + '...' : '없음');
+    
     try {
-      await apiClient.put('/user/info', {
-        userName: formData.name || '',
-        phone: formData.phone || '',
-        profileImage: formData.profileImage || '',
-        // notification: formData.notification, // 필요시 추가
+      // FormData 사용하여 multipart/form-data로 전송
+      const formDataToSend = new FormData();
+      formDataToSend.append('userName', formData.name || '');
+      formDataToSend.append('phone', formData.phone || '');
+      
+      // 프로필 이미지가 있는 경우에만 추가
+      if (formData.profileImage) {
+        // Base64 데이터를 Blob으로 변환
+        const base64Response = await fetch(formData.profileImage);
+        const blob = await base64Response.blob();
+        formDataToSend.append('profileImage', blob, 'profile.jpg');
+        console.log('FormData에 프로필 이미지 추가됨');
+      } else {
+        console.log('프로필 이미지가 없어서 추가하지 않음');
+      }
+      
+      console.log('전송할 FormData 내용:');
+      for (let [key, value] of formDataToSend.entries()) {
+        console.log(key, ':', value);
+      }
+      
+      const response = await apiClient.put('/user/info', formDataToSend, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
+      
+      console.log('프로필 수정 응답:', response.data);
+      
+      // 프로필 수정 성공 후 새로운 토큰이 응답에 포함되어 있다면 업데이트
+      if (response.data.accessToken && response.data.refreshToken) {
+        updateTokens(response.data.accessToken, response.data.refreshToken);
+        console.log('프로필 수정 후 토큰 업데이트 완료');
+      } else {
+        // 토큰이 없으면 localStorage의 userName만 업데이트
+        localStorage.setItem('userName', formData.name);
+        console.log('프로필 수정 후 localStorage userName 업데이트 완료');
+      }
+      
       alert('프로필이 성공적으로 수정되었습니다.');
       navigate('/userprofile');
     } catch (err) {
@@ -110,13 +163,18 @@ const UserFormPage = () => {
     setErrors(validation);
     if (Object.keys(validation).length > 0) return;
     try {
-      await apiClient.put('/user/info', {
+      // Base64 데이터를 JSON으로 전송
+      const requestData = {
         userName: formData.name || '',
         phone: formData.phone || '',
-        profileImage: formData.profileImage || '',
         currentPassword: formData.currentPassword,
         newPassword: formData.newPassword,
-        confirmPassword: formData.confirmPassword
+        confirmPassword: formData.confirmPassword,
+        profileImage: formData.profileImage || ''
+      };
+      
+      await apiClient.put('/user/info', requestData, {
+        headers: { 'Content-Type': 'application/json' },
       });
       alert('비밀번호가 성공적으로 변경되었습니다. 다시 로그인 해주세요.');
       setFormData({ ...formData, currentPassword: '', newPassword: '', confirmPassword: '' });

@@ -23,9 +23,13 @@ const UserProfilePage = () => {
     const fetchUserDetail = async () => {
       try {
         const res = await apiClient.get('/user/info'); // 또는 '/user/me' 서버에 맞게
+        console.log('사용자 정보 응답:', res.data);
+        console.log('프로필 이미지 데이터:', res.data.profileImage ? res.data.profileImage.substring(0, 50) + '...' : '없음');
+        console.log('프로필 이미지 타입:', typeof res.data.profileImage);
         setUserDetail(res.data);
         setError(null);
       } catch (err) {
+        console.error('사용자 정보 조회 실패:', err);
         setError('사용자 정보를 불러오지 못했습니다.');
       }
     };
@@ -62,10 +66,23 @@ const UserProfilePage = () => {
         <div className={styles.profileSection}>
           <div className={styles.profileAvatar}>
             {userDetail.profileImage ? (
-              <img src={userDetail.profileImage} alt="프로필" style={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover' }} />
-            ) : (
-              <span role="img" aria-label="avatar">🧑</span>
-            )}
+              <img 
+                src={userDetail.profileImage} 
+                alt="프로필" 
+                style={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover' }}
+                onLoad={() => {
+                  console.log('프로필 이미지 로드 성공');
+                }}
+                onError={(e) => {
+                  console.error('프로필 이미지 로드 실패:', e.target.src);
+                  console.error('프로필 이미지 데이터:', userDetail.profileImage ? userDetail.profileImage.substring(0, 100) + '...' : '없음');
+                  // 이미지 로드 실패 시 기본 아바타로 대체
+                  e.target.style.display = 'none';
+                  e.target.nextSibling.style.display = 'inline';
+                }}
+              />
+            ) : null}
+            <span role="img" aria-label="avatar" style={{ display: userDetail.profileImage ? 'none' : 'inline' }}>🧑</span>
           </div>
           <div className={styles.profileInfo}>
             <div className={styles.profileHeader}>

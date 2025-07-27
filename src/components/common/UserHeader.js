@@ -14,6 +14,9 @@ function UserHeader() {
   // 전역 상태 관리자 AuthProvider 에서 필요한 정보 가져오기
   const { isLoggedIn, username, role, logoutAndRedirect, userid } =
     useContext(AuthContext);
+  
+  // localStorage에서 최신 userName 가져오기 (프로필 수정 후 반영을 위해)
+  const [localUserName, setLocalUserName] = useState(localStorage.getItem('userName') || username);
 
   // 장착 뱃지 상태
   const [equippedBadge, setEquippedBadge] = useState(null);
@@ -33,6 +36,19 @@ function UserHeader() {
     if (userid) fetchEquippedBadge();
   }, [userid]);
 
+  // localStorage의 userName 변경 감지
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const newUserName = localStorage.getItem('userName');
+      if (newUserName && newUserName !== localUserName) {
+        setLocalUserName(newUserName);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [localUserName]);
+
   // 뱃지 REWARD_ID별 클래스
   const badgeClass =
     equippedBadge && equippedBadge.rewardId
@@ -48,7 +64,7 @@ function UserHeader() {
     <header className={styles.header}>
       <div className={styles.headerInner}>
         {/* 로고 섹션 */}
-        <Link to="/" style={{ textDecoration: "none" }}>
+        <Link to={isLoggedIn ? "/userdashboard" : "/"} style={{ textDecoration: "none" }}>
           <div className={styles.logoWrap}>
             <span className={styles.logoText}>
               <span className={styles.logoSee}>SEE</span>
@@ -68,7 +84,7 @@ function UserHeader() {
           style={{ display: "flex", alignItems: "center", gap: 12 }}
         >
           <span className={styles.userGreeting}>
-            {username ? `${username}님, 안녕하세요` : "안녕하세요"}
+            {localUserName ? `${localUserName}님, 안녕하세요` : "안녕하세요"}
           </span>
           {/* 장착 뱃지 노출 */}
           {equippedBadge && (

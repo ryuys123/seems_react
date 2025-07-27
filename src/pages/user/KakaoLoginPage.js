@@ -1,62 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { kakaoLogin } from '../../services/authService';
+import React from 'react';
 import styles from './KakaoLoginPage.module.css';
 
 const KakaoLoginPage = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    // 카카오 SDK 로드
-    const loadKakaoSDK = () => {
-      if (window.Kakao) {
-        if (!window.Kakao.isInitialized()) {
-          const kakaoAppKey = process.env.REACT_APP_KAKAO_APP_KEY || 'your_kakao_app_key';
-          window.Kakao.init(kakaoAppKey);
-        }
-      } else {
-        // 카카오 SDK가 로드되지 않은 경우 동적으로 로드
-        const script = document.createElement('script');
-        script.src = 'https://developers.kakao.com/sdk/js/kakao.js';
-        script.onload = () => {
-          const kakaoAppKey = process.env.REACT_APP_KAKAO_APP_KEY || 'your_kakao_app_key';
-          window.Kakao.init(kakaoAppKey);
-        };
-        document.head.appendChild(script);
-      }
-    };
-
-    loadKakaoSDK();
-  }, []);
-
-  const handleKakaoLogin = async () => {
-    setIsLoading(true);
-    setError('');
-    
-    try {
-      if (!window.Kakao) {
-        throw new Error('카카오 SDK가 로드되지 않았습니다.');
-      }
-
-      const result = await kakaoLogin();
-      
-      if (result.success) {
-        // 로그인 성공 시 메인 페이지로 이동
-        navigate('/dashboard');
-      }
-    } catch (error) {
-      console.error('카카오 로그인 에러:', error);
-      setError('로그인에 실패했습니다. 다시 시도해주세요.');
-      navigate('/');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleBackToLogin = () => {
-    navigate('/');
+  const handleKakaoLogin = () => {
+    window.location.href = 'http://localhost:8080/auth/kakao/login';
   };
 
   return (
@@ -66,11 +13,9 @@ const KakaoLoginPage = () => {
           <h1>카카오 로그인</h1>
           <p>카카오 계정으로 간편하게 로그인하세요</p>
         </div>
-
         <div className={styles.kakaoLoginSection}>
           <button
             onClick={handleKakaoLogin}
-            disabled={isLoading}
             className={styles.kakaoLoginBtn}
           >
             <div className={styles.kakaoIcon}>
@@ -81,23 +26,10 @@ const KakaoLoginPage = () => {
             <span>카카오로 시작하기</span>
           </button>
         </div>
-
-        {error && (
-          <div className={styles.errorMessage}>
-            {error}
-          </div>
-        )}
-
-        {isLoading && (
-          <div className={styles.loadingMessage}>
-            로그인 중...
-          </div>
-        )}
-
         <div className={styles.backButton}>
           <button 
             type="button" 
-            onClick={() => navigate('/')}
+            onClick={() => window.location.href = '/'}
             className={styles.backBtn}
           >
             다른 방법으로 로그인
