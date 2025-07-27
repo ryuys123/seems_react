@@ -2,6 +2,7 @@ import React, { useRef, useState, useContext } from "react";
 import { AuthContext } from "../../AuthProvider";
 import styles from "./FaceLoginPage.module.css";
 import axios from "axios";
+import { useNavigate } from "react-router-dom"; // Added useNavigate import
 
 const FaceLoginPage = () => {
   const { updateTokens } = useContext(AuthContext);
@@ -10,6 +11,7 @@ const FaceLoginPage = () => {
   const [step, setStep] = useState("idle"); // idle, camera, loading
   const [capturedImage, setCapturedImage] = useState(null);
   const [loginResult, setLoginResult] = useState(null);
+  const navigate = useNavigate(); // Added useNavigate hook
 
   // 버튼 클릭 핸들러
   const handleButtonClick = async () => {
@@ -52,8 +54,8 @@ const FaceLoginPage = () => {
           updateTokens(response.data.accessToken, response.data.refreshToken);
           
           alert("페이스 로그인 성공! 환영합니다, " + response.data.userName + "님!");
-          // 성공 시 메인 페이지로 이동
-          window.location.href = "/";
+          // 성공 시 대시보드로 이동 (navigate 사용)
+          navigate("/userdashboard");
         } else {
           alert("페이스 로그인 실패: " + (response.data.message || "다시 시도하세요."));
         }

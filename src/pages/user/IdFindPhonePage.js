@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import logoImage from '../../assets/images/logo_2.png';
 import styles from './IdFindPhonePage.module.css';
 import apiClient from '../../utils/axios'; // axios 인스턴스 추가
+import axios from 'axios'; // 직접 axios 사용을 위해 추가
 
 const IdFindPhone = () => {
   const navigate = useNavigate();
@@ -33,9 +34,15 @@ const IdFindPhone = () => {
       setIsLoading(true);
       setResultMessage('');
       try {
-        const response = await apiClient.post('/api/user/verification', { 
+        // 인증번호 요청은 토큰이 필요없는 공개 API이므로 직접 axios 사용
+        const response = await axios.post('http://localhost:8888/seems/api/user/verification', { 
           verificationType: 'SMS_SEND', 
+          name: formData.name,  // 이름 추가
           phone: formData.phone 
+        }, {
+          headers: {
+            'Content-Type': 'application/json'
+          }
         });
         
         if (response.data.success) {
@@ -93,10 +100,15 @@ const IdFindPhone = () => {
     setIsLoading(true);
     setResultMessage('');
     try {
-      const response = await apiClient.post('/api/user/verification', {
+      // 인증번호 확인도 토큰이 필요없는 공개 API이므로 직접 axios 사용
+      const response = await axios.post('http://localhost:8888/seems/api/user/verification', {
         verificationType: 'SMS_VERIFY',
         phone: formData.phone,
         verificationCode: formData.verifyCode
+      }, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
       
       if (response.data.success) {
@@ -120,10 +132,15 @@ const IdFindPhone = () => {
     setIsLoading(true);
     setResultMessage('');
     try {
-      const response = await apiClient.post('/api/user/verification', {
+      // 아이디 찾기도 토큰이 필요없는 공개 API이므로 직접 axios 사용
+      const response = await axios.post('http://localhost:8888/seems/api/user/verification', {
         verificationType: 'FIND_ID',
         name: formData.name, // 이름 필드 추가
         phone: formData.phone
+      }, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
       
       if (response.data.success) {
