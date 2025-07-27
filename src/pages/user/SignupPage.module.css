@@ -299,6 +299,69 @@ body {
   height: 24px;
 }
 
+/* 비밀번호 조건 검증 스타일 */
+.passwordValidation {
+  margin-top: 12px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.validationTitle {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--main-dark);
+  margin-bottom: 8px;
+}
+
+.validationList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.validationItem {
+  display: flex;
+  align-items: center;
+  font-size: 0.85rem;
+  transition: color 0.2s ease;
+}
+
+.validationItem.valid {
+  color: #28a745;
+}
+
+.validationItem.invalid {
+  color: #dc3545;
+}
+
+.validationIcon {
+  margin-right: 8px;
+  font-size: 0.8rem;
+}
+
+.passwordStrength {
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: #d4edda;
+  border: 1px solid #c3e6cb;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.strengthIcon {
+  margin-right: 6px;
+}
+
+.strengthText {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #155724;
+}
+
 @media (max-width: 500px) {
   .signupContainer {
     padding: 24px 16px;
@@ -307,5 +370,13 @@ body {
   .formRow {
     flex-direction: column;
     gap: 16px;
+  }
+  
+  .passwordValidation {
+    padding: 12px;
+  }
+  
+  .validationItem {
+    font-size: 0.8rem;
   }
 }
