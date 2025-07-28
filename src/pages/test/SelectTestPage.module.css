@@ -1,3 +1,4 @@
+/* --- 기존 CSS 스타일 유지 (변경 없음) --- */
 .selectTestContainer {
   display: flex;
   flex-direction: column;
@@ -6,10 +7,11 @@
   width: 100%;
 }
 
+/* 기존 h1 스타일을 'AI 이미지 심리 분석'에 적용 */
 .selectTestContainer h1 {
   font-size: 2.5em;
   color: #2c3e50;
-  margin-bottom: 30px;
+  margin-bottom: 10px; /* 설명 글이 바로 아래 오므로 마진을 줄임 */
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
 
@@ -78,17 +80,16 @@
 
 .bottomGridContainer {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr; /* 2단 그리드 유지 */
   gap: 2rem;
-  width: 90%;
+  width: 90%; /* 전체 너비 유지 */
   max-width: 1440px; /* Increased max-width for wider layouts */
   margin-top: 20px;
 }
 
-.rightSideContainer {
-  display: flex;
+.gridItem {
+  display: flex; /* 내부 testSection이 꽉 채우도록 */
   flex-direction: column;
-  gap: 2rem;
 }
 
 /* --- Responsive Design --- */
@@ -118,6 +119,10 @@
   }
   .bottomGridContainer {
     width: 95%;
+  }
+  /* .subheading도 작은 화면에서 글꼴 크기 조정 */
+  .subheading {
+    font-size: 1.8em; /* 2em -> 1.8em로 약간 줄임 */
   }
 }
 
@@ -149,28 +154,49 @@
 .secondaryButton:hover {
   background-color: #7f8c8d !important;
 }
-/* Add this new style for the grid container */
-.groupedSection {
-  display: grid;
-  grid-template-columns: 1fr 1fr; /* Create two equal columns */
-  gap: 2rem; /* Adjust the space between the two sections */
-  width: 90%;
-  max-width: 700px;
-}
 
-/* Make it a single column on smaller screens for responsiveness */
-@media (max-width: 768px) {
-  .groupedSection {
-    grid-template-columns: 1fr;
-  }
-}
-/* Add this for the new subheading */
+/*
+  기존 .subheading는 h2에 적용되었으나,
+  '일반 심리 검사'는 h1으로, '정신 건강 검사'는 h2로 사용하므로
+  .subheading의 스타일을 수정하고, 필요하다면 h1에도 적용합니다.
+*/
 .subheading {
-  font-size: 2em;
+  font-size: 2em; /* h2에 대한 기본 크기 */
   color: #2c3e50;
-  margin-top: 40px;
+  margin-top: 40px; /* 이전 섹션과의 간격 조절 */
   margin-bottom: 10px;
   width: 90%;
   max-width: 1440px;
   text-align: left;
+}
+
+/* '일반 심리 검사'의 h1에도 subheading과 유사한 스타일을 적용합니다. */
+.selectTestContainer h1:nth-of-type(2) {
+  /* 두 번째 h1 (일반 심리 검사)에 적용 */
+  font-size: 2.5em; /* 기존 h1과 동일하게 또는 더 크게 설정 */
+  color: #2c3e50;
+  margin-top: 40px; /* AI 이미지 검사 섹션과의 간격 */
+  margin-bottom: 10px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+  width: 100%; /* 전체 너비 */
+  max-width: 1440px;
+  text-align: center; /* 필요하다면 중앙 정렬 */
+}
+
+/* Add this for the section description */
+.sectionDescription {
+  color: #555;
+  margin-bottom: 25px; /* 설명 아래에 다른 요소가 오도록 마진 추가 */
+  line-height: 1.6;
+  font-size: 1.1em;
+  width: 90%; /* .subheading와 동일한 너비로 설정 */
+  max-width: 1440px; /* .subheading와 동일한 최대 너비로 설정 */
+  text-align: left; /* 왼쪽 정렬 */
+}
+/* 추가적인 미디어 쿼리 조정 (선택 사항) */
+@media (max-width: 768px) {
+  .sectionDescription {
+    font-size: 1em;
+    width: 95%; /* 작은 화면에서는 더 넓게 */
+  }
 }
