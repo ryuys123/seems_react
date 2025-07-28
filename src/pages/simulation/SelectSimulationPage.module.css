@@ -1,173 +1,211 @@
-/* --- 전체 레이아웃 --- */
+/* src/pages/simulation/SelectSimulationPage.module.css */
+
 .container {
-  width: 100%;
-  max-width: 900px; /* 너무 넓어지지 않게 최대 너비 설정 */
-  margin: 0 auto; /* 페이지 중앙 정렬 */
-  padding: 20px;
-  box-sizing: border-box; /* 패딩이 너비에 포함되도록 설정 */
   display: flex;
   flex-direction: column;
-  gap: 20px; /* 요소 사이의 간격 */
-}
-
-.pageDescription {
-  text-align: center;
-  font-size: 1.1rem;
-  color: #666;
-  margin-bottom: 20px;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 100vh;
+  padding: 20px;
+  background: linear-gradient(
+    135deg,
+    #e0f2f7 0%,
+    #c8e6c9 100%
+  ); /* 시뮬레이션 테스트 페이지와 동일한 그라데이션 배경 */
+  font-family: "Noto Sans KR", sans-serif;
+  color: #4caf50; /* 주 색상: 따뜻한 초록색 */
+  overflow-y: auto;
 }
 
 .title {
-  font-size: 1.8rem;
-  font-weight: bold;
-  color: #333;
+  font-size: 2.2em;
+  color: #388e3c; /* 진한 초록색 */
   margin-top: 20px;
-  margin-bottom: 10px;
-  padding-left: 10px;
-  border-left: 5px solid #8e44ad; /* 포인트 색상으로 왼쪽에 테두리 */
-}
-
-.divider {
-  border: 0;
-  height: 1px;
-  background-color: #e0e0e0;
-  margin: 40px 0;
-}
-
-/* --- 카드 공통 스타일 --- */
-.card {
-  background-color: #ffffff;
-  border-radius: 15px;
-  padding: 25px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); /* 부드러운 그림자 효과 */
-  border: 1px solid #f0f0f0;
-  display: flex;
-  flex-direction: column;
-}
-
-.cardTitle {
-  font-size: 1.5rem;
+  margin-bottom: 30px;
   font-weight: bold;
-  color: #2c3e50;
-  margin-bottom: 10px;
-}
-
-.cardDesc {
-  font-size: 1rem;
-  color: #555;
-  line-height: 1.6; /* 줄 간격 */
-}
-
-/* --- 1. 맞춤형 극복 시뮬레이션 카드 --- */
-.healingCard {
-  background: linear-gradient(
-    135deg,
-    #f3e5f5,
-    #e1bee7
-  ); /* 부드러운 보라색 계열 그라데이션 */
-  align-items: center; /* 내용물 중앙 정렬 */
+  letter-spacing: -0.5px;
   text-align: center;
 }
 
+.card {
+  background-color: rgba(255, 255, 255, 0.95); /* 반투명 흰색 배경 */
+  border-radius: 20px; /* 둥근 모서리 */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); /* 은은한 그림자 */
+  padding: 40px;
+  margin-bottom: 30px;
+  width: 90%;
+  max-width: 700px; /* 최대 너비 제한 */
+  text-align: center;
+  position: relative; /* 로딩 오버레이를 위해 */
+  overflow: hidden;
+}
+
+.healingCard {
+  /* 이미 .card에 공통 스타일 적용되어 있으므로 추가 스타일 필요시 여기에 정의 */
+  border: 1px solid rgba(76, 175, 80, 0.2); /* 연한 초록색 테두리 */
+}
+
 .cardIcon {
-  font-size: 2.5rem;
+  font-size: 3em; /* 아이콘 크기 */
   margin-bottom: 15px;
+  color: #ffd700; /* 금색 하트 */
 }
 
-.healingPrompt {
-  margin-top: 15px;
-  font-size: 0.95rem;
-  color: #5e35b1;
-}
-
-.healingButton {
-  background-color: #8e44ad;
-  color: white;
-  font-size: 1.1rem;
+.cardTitle {
+  font-size: 1.8em;
+  color: #2e7d32; /* 진한 초록색 */
+  margin-bottom: 15px;
   font-weight: bold;
-  border: none;
-  border-radius: 10px;
-  padding: 12px 25px;
-  margin-top: 20px;
-  cursor: pointer;
-  transition:
-    background-color 0.2s,
-    transform 0.2s;
 }
 
-.healingButton:hover {
-  background-color: #9b59b6;
-  transform: scale(1.03);
-}
-
-/* --- 2. 오늘의 랜덤 시뮬레이션 카드 --- */
-.cardsWrapper {
-  display: flex;
-  justify-content: center; /* 단일 카드를 중앙에 배치 */
-  align-items: center;
-}
-
-.themedCard {
-  width: 100%;
-  max-width: 450px; /* 카드의 최대 너비 제한 */
-  cursor: pointer;
-  transition:
-    transform 0.3s ease,
-    box-shadow 0.3s ease;
-}
-
-.themedCard:hover {
-  transform: translateY(-8px); /* 위로 살짝 떠오르는 효과 */
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
-}
-
-.cardImage {
-  width: 100%;
-  height: 200px;
-  object-fit: cover; /* 이미지가 카드 비율에 맞게 잘리도록 설정 */
-  border-radius: 10px;
+.cardDesc {
+  font-size: 1.1em;
+  line-height: 1.6;
+  color: #555; /* 부드러운 회색 */
   margin-bottom: 20px;
 }
 
-.cardContent {
-  flex-grow: 1; /* 내용이 이미지 아래 공간을 채우도록 함 */
+.healingPrompt {
+  font-size: 1em;
+  color: #757575; /* 연한 회색 */
+  margin-bottom: 25px;
+  font-style: italic;
 }
 
-/* --- 반응형 웹 디자인 (모바일 화면) --- */
+.healingButton {
+  background-color: #81c784; /* 밝은 초록색 */
+  color: white;
+  padding: 15px 30px;
+  border: none;
+  border-radius: 30px; /* 둥근 알약형 버튼 */
+  font-size: 1.2em;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* 버튼 그림자 */
+  font-weight: 500;
+  width: auto; /* 내용에 맞게 너비 조절 */
+  display: inline-block; /* 중앙 정렬을 위해 */
+  margin: 0 10px; /* 버튼 사이 간격 */
+}
+
+.healingButton:hover {
+  background-color: #66bb6a; /* 호버 시 약간 진하게 */
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+}
+
+.healingButton:disabled {
+  background-color: #b2dfdb;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+/* --- 최근 시뮬레이션 요약 섹션 --- */
+.recentSummarySection {
+  background-color: #f0f7f4; /* 시뮬레이션 테스트 페이지의 narrativeSection 배경색과 유사 */
+  border-radius: 15px;
+  padding: 25px 30px;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(76, 175, 80, 0.2);
+  margin-top: 20px;
+  text-align: left; /* 텍스트 좌측 정렬 */
+}
+
+.recentSummarySection h3 {
+  font-size: 1.5em;
+  color: #388e3c;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.recentSummarySection p {
+  font-size: 1.1em;
+  line-height: 1.6;
+  color: #424242;
+  margin-bottom: 10px;
+}
+
+.recentSummarySection strong {
+  color: #2e7d32; /* 강조 텍스트 */
+}
+
+.summaryText {
+  font-style: italic;
+  color: #616161;
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.summaryActions {
+  display: flex;
+  justify-content: center; /* 버튼 중앙 정렬 */
+  gap: 15px; /* 버튼 사이 간격 */
+  margin-top: 25px;
+}
+
+.retryButton {
+  background-color: #ffab91; /* 따뜻한 주황색 (새로운 시작 느낌) */
+  color: white;
+  padding: 15px 30px;
+  border: none;
+  border-radius: 30px;
+  font-size: 1.2em;
+  cursor: pointer;
+  transition:
+    background-color 0.3s ease,
+    transform 0.2s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.retryButton:hover {
+  background-color: #ff8a65;
+  transform: translateY(-2px);
+}
+
+/* 로딩 메시지 */
+.loadingMessage,
+.errorMessage {
+  font-size: 1.2em;
+  color: #555;
+  text-align: center;
+  padding: 20px;
+}
+
+.errorMessage {
+  color: red;
+}
+
+/* 반응형 디자인 */
 @media (max-width: 768px) {
-  .container {
-    padding: 15px;
+  .card {
+    padding: 25px;
+    width: 95%;
   }
-
   .title {
-    font-size: 1.5rem;
+    font-size: 1.8em;
   }
-
   .cardTitle {
-    font-size: 1.3rem;
+    font-size: 1.5em;
   }
-
-  .sectionIntro {
-    text-align: center;
-    padding: 0 20px;
-    color: #555;
-    font-size: 1rem;
-    line-height: 1.7;
-    margin-top: -10px; /* 제목과의 간격 조절 */
-    margin-bottom: 20px;
+  .cardDesc,
+  .healingPrompt,
+  .healingButton,
+  .recentSummarySection p {
+    font-size: 1em;
   }
-
-  .analysisTarget {
-    margin-top: 20px;
-    padding: 15px;
-    background-color: #f8f9fa; /* 배경색으로 구분 */
-    border-radius: 8px;
-    font-size: 0.95rem;
-    color: #34495e;
-    border-left: 4px solid #1abc9c; /* 포인트 색상 */
+  .healingButton,
+  .retryButton {
+    padding: 12px 25px;
+    font-size: 1.1em;
   }
-
-  .analysisTarget strong {
-    color: #16a085;
+  .summaryActions {
+    flex-direction: column; /* 모바일에서 버튼 세로 정렬 */
+    gap: 10px;
+  }
+  .healingButton,
+  .retryButton {
+    width: 100%; /* 모바일에서 버튼 전체 너비 */
   }
 }
