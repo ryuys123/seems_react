@@ -427,7 +427,6 @@ const EmotionRecordPage = () => {
           </div>
         </div>
       </main>
-      //표정기반 감정분석 모달창
       {showWebcamModal && (
         <div className={styles["webcam-modal"]}>
           <div className={styles["webcam-container"]}>

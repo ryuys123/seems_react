@@ -248,7 +248,7 @@ export default function AnalysisPage() {
               )}
               {latestResult.dominantEmotion && (
                 <p className={styles.highlightBox}>
-                  AI가 분석한 당신의 주요 감정! 이 감정을 극복하고 싶다면<br /> 맞춤형 퀘스트, 시뮬레이션, 컨텐츠를 활용해보세요.
+                  AI가 분석한 당신의 주요 감정! 이 감정을 극복하고 싶다면<br /> 맞춤형 퀘스트, 시뮬레이션, 콘텐츠를 활용해보세요.
                 </p>
               )}
               {/* <p>
