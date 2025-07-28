@@ -18,7 +18,7 @@ import IdFindEmailPage from '../pages/user/IdFindEmailPage';
 import GoogleLoginPage from '../pages/user/GoogleLoginPage';
 import KakaoLoginPage from '../pages/user/KakaoLoginPage';
 import NaverLoginPage from '../pages/user/NaverLoginPage';
-import SocialLoginCallback from '../pages/user/SocialLoginCallback';
+import SocialResult from '../pages/user/SocialResult';
 import FaceLoginPage from '../pages/user/FaceLoginPage';
 import FaceSignupPage from '../pages/user/FaceSignupPage';
 
@@ -88,8 +88,8 @@ const userRoutes = [
     element: <NaverLoginPage />,
   },
   {
-    path: '/auth/callback',
-    element: <SocialLoginCallback />,
+    path: '/social-result',
+    element: <SocialResult />,
   },
   {
     path: '/facelogin',
@@ -98,7 +98,7 @@ const userRoutes = [
   {
     path: '/facesignup',
     element: <FaceSignupPage />,
-  }
+  },
 ];
 
 export default userRoutes;

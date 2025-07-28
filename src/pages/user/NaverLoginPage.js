@@ -3,7 +3,7 @@ import styles from './NaverLoginPage.module.css';
 
 const NaverLoginPage = () => {
   const handleNaverLogin = () => {
-    window.location.href = 'http://localhost:8080/auth/naver/login';
+    window.location.href = 'http://localhost:8888/seems/oauth2/authorization/naver';
   };
 
   return (
