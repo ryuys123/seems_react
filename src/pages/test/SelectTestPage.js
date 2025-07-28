@@ -239,7 +239,7 @@ const SelectTestPage = () => {
               </div>
             ) : (
               <>
-                <p>자신의 우울감 수준을 간단한 설문을 통해 확인해보세요.</p>
+                <p>자신의 우울감 수준을 설문을 통해 확인해보세요.</p>
                 <button
                   onClick={() =>
                     handleStartSensitiveTest("/psychological-test/depression")
