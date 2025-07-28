@@ -34,7 +34,7 @@ function FaqListPage({ searchResults }) {
     try {
       setLoading(true); // 로딩 상태 시작
       const response = await secureApiRequest(
-        `/faq/my?page=${page}&userId=${userid}&role=${role}`,
+        `/faq?page=${page}&userId=${userid}&role=${role}`,
         {
           method: "GET",
         }
@@ -193,4 +193,3 @@ function FaqListPage({ searchResults }) {
 }
 
 export default FaqListPage;
-
