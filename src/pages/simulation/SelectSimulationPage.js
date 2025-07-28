@@ -53,7 +53,7 @@ export default function SelectSimulationPage() {
             depressionResult.riskLevel &&
             depressionResult.riskLevel.includes("심각")
           ) {
-            recommendedTopic = "우울감 다루기";
+            recommendedTopic = "극복 시뮬레이션";
           }
           setUserProfile({
             summary: summaryData.analysisComment,
@@ -177,7 +177,6 @@ export default function SelectSimulationPage() {
           <p>데이터를 불러오는 중입니다...</p>
         ) : userProfile ? (
           <>
-            <div className={styles.cardIcon}>💖</div>
             <div className={styles.cardTitle}>나를 위한 시나리오</div>
             {/* 최근 시뮬레이션 요약 결과 표시 */}
             {recentSimulationSummary ? (
