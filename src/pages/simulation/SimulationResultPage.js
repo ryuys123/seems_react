@@ -4,9 +4,8 @@ import React, { useState, useEffect } from "react";
 // ✅ useParams 임포트 추가
 import { useNavigate, useParams } from "react-router-dom";
 import styles from "./SimulationResultPage.module.css";
-// ✅ apiClient 임포트 (상세 결과를 fetch할 때 사용)
 import apiClient from "../../utils/axios";
-import UserHeader from "../../components/common/UserHeader"; // UserHeader 추가 (Consistent UI)
+import UserHeader from "../../components/common/UserHeader";
 
 console.log("--- SimulationResultPage.js 파일 로드됨 ---");
 
@@ -21,13 +20,13 @@ export default function SimulationResultPage() {
   const [error, setError] = useState(null);
 
   console.log("SimulationResultPage 컴포넌트 렌더링 시작");
-  console.log("Setting ID from URL parameters:", settingId); // URL에서 가져온 settingId 확인
+  console.log("Setting ID from URL parameters:", settingId);
 
   useEffect(() => {
-    // settingId가 없을 경우 리다이렉트
+    // settingId가 없을 경우 또는 유효하지 않을 경우 리다이렉트
     if (!settingId) {
       console.log("settingId가 없습니다. 시뮬레이션 선택 페이지로 리다이렉트");
-      navigate("/simulation"); // 메인 시뮬레이션 선택 페이지로 이동
+      navigate("/simulation");
       return;
     }
 
@@ -37,13 +36,13 @@ export default function SimulationResultPage() {
         // ✅ 백엔드에서 특정 settingId의 상세 결과 데이터를 가져오는 API 호출
         // 백엔드 SimulationController에 GET /api/simulation/result-details/{settingId} API가 필요합니다.
         const response = await apiClient.get(
-          `api/simulation/result-details/${settingId}`
+          `/api/simulation/result-details/${settingId}`
         );
         setAnalysisResult(response.data);
       } catch (err) {
         console.error("상세 결과 불러오기 실패:", err);
         setError("상세 결과를 불러오는 데 실패했습니다.");
-        // 실패 시 시뮬레이션 선택 페이지로 돌아갈 수 있음
+        // 오류 발생 시 시뮬레이션 선택 페이지로 돌아갈 수 있음
         // navigate("/simulation");
       } finally {
         setIsLoading(false);
@@ -74,8 +73,8 @@ export default function SimulationResultPage() {
     );
   }
 
+  // 로딩도 아니고 에러도 없는데 analysisResult가 null이면 데이터 없는 경우
   if (!analysisResult) {
-    // 로딩도 아니고 에러도 없는데 analysisResult가 null이면 데이터 없는 경우
     return (
       <div className={styles.loadingMessage}>
         결과 데이터를 찾을 수 없습니다.
@@ -91,8 +90,9 @@ export default function SimulationResultPage() {
 
   return (
     <div className={styles.resultContainer}>
-      <UserHeader /> {/* 사용자 헤더 추가 */}
+      <UserHeader />
       <h2 className={styles.pageTitle}>맞춤형 극복 시뮬레이션 결과 ✨</h2>
+
       {/* 스트레스 및 우울감 변화 섹션 */}
       <div className={styles.scoreChangeSection}>
         <h3 className={styles.sectionTitle}>당신의 변화 여정</h3>
@@ -132,6 +132,7 @@ export default function SimulationResultPage() {
           감소했을 것으로 예상됩니다.
         </p>
       </div>
+
       {/* 결과 제목 섹션 */}
       {analysisResult.resultTitle && (
         <div className={styles.infoSection}>
@@ -141,11 +142,13 @@ export default function SimulationResultPage() {
           </p>
         </div>
       )}
+
       {/* 심리 분석 요약 섹션 */}
       <div className={styles.infoSection}>
         <h3 className={styles.sectionTitle}>당신의 시뮬레이션 요약:</h3>
         <p className={styles.summaryText}>{analysisResult.resultSummary}</p>
       </div>
+
       {/* 긍정적 기여 요인 섹션 */}
       {analysisResult.positiveContributionFactors && (
         <div className={styles.infoSection}>
@@ -155,12 +158,13 @@ export default function SimulationResultPage() {
           </p>
         </div>
       )}
+
       {/* 다시 시뮬레이션하기 버튼 */}
       <button
         className={styles.retryButton}
         onClick={() => navigate("/simulation")}
       >
-        다른 시뮬레이션 하기 🌳
+        돌아가기 🌳
       </button>
     </div>
   );
