@@ -42,21 +42,6 @@
   margin-bottom: 24px;
 }
 
-.profileImg {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 3px solid #4b94d0;
-  margin-bottom: 12px;
-  cursor: pointer;
-  transition: border-color 0.2s;
-}
-
-.profileImg:hover {
-  border-color: #ef770c;
-}
-
 .fileInput {
   display: none;
 }
@@ -128,4 +113,143 @@
 
 .cancelBtn:hover {
   background: #e9ecef;
+}
+
+/* 프로필 이미지 관련 스타일 */
+.profileImageContainer {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 16px auto;
+  border-radius: 50%;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.profileImageContainer:hover {
+  transform: scale(1.05);
+}
+
+.profileImageContainer:hover .imageOverlay {
+  opacity: 1;
+}
+
+.profileImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border: 3px solid #e9ecef;
+  border-radius: 50%;
+}
+
+.imageOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: 50%;
+}
+
+.changeText {
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.imageInfo {
+  margin-bottom: 20px;
+}
+
+.imageNote {
+  color: #6c757d;
+  font-size: 0.85rem;
+  margin: 0 0 12px 0;
+  line-height: 1.4;
+}
+
+.imageChangeBtn {
+  background: #4ecdc4;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.imageChangeBtn:hover {
+  background: #45b7aa;
+}
+
+/* 비밀번호 조건 검증 스타일 */
+.passwordValidation {
+  margin-top: 12px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+  text-align: left;
+}
+
+.validationTitle {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.validationList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.validationItem {
+  display: flex;
+  align-items: center;
+  font-size: 0.85rem;
+  transition: color 0.2s ease;
+}
+
+.validationItem.valid {
+  color: #28a745;
+}
+
+.validationItem.invalid {
+  color: #dc3545;
+}
+
+.validationIcon {
+  margin-right: 8px;
+  font-size: 0.8rem;
+}
+
+.passwordStrength {
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: #d4edda;
+  border: 1px solid #c3e6cb;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.strengthIcon {
+  margin-right: 6px;
+}
+
+.strengthText {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #155724;
 }

@@ -32,6 +32,14 @@ import { AuthContext } from '../../AuthProvider';
   const [showAdditionInfoModal, setShowAdditionInfoModal] = useState(false);
   const [socialUserInfo, setSocialUserInfo] = useState(null);
   
+
+  
+  // 디버깅용: 모달 상태 변화 추적
+  React.useEffect(() => {
+    console.log('🚨 showAdditionInfoModal 상태 변경:', showAdditionInfoModal);
+    console.log('🚨 socialUserInfo 상태 변경:', socialUserInfo);
+  }, [showAdditionInfoModal, socialUserInfo]);
+  
   // 비밀번호 조건 검증 상태
   const [passwordValidation, setPasswordValidation] = useState({
     length: false,      // 8자 이상 16자 이하
@@ -262,11 +270,24 @@ import { AuthContext } from '../../AuthProvider';
   // 팝업 창에서 소셜 로그인/회원가입 성공 시 메인 창에서 처리
   React.useEffect(() => {
     const handleMessage = (event) => {
-      console.log('받은 메시지:', event.data); // 디버깅용 로그 추가
+      console.log('🚨 받은 메시지:', event.data); // 디버깅용 로그 추가
+      console.log('🚨 메시지 타입:', event.data?.type);
+      console.log('🚨 isExistingUser:', event.data?.isExistingUser);
+      console.log('🚨 받은 데이터 키들:', Object.keys(event.data || {})); // 어떤 키들이 있는지 확인
+      console.log('🚨 tempToken 존재:', !!event.data?.tempToken);
+      console.log('🚨 sessionId 존재:', !!event.data?.sessionId);
       try {
-        if (event.data && event.data.type === "social-login-success" && event.data.token) {
+        // 소셜 로그인/회원가입 관련 메시지 처리 (더 포괄적으로)
+        if (event.data && (
+          event.data.type === "social-login-success" || 
+          event.data.type === "social-signup-complete" ||
+          event.data.type === "social-auth-result" ||
+          event.data.type === "social-signup-needed"
+        )) {
+          console.log('🚨 소셜 인증 메시지 감지됨');
         // 기존 사용자인 경우 - 바로 로그인 처리
-        if (event.data.isExistingUser) {
+        if (event.data.isExistingUser === true) {
+          console.log('🚨 기존 사용자 로그인 처리');
           // 1. 토큰 저장 (key를 'accessToken'으로 변경)
           // 1. AuthProvider의 updateTokens 함수 호출하여 authInfo 업데이트 (토큰 저장도 함께 처리)
           updateTokens(event.data.token, event.data.refreshToken || "");
@@ -279,13 +300,24 @@ import { AuthContext } from '../../AuthProvider';
           navigate("/userdashboard");
         } else {
           // 신규 사용자인 경우 - 추가 정보 입력 모달 열기
-                      setSocialUserInfo({
-              socialId: event.data.socialId,
-              provider: event.data.provider,
-              email: event.data.email || event.data.socialEmail,
-              userName: event.data.userName,
-              profileImage: event.data.profileImage
-            });
+          console.log('🚨 신규 사용자 - AdditionInfo 모달 열기');
+          console.log('🚨 socialUserInfo 설정:', {
+            socialId: event.data.socialId,
+            provider: event.data.provider,
+            email: event.data.email || event.data.socialEmail,
+            userName: event.data.userName,
+            profileImage: event.data.profileImage,
+            sessionId: event.data.sessionId || event.data.tempToken // 둘 다 지원
+          });
+          setSocialUserInfo({
+            socialId: event.data.socialId,
+            provider: event.data.provider,
+            email: event.data.email || event.data.socialEmail,
+            userName: event.data.userName,
+            profileImage: event.data.profileImage,
+            sessionId: event.data.sessionId || event.data.tempToken // 둘 다 지원
+          });
+          console.log('🚨 setShowAdditionInfoModal(true) 호출');
           setShowAdditionInfoModal(true);
         }
       }
@@ -297,25 +329,99 @@ import { AuthContext } from '../../AuthProvider';
     return () => window.removeEventListener("message", handleMessage);
   }, []);
 
+  // 페이지 로드 시 URL 파라미터에서 소셜 로그인 결과 확인
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const socialData = urlParams.get('socialData');
+    
+    if (socialData) {
+      try {
+        const parsedData = JSON.parse(decodeURIComponent(socialData));
+        console.log('URL에서 소셜 데이터 받음:', parsedData);
+        
+        if (parsedData.isExistingUser === false) {
+          setSocialUserInfo({
+            socialId: parsedData.socialId,
+            provider: parsedData.provider,
+            email: parsedData.email || parsedData.socialEmail,
+            userName: parsedData.userName,
+            profileImage: parsedData.profileImage,
+            sessionId: parsedData.sessionId
+          });
+          setShowAdditionInfoModal(true);
+          
+          // URL 정리
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+      } catch (error) {
+        console.error('소셜 데이터 파싱 오류:', error);
+      }
+    }
+  }, []);
+
   const handleSocialSignup = (provider) => {
     // 소셜 회원가입 로직 구현
     console.log(`${provider} 회원가입 시도`);
     
-    // Spring Security OAuth2 엔드포인트로 직접 이동 (포트 8888 사용)
-    switch (provider) {
-      case "google":
-        window.location.href = "http://localhost:8888/seems/oauth2/authorization/google";
-        break;
-      case "kakao":
-        window.location.href = "http://localhost:8888/seems/oauth2/authorization/kakao";
-        break;
-      case "naver":
-        window.location.href = "http://localhost:8888/seems/oauth2/authorization/naver";
-        break;
-      default:
-        console.log(`지원하지 않는 소셜 로그인: ${provider}`);
-    }
+    // 백엔드 호출 후 결과를 직접 처리
+    window.location.href = `http://localhost:8888/seems/oauth2/authorization/${provider}`;
   };
+
+  // 페이지가 로드될 때 현재 페이지의 내용이 JSON인지 확인
+  useEffect(() => {
+    // 페이지 로드 직후 약간의 지연을 두고 체크
+    const checkForSocialData = () => {
+      try {
+        const bodyText = document.body.innerText || document.body.textContent;
+        console.log('페이지 내용 확인:', bodyText.substring(0, 100));
+        
+        // JSON 형태인지 확인
+        if (bodyText.trim().startsWith('{') && bodyText.includes('socialEmail') && bodyText.includes('tempToken')) {
+          console.log('소셜 로그인 JSON 데이터 감지됨');
+          const socialData = JSON.parse(bodyText.trim());
+          console.log('파싱된 소셜 데이터:', socialData);
+          
+          if (socialData.isExistingUser === false) {
+            console.log('신규 사용자 - AdditionInfo 모달 열기');
+            // 신규 사용자 - AdditionInfo 모달 열기
+            setSocialUserInfo({
+              socialId: socialData.socialId,
+              provider: socialData.provider,
+              email: socialData.email || socialData.socialEmail,
+              userName: socialData.userName,
+              profileImage: socialData.profileImage,
+              sessionId: socialData.sessionId
+            });
+            setShowAdditionInfoModal(true);
+            
+            // 원래 페이지 내용을 숨기고 SignupPage UI 표시
+            document.body.innerHTML = '';
+            // React 컴포넌트가 다시 렌더링되도록 강제
+            window.location.href = '/signup';
+            return;
+          } else if (socialData.isExistingUser === true) {
+            // 기존 사용자 - 토큰 저장 후 대시보드로
+            updateTokens(socialData.token, socialData.refreshToken || "");
+            localStorage.setItem("userName", socialData.userName || "");
+            localStorage.setItem("userId", socialData.userId || "");
+            localStorage.setItem("email", socialData.email || socialData.socialEmail || "");
+            localStorage.setItem("role", socialData.role || "");
+            navigate("/userdashboard");
+          }
+        }
+      } catch (error) {
+        console.log('JSON 파싱 실패 또는 정상 페이지:', error.message);
+      }
+    };
+    
+    // 즉시 실행
+    checkForSocialData();
+    
+    // 100ms 후에도 한 번 더 체크 (DOM이 완전히 로드된 후)
+    const timer = setTimeout(checkForSocialData, 100);
+    
+    return () => clearTimeout(timer);
+  }, [navigate, updateTokens]);
 
   // 팝업 열기 함수
   const openSocialPopup = (provider) => {
@@ -568,6 +674,8 @@ import { AuthContext } from '../../AuthProvider';
         >{'  '}로그인
         </span>
       </div>
+      
+
       
       <div className={styles.divider}>
         <hr />

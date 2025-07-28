@@ -3,7 +3,7 @@ import styles from './KakaoLoginPage.module.css';
 
 const KakaoLoginPage = () => {
   const handleKakaoLogin = () => {
-    window.location.href = 'http://localhost:8080/auth/kakao/login';
+    window.location.href = 'http://localhost:8888/seems/oauth2/authorization/kakao';
   };
 
   return (
