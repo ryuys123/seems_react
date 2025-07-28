@@ -31,8 +31,26 @@ const IdFindPhone = () => {
 
   const handleSendVerificationCode = async () => {
     if (formData.name && formData.phone) {
+      // 재전송 시 사용자 확인 (타이머가 남아있을 때만)
+      if (isCodeSent && timer > 0) {
+        const confirmResend = window.confirm(
+          `아직 ${Math.floor(timer / 60)}분 ${timer % 60}초가 남아있습니다.\n새로운 인증번호를 재전송하시겠습니까?`
+        );
+        if (!confirmResend) {
+          return; // 사용자가 취소하면 함수 종료
+        }
+      }
+      
       setIsLoading(true);
       setResultMessage('');
+      
+      // 재전송 시 기존 인증번호 입력값과 인증 상태 초기화
+      if (isCodeSent) {
+        console.log('인증번호 재전송 - 기존 데이터 초기화');
+        setFormData(prev => ({ ...prev, verifyCode: '' })); // 입력된 인증번호 초기화
+        setIsVerified(false); // 인증 상태 초기화
+      }
+      
       try {
         // 인증번호 요청은 토큰이 필요없는 공개 API이므로 직접 axios 사용
         const response = await axios.post('http://localhost:8888/seems/api/user/verification', { 
@@ -51,7 +69,16 @@ const IdFindPhone = () => {
           setIsCodeSent(true);
           setIsVerified(false);
           setTimer(180); // 3분
-          setResultMessage(response.data.message || '인증번호가 문자로 전송되었습니다.');
+          
+          // 재전송 여부에 따른 메시지 차별화
+          const isResend = isCodeSent;
+          const defaultMessage = isResend ? 
+            '새로운 인증번호가 재전송되었습니다.' : 
+            '인증번호가 문자로 전송되었습니다.';
+          setResultMessage(response.data.message || defaultMessage);
+          
+          console.log(isResend ? '인증번호 재전송 완료' : '인증번호 최초 전송 완료');
+          
           // 타이머 시작
           if (timerRef.current) clearInterval(timerRef.current);
           timerRef.current = setInterval(() => {
@@ -212,9 +239,12 @@ const IdFindPhone = () => {
               type="button" 
               className={styles.verifyBtn}
               onClick={handleSendVerificationCode}
-              disabled={isLoading || (isCodeSent && timer > 0)}
+              disabled={isLoading}
             >
-              {isCodeSent && timer > 0 ? `재전송(${timer}s)` : '인증번호 받기'}
+              {isCodeSent ? 
+                (timer > 0 ? `재전송 (${timer}s)` : '재전송') : 
+                '인증번호 받기'
+              }
             </button>
           </div>
         </div>

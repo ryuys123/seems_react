@@ -31,15 +31,13 @@ function Login({ onLoginSuccess }) {
       return;
     }
     
-    // 로그인되지 않은 상태에서만 localStorage 클리어
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("loggedInUserId");
-    localStorage.removeItem("userName");
-    localStorage.removeItem("userId");
-    localStorage.removeItem("email");
-    localStorage.removeItem("role");
-    console.log("로그인되지 않은 상태 - localStorage 클리어 완료");
+    // 토큰이 없는 상태에서 로그인 페이지에 머물기
+    console.log("로그인 페이지 로드 - 토큰 상태:", { 
+      hasAccessToken: !!accessToken, 
+      hasRefreshToken: !!refreshToken 
+    });
+    
+    // localStorage 클리어 제거 - 로그아웃 시에만 클리어하도록 수정
   }, [navigate]);
 
   // OAuth2 로그인 성공 후 URL 파라미터에서 토큰 추출 처리

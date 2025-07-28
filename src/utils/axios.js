@@ -20,9 +20,19 @@ apiClient.interceptors.request.use(
     const accessToken = localStorage.getItem("accessToken");
     const refreshToken = localStorage.getItem("refreshToken");
 
-    if (accessToken && refreshToken) {
+    // 토큰이 유효한 경우에만 헤더에 추가
+    if (accessToken && refreshToken && 
+        accessToken !== 'undefined' && accessToken.trim() !== '' &&
+        refreshToken !== 'undefined' && refreshToken.trim() !== '') {
       config.headers["Authorization"] = `Bearer ${accessToken}`; //빽틱 사용해야 함
       config.headers["RefreshToken"] = `Bearer ${refreshToken}`; //빽틱 사용해야 함
+    } else {
+      // 유효하지 않은 토큰이 있는 경우 제거
+      if (accessToken === 'undefined' || refreshToken === 'undefined') {
+        console.warn('유효하지 않은 토큰 감지, localStorage 정리');
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+      }
     }
 
     console.log("Axios 요청 설정 : ", config);
@@ -72,6 +82,16 @@ apiClient.interceptors.response.use(
     // 401 에러 (인증 실패)인 경우
     if (error.response?.status === 401 && !error.config._retry) {
       error.config._retry = true;
+      
+      // 현재 페이지가 로그인 페이지인지 확인
+      const currentPath = window.location.pathname;
+      const isLoginPage = currentPath === '/' || currentPath === '/login';
+      
+      // 로그인 페이지에서는 토큰 재발급 시도하지 않음
+      if (isLoginPage) {
+        console.log("로그인 페이지에서 401 에러 - 토큰 재발급 시도 안함");
+        return Promise.reject(error);
+      }
 
       // 토큰 재발급 함수 직접 구현
       const reissued = await reissueToken();
@@ -80,6 +100,14 @@ apiClient.interceptors.response.use(
         try {
           const accessToken = localStorage.getItem("accessToken");
           const refreshToken = localStorage.getItem("refreshToken");
+
+          // 토큰 유효성 검증
+          if (!accessToken || !refreshToken || 
+              accessToken === 'undefined' || refreshToken === 'undefined' ||
+              accessToken.trim() === '' || refreshToken.trim() === '') {
+            console.error('유효하지 않은 토큰으로 재발급 요청 불가');
+            throw new Error('Invalid tokens');
+          }
 
           const response = await axios.post(
             "http://localhost:8888/seems/api/reissue",
@@ -113,19 +141,28 @@ apiClient.interceptors.response.use(
         } catch (error) {
           console.error("토큰 재발급 실패:", error);
           
-          // 세션 연장 확인 알림창
-          const shouldExtendSession = window.confirm(
-            "세션이 만료되었습니다.\n\n세션을 연장하시겠습니까?\n\n확인: 다시 로그인\n취소: 현재 페이지 유지"
-          );
+          // 현재 페이지가 로그인 페이지인지 확인
+          const currentPath = window.location.pathname;
+          const isLoginPage = currentPath === '/' || currentPath === '/login';
           
-          if (shouldExtendSession) {
-            // 사용자가 세션 연장을 원하는 경우
-            localStorage.clear();
-            window.location.href = "/";
+          // 로그인 페이지가 아닌 경우에만 세션 만료 알림 표시
+          if (!isLoginPage) {
+            const shouldExtendSession = window.confirm(
+              "세션이 만료되었습니다.\n\n세션을 연장하시겠습니까?\n\n확인: 다시 로그인\n취소: 현재 페이지 유지"
+            );
+            
+            if (shouldExtendSession) {
+              // 사용자가 세션 연장을 원하는 경우
+              localStorage.clear();
+              window.location.href = "/";
+            } else {
+              // 사용자가 세션 연장을 원하지 않는 경우
+              console.log("사용자가 세션 연장을 거부했습니다.");
+              localStorage.clear();
+            }
           } else {
-            // 사용자가 세션 연장을 원하지 않는 경우
-            console.log("사용자가 세션 연장을 거부했습니다.");
-            // 현재 페이지 유지 (로그아웃 상태로)
+            // 로그인 페이지에서는 조용히 처리
+            console.log("로그인 페이지에서 토큰 재발급 실패 - 알림창 표시 안함");
             localStorage.clear();
           }
           

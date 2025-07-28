@@ -117,6 +117,11 @@ function UserHeader() {
     };
   }, [isLoggedIn]);
 
+  // URL 안전 Base64를 표준 Base64로 변환
+  const urlSafeBase64ToStandard = (str) => {
+    return str.replace(/-/g, '+').replace(/_/g, '/');
+  };
+
   // JWT 토큰에서 만료 시간 계산
   const calculateTokenExpiry = () => {
     try {
@@ -124,11 +129,36 @@ function UserHeader() {
       if (!accessToken) return 0;
       
       // JWT 토큰 파싱 (header.payload.signature)
-      const payload = accessToken.split('.')[1];
+      const parts = accessToken.split('.');
+      if (parts.length !== 3) {
+        console.error('잘못된 JWT 토큰 형식:', accessToken);
+        return 0;
+      }
+      
+      const payload = parts[1];
       if (!payload) return 0;
       
-      // Base64 디코딩
-      const decodedPayload = JSON.parse(atob(payload));
+      // Base64 디코딩 (URL 안전 Base64 처리)
+      let decodedPayload;
+      try {
+        // URL 안전 Base64를 표준 Base64로 변환
+        const standardBase64 = urlSafeBase64ToStandard(payload);
+        // Base64 패딩 추가
+        const paddedPayload = standardBase64 + '='.repeat((4 - standardBase64.length % 4) % 4);
+        const decodedString = atob(paddedPayload);
+        decodedPayload = JSON.parse(decodedString);
+      } catch (decodeError) {
+        console.error('JWT 토큰 디코딩 실패:', decodeError);
+        console.error('토큰 payload:', payload);
+        console.error('표준 Base64 변환 후:', urlSafeBase64ToStandard(payload));
+        return 0;
+      }
+      
+      if (!decodedPayload.exp) {
+        console.error('토큰에 만료 시간이 없습니다:', decodedPayload);
+        return 0;
+      }
+      
       const expiryTime = decodedPayload.exp * 1000; // 밀리초로 변환
       const currentTime = Date.now();
       
