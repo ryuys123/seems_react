@@ -408,7 +408,7 @@ const CounselingPage = () => {
         <div className={styles.chatContainer}>
           <div className={styles.chatHeader}>
             <img src={images.counselor} alt="AI 상담사" />
-            <h2>AI 심리스나이퍼</h2>
+            <h2>AI 심리상담가</h2>
           </div>
           <div className={styles.chatMessages} ref={chatMessagesRef}>
             {messages.map((msg, index) => {
