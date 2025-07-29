@@ -57,6 +57,15 @@ body {
   color: var(--main-dark);
 }
 
+.logoImage {
+  margin-left: 8px;
+  width: 54px;
+  height: 54px;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+
 .forgotTitle {
   font-size: 1.5rem;
   font-weight: 900;
