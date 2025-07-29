@@ -1,12 +1,14 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import UserHeader from "../../components/common/UserHeader";
 import styles from "./PersonalityTestPage.module.css";
 import { submitPersonalityTest } from "../../services/TestService";
 import apiClient from "../../utils/axios";
+import { AuthContext } from "../../AuthProvider";
 
 const PersonalityTestPage = () => {
   const navigate = useNavigate();
+  const { userid, isLoggedIn, logoutAndRedirect } = useContext(AuthContext);
   const topOfTestRef = useRef(null);
 
   const [questions, setQuestions] = useState([]);
@@ -14,7 +16,7 @@ const PersonalityTestPage = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [testResult, setTestResult] = useState(null); // To store the result
+  const [testResult, setTestResult] = useState(null);
   const questionsPerPage = 5;
 
   const answerLabels = {
@@ -26,8 +28,14 @@ const PersonalityTestPage = () => {
   };
 
   useEffect(() => {
+    // 로그인 상태 확인
+    if (!isLoggedIn || !userid) {
+      alert("로그인이 필요합니다.");
+      navigate("/login");
+      return;
+    }
     fetchQuestions();
-  }, []);
+  }, [isLoggedIn, userid, navigate, logoutAndRedirect]);
 
   const fetchQuestions = async () => {
     try {
@@ -37,6 +45,11 @@ const PersonalityTestPage = () => {
       setQuestions(response.data);
     } catch (err) {
       console.error("문항을 불러오는데 실패했습니다:", err);
+      if (err.response?.status === 401) {
+        alert("로그인이 만료되었습니다. 다시 로그인해주세요.");
+        logoutAndRedirect();
+        return;
+      }
       setError("문항을 불러오는데 실패했습니다. 서버가 실행 중인지 확인해주세요.");
     } finally {
       setIsLoading(false);
@@ -86,15 +99,15 @@ const PersonalityTestPage = () => {
       return;
     }
 
-    const currentUserId = localStorage.getItem("loggedInUserId");
-    if (!currentUserId) {
-      alert("사용자 정보가 없습니다. 다시 로그인해주세요.");
-      navigate("/login");
+    // 로그인 상태 재확인
+    if (!isLoggedIn || !userid) {
+      alert("로그인이 만료되었습니다. 다시 로그인해주세요.");
+      logoutAndRedirect();
       return;
     }
 
     const submissionData = {
-      userId: currentUserId,
+      userId: userid, // AuthContext에서 가져온 userid 사용
       answers: questions.map((q) => ({
         questionId: q.questionId,
         answerValue: answers[q.questionId],
@@ -106,12 +119,17 @@ const PersonalityTestPage = () => {
       setIsLoading(true);
       const result = await submitPersonalityTest(submissionData);
       alert("성격 검사가 완료되었습니다!");
-      navigate(`/personality-test/result/${currentUserId}`);
+      navigate(`/personality-test/result/${userid}`);
     } catch (err) {
       console.error(
         "검사 제출 실패:",
         err.response ? err.response.data : err.message
       );
+      if (err.response?.status === 401) {
+        alert("로그인이 만료되었습니다. 다시 로그인해주세요.");
+        logoutAndRedirect();
+        return;
+      }
       setError("검사 제출 중 오류가 발생했습니다.");
     } finally {
       setIsLoading(false);

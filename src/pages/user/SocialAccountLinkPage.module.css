@@ -1,0 +1,18 @@
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #f8f9fa;
+}
+
+.content {
+  text-align: center;
+  padding: 40px;
+}
+
+.loading {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 20px;
+} 

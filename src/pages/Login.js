@@ -100,6 +100,14 @@ function Login({ onLoginSuccess }) {
           console.log("소셜 로그인 성공 - 기존 사용자");
           console.log("받은 토큰:", event.data.token);
           console.log("받은 refreshToken:", event.data.refreshToken);
+          console.log("받은 사용자 정보:", {
+            userId: event.data.userId,
+            userName: event.data.userName,
+            email: event.data.email,
+            role: event.data.role,
+            provider: event.data.provider,
+            socialId: event.data.socialId
+          });
           
           // 1. AuthProvider의 updateTokens 함수 호출하여 authInfo 업데이트 (토큰 저장도 함께 처리)
           updateTokens(event.data.token, event.data.refreshToken || "");
@@ -110,21 +118,87 @@ function Login({ onLoginSuccess }) {
           localStorage.setItem("email", event.data.email || "");
           localStorage.setItem("role", event.data.role || "");
           
+          // 소셜 로그인 정보 저장
+          if (event.data.provider) {
+            localStorage.setItem("social-provider", event.data.provider);
+          }
+          if (event.data.socialId) {
+            localStorage.setItem("social-id", event.data.socialId);
+          }
+          
           console.log("localStorage에 저장된 accessToken:", localStorage.getItem("accessToken"));
           console.log("localStorage에 저장된 refreshToken:", localStorage.getItem("refreshToken"));
+          console.log("localStorage에 저장된 소셜 정보:", {
+            provider: localStorage.getItem("social-provider"),
+            socialId: localStorage.getItem("social-id")
+          });
           
-          // 3. 대시보드로 이동
-          navigate("/userdashboard");
+          // 3. AuthContext 강제 업데이트 및 세션 타이머 초기화
+          console.log("AuthContext 강제 업데이트 시작");
+          
+          // AuthContext 상태 강제 업데이트
+          if (updateTokens) {
+            updateTokens(event.data.token, event.data.refreshToken || "");
+          }
+          
+          // 세션 타이머 초기화를 위한 지연 처리
+          setTimeout(() => {
+            console.log("대시보드로 이동 및 세션 타이머 초기화");
+            navigate("/userdashboard");
+            
+            // 페이지 로드 후 세션 타이머 강제 초기화
+            setTimeout(() => {
+              console.log("세션 타이머 강제 초기화 실행");
+              // localStorage 변경 이벤트 발생시켜 AuthContext 업데이트
+              const currentToken = localStorage.getItem('accessToken');
+              localStorage.setItem('accessToken', currentToken);
+              
+              // UserHeader의 세션 타이머 강제 업데이트
+              const sessionEvent = new CustomEvent('sessionUpdate', {
+                detail: { forceUpdate: true }
+              });
+              window.dispatchEvent(sessionEvent);
+            }, 500);
+          }, 200);
         } else {
-          // 신규 사용자인 경우 - 회원가입 페이지로 이동하여 추가 정보 입력
-          alert("등록되지 않은 계정입니다. 소셜 회원가입 후 이용해주세요.");
-          navigate("/signup");
+          // 신규 사용자인 경우 - 계정 연동 확인 페이지로 이동
+          console.log("소셜 로그인 성공 - 신규 사용자, 계정 연동 확인");
+          const socialData = {
+            provider: event.data.provider,
+            socialId: event.data.socialId,
+            email: event.data.email,
+            name: event.data.userName
+          };
+          
+          // URL 파라미터로 소셜 데이터 전달
+          const params = new URLSearchParams({
+            provider: socialData.provider,
+            socialId: socialData.socialId,
+            email: socialData.email,
+            name: socialData.name
+          });
+          
+          navigate(`/social-link?${params.toString()}`);
         }
       } else if (event.data && event.data.type === "social-signup-needed") {
-        // 신규 사용자 - 회원가입 페이지로 이동
+        // 신규 사용자 - 계정 연동 확인 페이지로 이동
         console.log("소셜 회원가입 필요 - 신규 사용자");
-        alert("등록되지 않은 계정입니다. 소셜 회원가입 후 이용해주세요.");
-        navigate("/signup");
+        const socialData = {
+          provider: event.data.provider,
+          socialId: event.data.socialId,
+          email: event.data.email,
+          name: event.data.userName
+        };
+        
+        // URL 파라미터로 소셜 데이터 전달
+        const params = new URLSearchParams({
+          provider: socialData.provider,
+          socialId: socialData.socialId,
+          email: socialData.email,
+          name: socialData.name
+        });
+        
+        navigate(`/social-link?${params.toString()}`);
       }
     };
     window.addEventListener("message", handleMessage);
