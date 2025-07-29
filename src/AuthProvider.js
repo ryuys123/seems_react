@@ -61,6 +61,7 @@ export const AuthProvider = ({ children }) => {
     // 페이지 로드 시 저장된 토큰이 있으면 로그인 상태 복원
     const accessToken = localStorage.getItem("accessToken");
     const refreshToken = localStorage.getItem("refreshToken");
+    const storedUserId = localStorage.getItem("userId"); // localStorage에서 userId 가져오기
     
     if (accessToken && refreshToken) {
       const parsedToken = parseAccessToken(accessToken);
@@ -68,7 +69,7 @@ export const AuthProvider = ({ children }) => {
         setAuthInfo({
           isLoggedIn: true,
           role: parsedToken.role,
-          userid: parsedToken.sub || parsedToken.userId || localStorage.getItem('userId') || localStorage.getItem('loggedInUserId') || "", // JWT에서 userid 추출, 없으면 localStorage에서
+          userid: parsedToken.sub || parsedToken.userId || storedUserId || "", // 저장된 userId 사용
           username: parsedToken.name,
         });
         console.log("AuthProvider: 저장된 토큰으로 로그인 상태 복원 완료");

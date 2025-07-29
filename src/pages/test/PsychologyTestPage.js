@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react"; // useContext 추가
 import { useNavigate } from "react-router-dom";
 import styles from "./PsychologyTestPage.module.css";
 import UserHeader from "../../components/common/UserHeader";
 import { submitPsychologicalAnswer } from "../../services/TestService";
 import apiClient from "../../utils/axios";
+import { AuthContext } from "../../AuthProvider"; // AuthContext 추가
 
 function PsychologyTestPage() {
   const [questions, setQuestions] = useState([]);
@@ -12,8 +13,7 @@ function PsychologyTestPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
-
-  // 이미지가 저장된 백엔드 서버의 기본 URL
+  const { userid: userId } = useContext(AuthContext); // AuthContext에서 userId 가져오기
   const BASE_IMAGE_URL = "http://localhost:8888/seems/images/";
 
   useEffect(() => {
@@ -50,11 +50,11 @@ function PsychologyTestPage() {
     }
 
     const currentQuestion = questions[currentStep];
-    const userId = localStorage.getItem("loggedInUserId");
+    // const userId = localStorage.getItem("loggedInUserId"); // 이 줄은 이제 필요 없습니다.
 
     if (!userId) {
       alert("로그인 정보가 올바르지 않습니다. 다시 로그인해주세요.");
-      navigate("/login");
+      navigate("/"); // /login 대신 /로 리다이렉션
       return;
     }
 

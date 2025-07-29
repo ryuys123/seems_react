@@ -67,7 +67,9 @@ export const submitPsychologicalAnswer = async (answerData) => {
  */
 export const getPsychologicalTestResult = async (resultId, testType) => {
   try {
+    console.log(`TestService: getPsychologicalTestResult 호출 - resultId: ${resultId}, testType: ${testType}`);
     const response = await apiClient.get(`/api/psychological-test/result/${resultId}?testType=${testType}`);
+    console.log(`TestService: getPsychologicalTestResult 응답 데이터:`, response.data);
     return response.data;
   } catch (error) {
     console.error(`검사 결과(ID: ${resultId}, 타입: ${testType}) 조회 중 오류 발생:`, error);

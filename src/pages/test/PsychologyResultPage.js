@@ -14,6 +14,7 @@ function PsychologyResultPage() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    console.log(`PsychologyResultPage: useEffect 실행 - resultId: ${resultId}, location.search: ${location.search}`);
     const fetchResult = async () => {
       if (!resultId) {
         setError("결과 ID가 제공되지 않았습니다.");
@@ -24,6 +25,8 @@ function PsychologyResultPage() {
       // URL 쿼리 파라미터에서 testType을 가져옵니다.
       const queryParams = new URLSearchParams(location.search);
       const testType = queryParams.get('type');
+
+      console.log(`PsychologyResultPage: testType 추출됨 - ${testType}`);
 
       if (!testType) {
         setError("검사 유형(testType)이 제공되지 않았습니다.");
