@@ -49,10 +49,13 @@ const SocialResult = () => {
               
               // 소셜 로그인 타입 저장
               if (socialData.socialEmail) {
-                const provider = socialData.socialEmail.includes('@gmail.com') ? 'google' :
-                               socialData.socialEmail.includes('@kakao.com') ? 'kakao' :
-                               socialData.socialEmail.includes('@naver.com') ? 'naver' : 'unknown';
+                // 실제 provider 정보가 있으면 사용, 없으면 이메일로 추정
+                const provider = socialData.provider || 
+                               (socialData.socialEmail.includes('@gmail.com') ? 'google' :
+                                socialData.socialEmail.includes('@kakao.com') ? 'kakao' :
+                                socialData.socialEmail.includes('@naver.com') ? 'naver' : 'unknown');
                 localStorage.setItem('social-login', provider);
+                console.log('소셜 로그인 타입 저장:', provider);
               }
               
               console.log('토큰 저장 완료, 대시보드로 이동');

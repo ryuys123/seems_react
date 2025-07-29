@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import styles from './UserProfilePage.module.css';
 import UserHeader from '../../components/common/UserHeader';
+import KeywordSettings from '../../components/user/KeywordSettings';
 import { AuthContext } from '../../AuthProvider';
 import apiClient from '../../utils/axios';
 import { getRecentActivities, getActivityIcon, getActivityName } from '../../services/activityService';
@@ -24,6 +25,29 @@ const UserProfilePage = () => {
       : profileStyles.profileBadge;
 
   useEffect(() => {
+    // 인증 상태 확인
+    const checkAuth = () => {
+      const accessToken = localStorage.getItem('accessToken');
+      const currentUserId = userid || localStorage.getItem('userId') || localStorage.getItem('loggedInUserId');
+      
+      console.log('인증 상태 확인:', {
+        accessToken: accessToken ? '존재' : '없음',
+        userid: userid,
+        currentUserId: currentUserId
+      });
+      
+      if (!accessToken || !currentUserId) {
+        console.log('인증되지 않은 사용자 - 로그인 페이지로 이동');
+        navigate('/');
+        return false;
+      }
+      return true;
+    };
+
+    if (!checkAuth()) {
+      return;
+    }
+
     const fetchUserDetail = async () => {
       try {
         const res = await apiClient.get('/user/info'); // 또는 '/user/me' 서버에 맞게
@@ -50,6 +74,18 @@ const UserProfilePage = () => {
         setError(null);
       } catch (err) {
         console.error('사용자 정보 조회 실패:', err);
+        
+        // 401 에러인 경우 로그인 페이지로 이동
+        if (err.response?.status === 401) {
+          console.log('인증 실패 - 로그인 페이지로 이동');
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+          localStorage.removeItem('userId');
+          localStorage.removeItem('userName');
+          navigate('/');
+          return;
+        }
+        
         setError('사용자 정보를 불러오지 못했습니다.');
       }
     };
@@ -94,7 +130,7 @@ const UserProfilePage = () => {
       try {
         setActivitiesLoading(true);
         const response = await getRecentActivities(userid, 10);
-        setRecentActivities(response.activities || []);
+        setRecentActivities(response.list || []);
         // console.log('최근 활동 조회 성공:', response);
       } catch (error) {
         // console.error('최근 활동 조회 실패:', error);
@@ -282,7 +318,13 @@ const UserProfilePage = () => {
               </div>
             </div>
           </div>
+          
+          {/* 키워드 설정 섹션 */}
+          <div className={styles.settingsCard}>
+            <KeywordSettings />
+          </div>
         </div>
+        
         <div className={styles.activityHistory}>
           <h3>최근 활동</h3>
           <div className={styles.historyList}>
@@ -295,14 +337,19 @@ const UserProfilePage = () => {
                 <div key={index} className={styles.historyItem}>
                   <div className={styles.historyLeft}>
                     <div className={styles.historyIcon}>{getActivityIcon(activity.activityType)}</div>
-                    <div className={styles.historyContent}>
-                      <div className={styles.historyTitle}>
-                        {activity.title}
-                      </div>
+                                      <div className={styles.historyContent}>
+                    <div className={styles.historyTitle}>
+                      {activity.title || getActivityName(activity.activityType)}
                     </div>
+                    {activity.activityDescription && (
+                      <div className={styles.historyDescription}>
+                        {activity.activityDescription}
+                      </div>
+                    )}
+                  </div>
                   </div>
                   <div className={styles.historyTime}>
-                    {formatActivityDate(activity.activityDate)}
+                    {formatActivityDate(activity.createdAt || activity.activityDate)}
                   </div>
                 </div>
               ))

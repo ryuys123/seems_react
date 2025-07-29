@@ -132,7 +132,10 @@ const UserDeletePage = () => {
       const result = await deleteAccount(userType, authData);
       if (result.success) {
         alert('회원 탈퇴가 완료되었습니다.');
+        // 로그인페이지로 이동
         navigate('/');
+      } else {
+        alert('회원 탈퇴에 실패했습니다.');
       }
     } catch (error) {
       console.error('회원 탈퇴 실패:', error);
@@ -216,15 +219,15 @@ const UserDeletePage = () => {
               </button>
             </div>
             {/* 구분선 */}
-            <div style={{ display: 'flex', alignItems: 'center', margin: '24px 0' }}>
+            {/* <div style={{ display: 'flex', alignItems: 'center', margin: '24px 0' }}>
               <hr style={{ flex: 1, border: 0, borderTop: '1px solid #eee' }} />
               <span style={{ margin: '0 12px', color: '#888', fontWeight: 500 }}>또는</span>
               <hr style={{ flex: 1, border: 0, borderTop: '1px solid #eee' }} />
-            </div>
+            </div> */}
             {/* 소셜 로그인 버튼들 */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {/* <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {/* 구글 본인 인증 버튼 */}
-              <button
+              {/* <button
                 onClick={socialType === 'google' ? handleSocialAuth : () => alert('현재 계정과 다른 소셜 로그인입니다.')}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'center',
@@ -235,10 +238,10 @@ const UserDeletePage = () => {
                 }}
               >
                 {/* 구글 아이콘 등 추가 가능 */}
-                구글로 인증
-              </button>
+                {/* 구글로 인증
+              </button> */}
               {/* 카카오 본인 인증 버튼 */}
-              <button
+              {/* <button
                 onClick={socialType === 'kakao' ? handleSocialAuth : () => alert('현재 계정과 다른 소셜 로그인입니다.')}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'center',
@@ -250,9 +253,9 @@ const UserDeletePage = () => {
               >
                 <img src={kakaoIcon} alt="카카오" style={{ width: 24, height: 24 }} />
                 카카오로 인증
-              </button>
+              </button> */}
               {/* 네이버 본인 인증 버튼 */}
-              <button
+              {/* <button
                 onClick={socialType === 'naver' ? handleSocialAuth : () => alert('현재 계정과 다른 소셜 로그인입니다.')}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'center',
@@ -264,8 +267,8 @@ const UserDeletePage = () => {
               >
                 <img src={naverIcon} alt="네이버" style={{ width: 24, height: 24 }} />
                 네이버로 인증
-              </button>
-            </div>
+              </button> */}
+            {/* </div> */}
           </div>
         </div>
       ) : (

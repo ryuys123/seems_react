@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useContext } from "react"; // useContext 추가
+import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./PsychologyTestPage.module.css";
 import UserHeader from "../../components/common/UserHeader";
 import { submitPsychologicalAnswer } from "../../services/TestService";
 import apiClient from "../../utils/axios";
-import { AuthContext } from "../../AuthProvider"; // AuthContext 추가
+import { AuthContext } from "../../AuthProvider";
 
 function PsychologyTestPage() {
   const [questions, setQuestions] = useState([]);
@@ -13,10 +13,19 @@ function PsychologyTestPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
-  const { userid: userId } = useContext(AuthContext); // AuthContext에서 userId 가져오기
+  const { userid, isLoggedIn, logoutAndRedirect } = useContext(AuthContext);
+
+  // 이미지가 저장된 백엔드 서버의 기본 URL
   const BASE_IMAGE_URL = "http://localhost:8888/seems/images/";
 
   useEffect(() => {
+    // 로그인 상태 확인
+    if (!isLoggedIn || !userid) {
+      alert("로그인이 필요합니다.");
+      navigate("/login");
+      return;
+    }
+
     const fetchQuestions = async () => {
       try {
         setLoading(true);
@@ -31,13 +40,18 @@ function PsychologyTestPage() {
         }
       } catch (err) {
         console.error("문항 목록을 불러오는데 실패했습니다:", err);
+        if (err.response?.status === 401) {
+          alert("로그인이 만료되었습니다. 다시 로그인해주세요.");
+          logoutAndRedirect();
+          return;
+        }
         setError("문항을 불러오는 데 실패했습니다. 서버 상태를 확인해주세요.");
       } finally {
         setLoading(false);
       }
     };
     fetchQuestions();
-  }, []);
+  }, [isLoggedIn, userid, navigate, logoutAndRedirect]);
 
   const handleResponseChange = (e) => {
     setUserResponse(e.target.value);
@@ -49,17 +63,16 @@ function PsychologyTestPage() {
       return;
     }
 
-    const currentQuestion = questions[currentStep];
-    // const userId = localStorage.getItem("loggedInUserId"); // 이 줄은 이제 필요 없습니다.
-
-    if (!userId) {
-      alert("로그인 정보가 올바르지 않습니다. 다시 로그인해주세요.");
-      navigate("/"); // /login 대신 /로 리다이렉션
+    // 로그인 상태 재확인
+    if (!isLoggedIn || !userid) {
+      alert("로그인이 만료되었습니다. 다시 로그인해주세요.");
+      logoutAndRedirect();
       return;
     }
 
+    const currentQuestion = questions[currentStep];
     const answerData = {
-      userId: userId,
+      userId: userid, // AuthContext에서 가져온 userid 사용
       questionId: currentQuestion.questionId,
       userResponseText: userResponse,
       currentStep: currentStep + 1,
@@ -69,7 +82,6 @@ function PsychologyTestPage() {
 
     setLoading(true);
     try {
-      // submitPsychologicalAnswer는 axios 호출을 포함하는 서비스 함수라고 가정
       const response = await apiClient.post(
         "/api/psychological-test/submit-answer",
         answerData
@@ -81,10 +93,8 @@ function PsychologyTestPage() {
       } else {
         alert("검사가 완료되었습니다! AI가 분석한 최종 결과를 보여드릴게요.");
 
-        // ✨ 서버 응답 데이터는 response.data 안에 있습니다.
         const resultId = response.data.resultId;
         if (resultId) {
-          // ✨ 경로 오타 수정 및 response.data에서 가져온 resultId를 사용합니다.
           navigate(
             `/psychological-test/result/${resultId}?type=PSYCHOLOGICAL_IMAGE`
           );
@@ -94,6 +104,11 @@ function PsychologyTestPage() {
       }
     } catch (err) {
       console.error("답변 제출 실패:", err);
+      if (err.response?.status === 401) {
+        alert("로그인이 만료되었습니다. 다시 로그인해주세요.");
+        logoutAndRedirect();
+        return;
+      }
       setError("답변 제출 중 오류가 발생했습니다.");
     } finally {
       setLoading(false);

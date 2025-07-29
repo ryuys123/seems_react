@@ -12,6 +12,13 @@ const apiClient = axios.create({
   withCredentials: true, // 쿠키 포함 여부
 });
 
+// 세션 만료 모달을 표시하는 함수
+let showSessionExpiredModal = null;
+
+export const setSessionExpiredHandler = (handler) => {
+  showSessionExpiredModal = handler;
+};
+
 // 요청 인터셉터 (토큰 처리)
 apiClient.interceptors.request.use(
   (config) => {
@@ -83,6 +90,11 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401 && !error.config._retry) {
       error.config._retry = true;
       
+      // 세션 만료 방지 옵션이 있으면 처리하지 않음
+      if (error.config._preventSessionExpired) {
+        return Promise.reject(error);
+      }
+      
       // 현재 페이지가 로그인 페이지인지 확인
       const currentPath = window.location.pathname;
       const isLoginPage = currentPath === '/' || currentPath === '/login';
@@ -90,6 +102,17 @@ apiClient.interceptors.response.use(
       // 로그인 페이지에서는 토큰 재발급 시도하지 않음
       if (isLoginPage) {
         // console.log("로그인 페이지에서 401 에러 - 토큰 재발급 시도 안함");
+        return Promise.reject(error);
+      }
+
+      // 토큰이 없는 경우 (로그인하지 않은 사용자)
+      const accessToken = localStorage.getItem("accessToken");
+      const refreshToken = localStorage.getItem("refreshToken");
+      
+      if (!accessToken || !refreshToken || 
+          accessToken === 'undefined' || refreshToken === 'undefined' ||
+          accessToken.trim() === '' || refreshToken.trim() === '') {
+        console.log("토큰이 없는 사용자 - 세션 만료 모달 표시 안함");
         return Promise.reject(error);
       }
 
@@ -147,18 +170,23 @@ apiClient.interceptors.response.use(
           
           // 로그인 페이지가 아닌 경우에만 세션 만료 알림 표시
           if (!isLoginPage) {
-            const shouldExtendSession = window.confirm(
-              "세션이 만료되었습니다.\n\n세션을 연장하시겠습니까?\n\n확인: 다시 로그인\n취소: 현재 페이지 유지"
-            );
-            
-            if (shouldExtendSession) {
-              // 사용자가 세션 연장을 원하는 경우
-              localStorage.clear();
-              window.location.href = "/";
+            // 세션 만료 모달이 설정되어 있으면 모달 표시, 아니면 기본 confirm 사용
+            if (showSessionExpiredModal) {
+              showSessionExpiredModal();
             } else {
-              // 사용자가 세션 연장을 원하지 않는 경우
-              // console.log("사용자가 세션 연장을 거부했습니다.");
-              localStorage.clear();
+              const shouldExtendSession = window.confirm(
+                "세션이 만료되었습니다.\n\n다시 로그인해주세요."
+              );
+              
+              if (shouldExtendSession) {
+                // 사용자가 확인을 클릭한 경우 로그인 페이지로 이동
+                localStorage.clear();
+                window.location.href = "/";
+              } else {
+                // 사용자가 취소를 클릭한 경우에도 로그인 페이지로 이동
+                localStorage.clear();
+                window.location.href = "/";
+              }
             }
           } else {
             // 로그인 페이지에서는 조용히 처리

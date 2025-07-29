@@ -60,16 +60,7 @@ export const logEmotionRecordActivity = async (userid, emotion) => {
   );
 };
 
-// 포춘카드 활동 기록
-export const logFortuneCardActivity = async (userid, cardKeyword, cardMessage) => {
-  const cardInfo = cardKeyword || cardMessage || '포춘카드';
-  return await logActivity(
-    userid,
-    'FORTUNE_CARD',
-    '포춘카드 뽑기',
-    `포춘카드를 뽑았습니다: ${cardInfo}`
-  );
-};
+
 
 // 퀘스트 활동 기록
 export const logQuestActivity = async (userid, questTitle, points = 0) => {
