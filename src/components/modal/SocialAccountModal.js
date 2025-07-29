@@ -235,10 +235,8 @@ const SocialAccountModal = ({ isOpen, onClose, socialData }) => {
       
       const response = await apiClient.post('/api/user/link-social-account', {
         userId: existingAccount.userId,
-        userPwd: existingAccount.password, // 저장된 비밀번호 사용
         socialId: socialData.socialId,
-        provider: socialData.provider, // socialProvider가 아닌 provider
-        socialEmail: socialData.email || '' // 소셜 이메일 추가
+        socialProvider: socialData.provider // provider를 socialProvider로 변경
       }, {
         headers: requestHeaders,
         // 세션 만료 모달 방지
@@ -247,7 +245,21 @@ const SocialAccountModal = ({ isOpen, onClose, socialData }) => {
 
       console.log('계정 연동 응답:', response.data);
 
-      if (response.data && response.data.success) {
+      // 서버 응답 구조에 따라 성공 여부 판단
+      let isSuccess = false;
+      if (response.data.success !== undefined) {
+        isSuccess = response.data.success;
+      } else if (response.data.message && response.data.message.includes('성공')) {
+        isSuccess = true;
+      } else if (response.data.message && response.data.message.includes('연동')) {
+        isSuccess = true;
+      } else if (response.status === 200 || response.status === 201) {
+        isSuccess = true;
+      }
+
+      console.log('성공 여부 판단:', isSuccess);
+
+      if (isSuccess) {
         alert('소셜 계정이 성공적으로 연동되었습니다.');
         // 로그인 처리
         if (response.data.accessToken) {
@@ -792,3 +804,4 @@ const PasswordInput = ({ onSubmit }) => {
 };
 
 export default SocialAccountModal; 
+// 모달 끝
