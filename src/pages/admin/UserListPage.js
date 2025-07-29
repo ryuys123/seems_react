@@ -261,12 +261,11 @@ function UserListPage({ searchResults }) {
 
         <table className={styles.noticeList}>
           <colgroup>
-            <col style={{ width: "10%" }} />
+            <col style={{ width: "15%" }} />
             <col style={{ width: "20%" }} />
-            <col style={{ width: "20%" }} />
-            <col style={{ width: "20%" }} />
-            <col style={{ width: "20%" }} />
-            <col style={{ width: "10%" }} />
+            <col style={{ width: "25%" }} />
+            <col style={{ width: "15%" }} />
+            <col style={{ width: "15%" }} />
           </colgroup>
           <thead>
             <tr className={styles.tableHeaderRow}>
@@ -274,7 +273,6 @@ function UserListPage({ searchResults }) {
               <th>이름</th>
               <th>전화번호</th>
               <th>가입일</th>
-              <th>최근 정보 수정일</th>
               <th>상태</th>
             </tr>
           </thead>
@@ -286,17 +284,28 @@ function UserListPage({ searchResults }) {
                   className={styles.noticeItem}
                   onClick={() => handleTitleClick(user)}
                 >
-                  <td className={styles.noticeNo}>{user.userId}</td>
+                  <td className={styles.noticeNo}>
+                    <strong>{user.userId}</strong>
+                  </td>
                   <td className={styles.title}>{user.userName}</td>
                   <td className={styles.noticeDate}>{user.phone}</td>
                   <td className={styles.readCount}>{user.createdAt}</td>
-                  <td className={styles.readCount}>{user.updatedAt}</td>
-                  <td className={styles.readCount}>
-                    {user.status === 1
-                      ? "활성"
-                      : user.status === 2
-                        ? "비활성"
-                        : "탈퇴"}{" "}
+                  <td>
+                    <span
+                      className={
+                        user.status === 1
+                          ? styles.status1
+                          : user.status === 2
+                            ? styles.status2
+                            : styles.status0
+                      }
+                    >
+                      {user.status === 1
+                        ? "활성"
+                        : user.status === 2
+                          ? "비활성"
+                          : "탈퇴"}
+                    </span>
                   </td>{" "}
                 </tr>
               ))

@@ -66,6 +66,10 @@ body {
   text-overflow: ellipsis;
   text-align: center;
 }
+.noticeNo {
+  font-size: 1rem;
+  color: var(--main-blue);
+}
 
 .noticeTitle {
   font-size: 1.1rem;
@@ -94,6 +98,10 @@ body {
   color: var(--main-accent);
   font-weight: 900;
   margin-right: 8px;
+}
+
+.importantRow {
+  font-weight: 600;
 }
 
 /*검색 영역 스타일 */
