@@ -296,8 +296,9 @@ import { AuthContext } from '../../AuthProvider';
           localStorage.setItem("userId", event.data.userId || "");
           localStorage.setItem("email", event.data.email || event.data.socialEmail || "");
           localStorage.setItem("role", event.data.role || "");
-          // 3. 대시보드로 이동
-          navigate("/userdashboard");
+          // 3. 로그인 페이지로 이동 (대시보드 대신)
+          alert("소셜 회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.");
+          navigate("/login");
         } else {
           // 신규 사용자인 경우 - 추가 정보 입력 모달 열기
           console.log('🚨 신규 사용자 - AdditionInfo 모달 열기');
@@ -406,7 +407,9 @@ import { AuthContext } from '../../AuthProvider';
             localStorage.setItem("userId", socialData.userId || "");
             localStorage.setItem("email", socialData.email || socialData.socialEmail || "");
             localStorage.setItem("role", socialData.role || "");
-            navigate("/userdashboard");
+            // 로그인 페이지로 이동 (대시보드 대신)
+            alert("소셜 회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.");
+            navigate("/login");
           }
         }
       } catch (error) {
@@ -655,13 +658,15 @@ import { AuthContext } from '../../AuthProvider';
         open={showAdditionInfoModal}
         socialUserInfo={socialUserInfo}
         onSubmit={(userData) => {
-          // 추가 정보 저장 성공 시 토큰 저장 및 대시보드로 이동
+          // 추가 정보 저장 성공 시 토큰 저장 및 로그인 페이지로 이동
           localStorage.setItem("accessToken", userData.accessToken);
           localStorage.setItem("userName", userData.userName);
           localStorage.setItem("userId", userData.userId);
           localStorage.setItem("email", userData.email || userData.socialEmail);
           localStorage.setItem("role", userData.role);
-          navigate("/userdashboard");
+          // 로그인 페이지로 이동 (대시보드 대신)
+          alert("소셜 회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.");
+          navigate("/login");
         }}
         onClose={() => setShowAdditionInfoModal(false)}
       />
@@ -719,19 +724,8 @@ import { AuthContext } from '../../AuthProvider';
           />
           카카오 회원가입
         </button>
-        
-        {/* <button 
-          className={`${styles.socialBtn} ${styles.faceio}`}
-          onClick={() => handleSocialSignup('faceio')}
-        >
-          <img 
-            src={faceioIcon} 
-            alt="페이스 아이콘"
-            className={styles.socialIcon}
-          />
-          페이스 회원가입
-        </button> */}
       </div>
+      
     </div>
   );
 };

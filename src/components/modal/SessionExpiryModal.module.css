@@ -85,7 +85,7 @@
 }
 
 .extendButton {
-  background: #4ecdc4;
+  background: var(--main-accent);
   color: white;
   border: none;
   padding: 12px 24px;
@@ -97,7 +97,7 @@
 }
 
 .extendButton:hover {
-  background: #45b7aa;
+  background: #d65a00;
 }
 
 .closeButton {

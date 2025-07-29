@@ -503,17 +503,34 @@ body {
   padding: 16px;
   border: 1px solid #eee;
   border-radius: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.historyLeft {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex: 1;
 }
 
 .historyIcon {
   width: 40px;
   height: 40px;
-  background: #f0f7ff;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
+  font-size: 1.2rem;
+  color: white;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.historyIcon:hover {
+  transform: scale(1.1);
 }
 
 .historyContent {
@@ -523,11 +540,14 @@ body {
 .historyTitle {
   font-weight: 700;
   margin-bottom: 4px;
+  color: #333;
 }
 
 .historyTime {
   color: #666;
   font-size: 0.9rem;
+  text-align: right;
+  font-weight: 500;
 }
 
 /* 모달 스타일 */

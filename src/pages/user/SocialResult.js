@@ -30,10 +30,10 @@ const SocialResult = () => {
           });
           
           if (socialData.isExistingUser === false) {
-            // 신규 사용자 - SignupPage로 데이터와 함께 이동
+            // 신규 사용자 - 회원가입 페이지로 이동
             console.log('신규 사용자 - 회원가입 페이지로 이동');
-            const encodedData = encodeURIComponent(JSON.stringify(socialData));
-            navigate(`/signup?socialData=${encodedData}`);
+            alert("등록되지 않은 계정입니다. 소셜 회원가입 후 이용해주세요.");
+            navigate("/signup");
           } else if (socialData.isExistingUser === true) {
             // 기존 사용자 - 토큰 검증 후 저장
             console.log('기존 사용자 - 토큰 검증 시작');

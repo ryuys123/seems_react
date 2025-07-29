@@ -9,7 +9,6 @@ import { AuthContext } from '../../AuthProvider';
 const initialForm = {
   name: '',
   phone: '',
-  notification: true,
   currentPassword: '',
   newPassword: '',
   confirmPassword: '',
@@ -34,7 +33,6 @@ const UserFormPage = () => {
         setFormData({
           name: user.userName || '',
           phone: user.phone || '',
-          notification: true,
           currentPassword: '',
           newPassword: '',
           confirmPassword: '',
@@ -222,13 +220,6 @@ const UserFormPage = () => {
                 <label htmlFor="phone">휴대폰 번호</label>
                 <input type="text" id="phone" name="phone" value={formData.phone || ''} onChange={handleInputChange} placeholder="010-1234-5678" />
                 {errors.phone && <div className={styles.errorMsg}>{errors.phone}</div>}
-              </div>
-              <div className={styles.formGroup}>
-                <span className={styles.settingsLabel}>알림</span>
-                <label className={styles.toggleSwitch}>
-                  <input type="checkbox" name="notification" checked={formData.notification} onChange={handleInputChange} />
-                  <span className={styles.toggleSlider}></span>
-                </label>
               </div>
               <div className={styles.formGroup}>
                 <button type="button" className={styles.passwordToggleBtn} onClick={() => setShowPasswordFields((v) => !v)}>

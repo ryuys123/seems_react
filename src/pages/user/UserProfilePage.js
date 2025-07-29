@@ -4,6 +4,7 @@ import styles from './UserProfilePage.module.css';
 import UserHeader from '../../components/common/UserHeader';
 import { AuthContext } from '../../AuthProvider';
 import apiClient from '../../utils/axios';
+import { getRecentActivities, getActivityIcon, getActivityName } from '../../services/activityService';
 import profileStyles from './UserProfilePage.module.css'; // 헤더와 동일한 스타일 사용을 위해
 
 const UserProfilePage = () => {
@@ -12,6 +13,8 @@ const UserProfilePage = () => {
   const [equippedBadge, setEquippedBadge] = useState(null); // 장착 뱃지 상태 추가
   const [error, setError] = useState(null);
   const [isFaceLinked, setIsFaceLinked] = useState(false); // 페이스 연동 상태
+  const [recentActivities, setRecentActivities] = useState([]); // 최근 활동 상태
+  const [activitiesLoading, setActivitiesLoading] = useState(false); // 활동 로딩 상태
   const navigate = useNavigate();
 
   // 뱃지 REWARD_ID별 클래스 (헤더와 동일한 로직)
@@ -84,10 +87,29 @@ const UserProfilePage = () => {
       }
     };
     
+    // 최근 활동 조회 함수
+    const fetchRecentActivities = async () => {
+      if (!userid) return;
+      
+      try {
+        setActivitiesLoading(true);
+        const response = await getRecentActivities(userid, 10);
+        setRecentActivities(response.activities || []);
+        // console.log('최근 활동 조회 성공:', response);
+      } catch (error) {
+        // console.error('최근 활동 조회 실패:', error);
+        // 활동이 없는 경우 빈 배열로 설정
+        setRecentActivities([]);
+      } finally {
+        setActivitiesLoading(false);
+      }
+    };
+    
     fetchUserDetail();
     if (userid) {
       fetchEquippedBadge();
       fetchFaceLinkStatus(); // 페이스 연동 상태 조회 추가
+      fetchRecentActivities(); // 최근 활동 조회 추가
     }
   }, [userid]);
 
@@ -97,6 +119,26 @@ const UserProfilePage = () => {
   const handleUserFormClick = () => {
     // 프로필 수정 페이지로 이동
     navigate('/userform');
+  };
+
+  // 날짜 포맷팅 함수
+  const formatActivityDate = (dateString) => {
+    if (!dateString) return '';
+    
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = now - date;
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) {
+      return `오늘 ${date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}`;
+    } else if (diffDays === 1) {
+      return `어제 ${date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}`;
+    } else if (diffDays < 7) {
+      return `${diffDays}일 전`;
+    } else {
+      return date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
+    }
   };
 
   // 페이스 연동 버튼 클릭 핸들러
@@ -231,7 +273,7 @@ const UserProfilePage = () => {
                   <button 
                     className={styles.faceLinkButton} 
                     onClick={handleFaceLinkClick}
-                    style={{ background: '#4ecdc4', color: 'white' }}
+                    style={{ background: '#ef770c', color: 'white' }}
                   >
                     페이스 연동
                   </button>
@@ -244,27 +286,31 @@ const UserProfilePage = () => {
         <div className={styles.activityHistory}>
           <h3>최근 활동</h3>
           <div className={styles.historyList}>
-            <div className={styles.historyItem}>
-              <div className={styles.historyIcon}>🧘‍♀️</div>
-              <div className={styles.historyContent}>
-                <div className={styles.historyTitle}>아침 명상 완료</div>
-                <div className={styles.historyTime}>오늘 08:30</div>
+            {activitiesLoading ? (
+              <div style={{ textAlign: 'center', padding: '20px', color: '#666' }}>
+                활동 내역을 불러오는 중...
               </div>
-            </div>
-            <div className={styles.historyItem}>
-              <div className={styles.historyIcon}>💭</div>
-              <div className={styles.historyContent}>
-                <div className={styles.historyTitle}>감정 기록 작성</div>
-                <div className={styles.historyTime}>어제 21:15</div>
+            ) : recentActivities.length > 0 ? (
+              recentActivities.map((activity, index) => (
+                <div key={index} className={styles.historyItem}>
+                  <div className={styles.historyLeft}>
+                    <div className={styles.historyIcon}>{getActivityIcon(activity.activityType)}</div>
+                    <div className={styles.historyContent}>
+                      <div className={styles.historyTitle}>
+                        {activity.title}
+                      </div>
+                    </div>
+                  </div>
+                  <div className={styles.historyTime}>
+                    {formatActivityDate(activity.activityDate)}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div style={{ textAlign: 'center', padding: '20px', color: '#666' }}>
+                아직 활동 내역이 없습니다
               </div>
-            </div>
-            <div className={styles.historyItem}>
-              <div className={styles.historyIcon}>🏃‍♂️</div>
-              <div className={styles.historyContent}>
-                <div className={styles.historyTitle}>스트레스 해소 운동</div>
-                <div className={styles.historyTime}>어제 18:00</div>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </main>
