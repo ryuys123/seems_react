@@ -74,6 +74,13 @@ function AdminDashboard() {
   const { role, secureApiRequest } = useContext(AuthContext);
   const navigate = useNavigate();
 
+  // 4주차 데이터 필터링
+  useEffect(() => {
+    if (userSummary?.weeklyJoinStats && visitorSummary?.weeklyVisitorStats) {
+      handleStatsTypeChange("weekly");
+    }
+  }, [userSummary, visitorSummary]);
+
   // 백엔드 API 호출 (기존 코드와 동일)
   useEffect(() => {
     const fetchData = async () => {
@@ -240,7 +247,7 @@ function AdminDashboard() {
             if (statDate < twelveMonthsAgo) return null;
 
             return {
-              period: `${year}년 ${parseInt(month, 10)}월`,
+              period: `${year.slice(-2)}년 ${parseInt(month, 10)}월`,
               count: item.count,
             };
           })
@@ -256,15 +263,15 @@ function AdminDashboard() {
             if (statDate < twelveMonthsAgo) return null;
 
             return {
-              period: `${year}년 ${parseInt(month, 10)}월`,
+              period: `${year.slice(-2)}년 ${parseInt(month, 10)}월`,
               count: item.visitorCount, // 방문자 수 필드명은 `visitorCount`라고 가정
             };
           })
           .filter(Boolean) || [];
     }
 
-    setUserStats(newStats);
-    setVisitorStats(newVisitorStats);
+    setUserStats(newStats); // 가입자
+    setVisitorStats(newVisitorStats); // 방문자
   };
 
   const renderChart = (data, title, color) => (
@@ -273,11 +280,17 @@ function AdminDashboard() {
       <ResponsiveContainer width="100%" height={300}>
         <BarChart data={data}>
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="period" />
-          <YAxis />
+          <XAxis
+            dataKey="period"
+            tickLine={false} // 눈금선 제거
+            axisLine={{ stroke: "#ccc", strokeWidth: 2 }}
+          />
+          <YAxis
+            tickLine={false}
+            axisLine={{ stroke: "#ccc", strokeWidth: 2 }}
+          />
           <Tooltip />
-          <Legend />
-          <Bar dataKey="count" fill={color} name={title} barSize={40} />
+          <Bar dataKey="count" fill={color} name={title} barSize={35} />
         </BarChart>
       </ResponsiveContainer>
     </div>
