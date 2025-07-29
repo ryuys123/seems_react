@@ -130,7 +130,22 @@ const UserDeletePage = () => {
         authData = { password };
       }
       const result = await deleteAccount(userType, authData);
-      if (result.success) {
+      
+      // 서버 응답 구조에 따라 성공 여부 판단
+      let isSuccess = false;
+      if (result.success !== undefined) {
+        isSuccess = result.success;
+      } else if (result.message && result.message.includes('완료')) {
+        isSuccess = true;
+      } else if (result.message && result.message.includes('성공')) {
+        isSuccess = true;
+      } else if (typeof result === 'string' && result.includes('완료')) {
+        isSuccess = true;
+      }
+      
+      console.log('회원탈퇴 성공 여부:', isSuccess);
+      
+      if (isSuccess) {
         alert('회원 탈퇴가 완료되었습니다.');
         // 로그인페이지로 이동
         navigate('/');
