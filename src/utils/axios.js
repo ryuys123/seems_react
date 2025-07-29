@@ -29,20 +29,20 @@ apiClient.interceptors.request.use(
     } else {
       // 유효하지 않은 토큰이 있는 경우 제거
       if (accessToken === 'undefined' || refreshToken === 'undefined') {
-        console.warn('유효하지 않은 토큰 감지, localStorage 정리');
+        // console.warn('유효하지 않은 토큰 감지, localStorage 정리');
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
       }
     }
 
-    console.log("Axios 요청 설정 : ", config);
-    console.log("Axios 요청 URL : ", config.baseURL + config.url);
-    console.log("Axios 요청 메서드 : ", config.method?.toUpperCase());
-    console.log("Axios 요청 헤더 : ", config.headers);
+    // console.log("Axios 요청 설정 : ", config);
+    // console.log("Axios 요청 URL : ", config.baseURL + config.url);
+    // console.log("Axios 요청 메서드 : ", config.method?.toUpperCase());
+    // console.log("Axios 요청 헤더 : ", config.headers);
     return config;
   },
   (error) => {
-    console.error("Axios 요청 에러 : ", error);
+    // console.error("Axios 요청 에러 : ", error);
     return Promise.reject(error);
   }
 );
@@ -59,25 +59,25 @@ apiClient.interceptors.response.use(
 
     if (newAccessToken) {
       localStorage.setItem("accessToken", newAccessToken);
-      console.log(
-        "새로운 AccessToken 저장됨:",
-        newAccessToken.substring(0, 20) + "..."
-      );
+      // console.log(
+      //   "새로운 AccessToken 저장됨:",
+      //   newAccessToken.substring(0, 20) + "..."
+      // );
     }
 
     if (newRefreshToken) {
       localStorage.setItem("refreshToken", newRefreshToken);
-      console.log(
-        "새로운 RefreshToken 저장됨:",
-        newRefreshToken.substring(0, 20) + "..."
-      );
+      // console.log(
+      //   "새로운 RefreshToken 저장됨:",
+      //   newRefreshToken.substring(0, 20) + "..."
+      // );
     }
 
     return response;
   },
   async (error) => {
     // 요청이 실패해서, fail 코드가 전송왔을 때 공통 처리 내용 작성함
-    console.error("Axios 응답 에러 : ", error);
+    // console.error("Axios 응답 에러 : ", error);
 
     // 401 에러 (인증 실패)인 경우
     if (error.response?.status === 401 && !error.config._retry) {
@@ -89,7 +89,7 @@ apiClient.interceptors.response.use(
       
       // 로그인 페이지에서는 토큰 재발급 시도하지 않음
       if (isLoginPage) {
-        console.log("로그인 페이지에서 401 에러 - 토큰 재발급 시도 안함");
+        // console.log("로그인 페이지에서 401 에러 - 토큰 재발급 시도 안함");
         return Promise.reject(error);
       }
 
@@ -105,7 +105,7 @@ apiClient.interceptors.response.use(
           if (!accessToken || !refreshToken || 
               accessToken === 'undefined' || refreshToken === 'undefined' ||
               accessToken.trim() === '' || refreshToken.trim() === '') {
-            console.error('유효하지 않은 토큰으로 재발급 요청 불가');
+            // console.error('유효하지 않은 토큰으로 재발급 요청 불가');
             throw new Error('Invalid tokens');
           }
 
@@ -139,7 +139,7 @@ apiClient.interceptors.response.use(
 
           return true;
         } catch (error) {
-          console.error("토큰 재발급 실패:", error);
+          // console.error("토큰 재발급 실패:", error);
           
           // 현재 페이지가 로그인 페이지인지 확인
           const currentPath = window.location.pathname;
@@ -157,12 +157,12 @@ apiClient.interceptors.response.use(
               window.location.href = "/";
             } else {
               // 사용자가 세션 연장을 원하지 않는 경우
-              console.log("사용자가 세션 연장을 거부했습니다.");
+              // console.log("사용자가 세션 연장을 거부했습니다.");
               localStorage.clear();
             }
           } else {
             // 로그인 페이지에서는 조용히 처리
-            console.log("로그인 페이지에서 토큰 재발급 실패 - 알림창 표시 안함");
+            // console.log("로그인 페이지에서 토큰 재발급 실패 - 알림창 표시 안함");
             localStorage.clear();
           }
           

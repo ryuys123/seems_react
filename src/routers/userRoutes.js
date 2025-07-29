@@ -21,6 +21,8 @@ import NaverLoginPage from '../pages/user/NaverLoginPage';
 import SocialResult from '../pages/user/SocialResult';
 import FaceLoginPage from '../pages/user/FaceLoginPage';
 import FaceSignupPage from '../pages/user/FaceSignupPage';
+import NoticeListPage from '../pages/notice/NoticeListPage';
+import NoticeDetailPage from '../pages/notice/NoticeDetailPage';
 
 const userRoutes = [
   {
@@ -98,6 +100,14 @@ const userRoutes = [
   {
     path: '/facesignup',
     element: <FaceSignupPage />,
+  },
+  {
+    path: '/notice',
+    element: <NoticeListPage />,
+  },
+  {
+    path: '/notice/detail/:noticeNo',
+    element: <NoticeDetailPage />,
   },
 ];
 

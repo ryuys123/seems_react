@@ -31,6 +31,14 @@ function Login({ onLoginSuccess }) {
       return;
     }
     
+    // URL 파라미터에서 social 파라미터 확인
+    const urlParams = new URLSearchParams(window.location.search);
+    const socialProvider = urlParams.get('social');
+    if (socialProvider) {
+      // URL에서 파라미터 제거
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+    
     // 토큰이 없는 상태에서 로그인 페이지에 머물기
     console.log("로그인 페이지 로드 - 토큰 상태:", { 
       hasAccessToken: !!accessToken, 
@@ -109,9 +117,14 @@ function Login({ onLoginSuccess }) {
           navigate("/userdashboard");
         } else {
           // 신규 사용자인 경우 - 회원가입 페이지로 이동하여 추가 정보 입력
-          alert("신규 사용자입니다. 회원가입 페이지에서 추가 정보를 입력해주세요.");
+          alert("등록되지 않은 계정입니다. 소셜 회원가입 후 이용해주세요.");
           navigate("/signup");
         }
+      } else if (event.data && event.data.type === "social-signup-needed") {
+        // 신규 사용자 - 회원가입 페이지로 이동
+        console.log("소셜 회원가입 필요 - 신규 사용자");
+        alert("등록되지 않은 계정입니다. 소셜 회원가입 후 이용해주세요.");
+        navigate("/signup");
       }
     };
     window.addEventListener("message", handleMessage);
@@ -254,28 +267,8 @@ function Login({ onLoginSuccess }) {
 
   // 🔥 수정된 소셜 로그인 처리 함수
   const handleSocialLogin = (provider) => {
-    console.log(`${provider} 소셜 로그인 시도`);
-    
-    // Spring Security OAuth2 엔드포인트로 직접 이동 (포트 8888 사용)
-    switch (provider) {
-      case "google":
-        // window.location.href = "/oauth2/authorization/google";
-        window.location.href = "http://localhost:8888/seems/oauth2/authorization/google";
-        // window.location.href = "http://localhost:8080/oauth2/authorization/google";
-        break;
-      case "kakao":
-        // window.location.href = "/oauth2/authorization/kakao";
-        window.location.href = "http://localhost:8888/seems/oauth2/authorization/kakao";
-        // window.location.href = "http://localhost:8080/oauth2/authorization/kakao";
-        break;
-      case "naver":
-        // window.location.href = "/oauth2/authorization/naver";
-        window.location.href = "http://localhost:8888/seems/oauth2/authorization/naver";
-        // window.location.href = "http://localhost:8080/oauth2/authorization/naver";
-        break;
-      default:
-        console.log(`지원하지 않는 소셜 로그인: ${provider}`);
-    }
+    // 통합 소셜 로그인 모달 열기
+    // setShowSocialModal(true); // 이 부분을 제거합니다.
   };
 
   const handleFaceLogin = () => {
@@ -290,15 +283,15 @@ function Login({ onLoginSuccess }) {
   };
 
   const handleIdFindClick = () => {
-    // 아이디 찾기 페이지 이동
+    // 아이디 찾기 페이지 이동 (휴대전화로 찾기)
     console.log("아이디 찾기 페이지로 이동");
-    navigate("/idfindselect");
+    navigate("/idfindphone");
   };
 
   const handlePwFindClick = () => {
-    // 비밀번호 찾기 페이지 이동
+    // 비밀번호 찾기 페이지 이동 (아이디로 찾기)
     console.log("비밀번호 찾기 페이지로 이동");
-    navigate("/pwfindselect");
+    navigate("/pwfindid");
   };
 
   return (
@@ -453,6 +446,9 @@ function Login({ onLoginSuccess }) {
 
       {/* API 연동 테스트 컴포넌트 */}
       {/* <ApiTest /> */}
+      
+      {/* 통합 소셜 로그인 모달 */}
+      {/* SocialLoginModal 컴포넌트는 이제 사용되지 않으므로 제거 */}
     </div>
   );
 }
