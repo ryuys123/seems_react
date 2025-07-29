@@ -22,6 +22,63 @@ function UserHeader() {
   // 장착 뱃지 상태
   const [equippedBadge, setEquippedBadge] = useState(null);
 
+  // 뱃지 클래스 계산 (UserProfilePage와 동일한 로직)
+  const badgeClass = equippedBadge && equippedBadge.rewardId
+    ? `${profileStyles.profileBadge} ${profileStyles["badge" + equippedBadge.rewardId]}`
+    : profileStyles.profileBadge;
+
+  // 뱃지 업데이트를 위한 이벤트 리스너
+  useEffect(() => {
+    const handleBadgeUpdate = () => {
+      fetchEquippedBadge();
+    };
+
+    // 뱃지 변경 이벤트 리스너 등록
+    window.addEventListener('badge-updated', handleBadgeUpdate);
+    
+    return () => {
+      window.removeEventListener('badge-updated', handleBadgeUpdate);
+    };
+  }, []);
+
+  const fetchEquippedBadge = async () => {
+    try {
+      if (!userid) {
+        console.log('UserHeader: userid 없음');
+        return;
+      }
+      
+      const res = await apiClient.get(
+        `/api/user/equipped-badge?userId=${userid}`
+      );
+      
+      console.log('UserHeader: 뱃지 데이터 로드됨:', res.data);
+      setEquippedBadge(res.data);
+    } catch (error) {
+      console.error('UserHeader: 뱃지 조회 실패:', error.response?.status, error.response?.data);
+      setEquippedBadge(null);
+    }
+  };
+
+  // 뱃지 업데이트 함수를 전역으로 노출 (다른 컴포넌트에서 사용)
+  useEffect(() => {
+    window.updateUserHeaderBadge = fetchEquippedBadge;
+    return () => {
+      delete window.updateUserHeaderBadge;
+    };
+  }, [userid]);
+
+  // 뱃지 업데이트 이벤트 발생 함수 (다른 컴포넌트에서 사용)
+  useEffect(() => {
+    window.triggerBadgeUpdate = () => {
+      console.log('UserHeader: 뱃지 업데이트 이벤트 발생');
+      window.dispatchEvent(new Event('badge-updated'));
+    };
+    return () => {
+      delete window.triggerBadgeUpdate;
+    };
+  }, []);
+
   // 세션 타이머 상태 (JWT 토큰 만료 시간 기반)
   const [sessionTime, setSessionTime] = useState(0);
   const [lastActivity, setLastActivity] = useState(Date.now());
@@ -84,10 +141,19 @@ function UserHeader() {
     // 세션 만료 알림 타이머 (토큰 만료 5분 전 알림)
     const checkExpiryWarning = () => {
       const remainingTime = calculateTokenExpiry();
+      console.log('세션 만료 체크 - 남은 시간:', remainingTime, '초');
+      
       if (remainingTime <= 300 && remainingTime > 0 && !modalAlreadyShown) { // 5분 이하, 0초 초과, 모달이 아직 표시되지 않은 경우
+        console.log('세션 만료 5분 전 알림 표시');
         setShowSessionModal(true);
         setRemainingTime(remainingTime);
         setModalAlreadyShown(true); // 모달이 표시되었음을 기록
+      } else if (remainingTime <= 0) {
+        // 토큰이 완전히 만료된 경우
+        console.log('토큰 완전 만료 - 로그아웃 처리');
+        setShowSessionModal(false);
+        setModalAlreadyShown(false);
+        logoutAndRedirect();
       }
     };
     
@@ -296,41 +362,26 @@ function UserHeader() {
           // 모달 닫기 및 상태 리셋
           setShowSessionModal(false);
           setModalAlreadyShown(false); // 모달 상태 리셋하여 다음 세션 만료 시 다시 표시 가능
-
-          console.log('세션 연장 성공');
-          console.log('modalAlreadyShown 리셋 완료');
-          console.log('현재 타이머 상태:', sessionTime, '초');
-          console.log('다음 알림 예정:', '25분 후 (5분 남았을 때)');
-          if (isQuickExtend) {
-            // 즉시 연장의 경우 간단한 성공 메시지
-            console.log('즉시 세션 연장 완료 - 30분 추가');
-          } else {
-            // 모달에서 연장한 경우만 알림 표시
-            alert('세션이 성공적으로 연장되었습니다.');
-          }
+          
+          console.log('세션 연장 성공!');
+          return;
         } else {
-          // 새로운 토큰이 발급되지 않은 경우
-          console.error('새로운 토큰이 발급되지 않았습니다.');
-          alert('토큰 재발급에 실패했습니다. 다시 로그인해주세요.');
-          logoutAndRedirect();
+          // 토큰이 발급되지 않은 경우
+          console.error('토큰 재발급 실패: 새로운 토큰이 발급되지 않음');
+          throw new Error('토큰 재발급에 실패했습니다.');
         }
+      } else {
+        throw new Error(`토큰 재발급 실패: ${response.status}`);
       }
     } catch (error) {
-      console.error('세션 연장 실패 - 상세 오류:', error);
-      console.error('오류 응답:', error.response);
-      console.error('오류 메시지:', error.message);
+      console.error('세션 연장 실패:', error);
       
-      // 더 구체적인 오류 메시지 표시
-      let errorMessage = '세션 연장에 실패했습니다.';
-      if (error.response?.status === 401) {
-        errorMessage = '토큰이 만료되었습니다. 다시 로그인해주세요.';
-      } else if (error.response?.status === 404) {
-        errorMessage = '세션 연장 서비스를 찾을 수 없습니다. 관리자에게 문의해주세요.';
-      } else if (error.response?.status === 500) {
-        errorMessage = '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
-      }
+      // 세션 연장 실패 시 모달 닫고 로그아웃 처리
+      setShowSessionModal(false);
+      setModalAlreadyShown(false);
       
-      alert(errorMessage);
+      // 사용자에게 알림 후 로그아웃
+      alert('세션 연장에 실패했습니다. 다시 로그인해주세요.');
       logoutAndRedirect();
     }
   };
@@ -340,13 +391,14 @@ function UserHeader() {
     setShowSessionModal(false);
     // 모달 상태 리셋하지 않음 - 사용자가 닫기만 한 경우 다시 표시하지 않음
     // 모달을 닫아도 세션은 계속 진행
+    console.log('사용자가 세션 만료 모달을 닫음');
   };
 
   // 뱃지 REWARD_ID별 클래스
-  const badgeClass =
-    equippedBadge && equippedBadge.rewardId
-      ? `${profileStyles.profileBadge} ${profileStyles["badge" + equippedBadge.rewardId]}`
-      : profileStyles.profileBadge;
+  // const badgeClass =
+  //   equippedBadge && equippedBadge.rewardId
+  //     ? `${profileStyles.profileBadge} ${profileStyles["badge" + equippedBadge.rewardId]}`
+  //     : profileStyles.profileBadge;
 
   const handleLogout = useCallback(() => {
     // 로그아웃 처리
@@ -436,33 +488,46 @@ function UserHeader() {
               </div>
             )}
             
-            {/* 두 번째 줄: 인사말과 뱃지 */}
+            {/* 두 번째 줄: 뱃지와 인사말 */}
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <span className={styles.userGreeting}>
-                {localUserName ? `${localUserName}님, 안녕하세요` : "안녕하세요"}
-              </span>
-              
-              {/* 장착 뱃지 노출 */}
+              {/* 장착 뱃지 노출 (사용자 이름 왼쪽) */}
               {equippedBadge && (
                 <div
                   className={badgeClass}
-                  style={{ display: "flex", alignItems: "center", gap: 6 }}
+                  style={{ 
+                    display: "flex", 
+                    alignItems: "center", 
+                    gap: 6,
+                    padding: "4px 8px",
+                    borderRadius: "12px",
+                    fontSize: "0.8rem",
+                    fontWeight: "600",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                    transition: "all 0.3s ease",
+                    backgroundColor: "#ff6b6b",
+                    color: "white"
+                  }}
+                  title={`장착중: ${equippedBadge.titleReward || equippedBadge.questName || "뱃지"}`}
                 >
                   <img
                     src={equippedBadge.imagePath}
                     alt="장착 뱃지"
                     style={{
-                      width: 24,
-                      height: 24,
+                      width: 20,
+                      height: 20,
                       marginRight: 4,
                       verticalAlign: "middle",
                     }}
                   />
-                  <span style={{ fontSize: "0.98rem" }}>
+                  <span style={{ fontSize: "0.75rem", fontWeight: "600" }}>
                     {equippedBadge.titleReward || equippedBadge.questName || "뱃지"}
                   </span>
                 </div>
               )}
+              
+              <span className={styles.userGreeting}>
+                {localUserName ? `${localUserName}님, 안녕하세요` : "안녕하세요"}
+              </span>
             </div>
           </div>
 

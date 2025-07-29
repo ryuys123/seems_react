@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import logoImage from '../../assets/images/logo_2.png';
+import logoSeems from '../../assets/images/logo_seems.png';
 import styles from './IdFindPhonePage.module.css';
 import apiClient from '../../utils/axios'; // axios 인스턴스 추가
 import axios from 'axios'; // 직접 axios 사용을 위해 추가
@@ -189,14 +189,14 @@ const IdFindPhone = () => {
   return (
     <div className={styles.forgotContainer}>
       <div className={styles.logoWrap}>
-        <span className={styles.logoText}>
-          <span style={{color: '#4b94d0', fontWeight: 900, fontSize: '2rem', letterSpacing: '-1px'}}>SEE</span>
-          <span style={{color: '#3d3833', fontWeight: 900, fontSize: '2rem', letterSpacing: '-1px'}}>MS</span>
-        </span>
+        <div className={styles.logoText}>
+          <span>SEE</span>
+          <span>MS</span>
+        </div>
         <img 
-          src={logoImage} 
+          src={logoSeems} 
           alt="SEE MS 로고" 
-          style={{marginLeft: '8px', width: '54px', height: '54px', borderRadius: 0, background: 'none', boxShadow: 'none'}}
+          className={styles.logoImage}
         />
       </div>
       
