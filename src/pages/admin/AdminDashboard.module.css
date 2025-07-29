@@ -1,3 +1,5 @@
+/* src/pages/admin/AdminDashboard.module.css */
+
 :root {
   --main-blue: #4b94d0;
   --main-bg: #f8f5ed;
@@ -14,31 +16,17 @@
   color: var(--main-dark);
   margin: 0;
   min-height: 100vh;
+  display: flex; /* Flexbox를 사용하여 전체 레이아웃 제어 */
+  flex-direction: column; /* 세로 방향 정렬 */
 }
 
-.adminNav {
-  display: flex;
-  gap: 18px;
-}
-
-.navLink {
-  color: var(--main-dark);
-  text-decoration: none;
-  font-weight: 700;
-  font-size: 1rem;
-  padding: 6px 14px;
-  border-radius: 8px;
-  transition: background 0.2s;
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-
-.main {
-  width: 100%;
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 32px 16px;
+/* ⭐ 새로운 공통 컨텐츠 영역 컨테이너 */
+.contentArea {
+  padding: 32px 20px; /* 상하 32px, 좌우 20px 패딩 */
+  max-width: 1200px; /* 전체 컨텐츠의 최대 너비를 설정 */
+  margin: 0 auto; /* 최대 너비 설정 시, 중앙 정렬 */
+  width: 100%; /* 부모에 맞춰 너비 100% 사용 */
+  box-sizing: border-box; /* 패딩이 너비에 포함되도록 설정 */
 }
 
 .pageTitle {
@@ -46,13 +34,14 @@
   font-weight: 900;
   color: var(--main-blue);
   margin-bottom: 30px;
+  /* ⭐ .contentArea의 좌측 패딩에 맞춰 조절 */
+  padding-left: 20px; /* contentArea와 같은 좌측 정렬을 위해 padding-left 사용 */
 }
 
 .statsGrid {
-  width: 100%;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 20px;
+  gap: 20px; /* 카드 사이의 간격 */
   margin-bottom: 32px;
 }
 
@@ -78,39 +67,45 @@
 
 .statSub {
   font-size: 0.9rem;
-  color: #4caf50;
+  color: #4caf50; /* 증감률 텍스트 색상. 필요시 조절 */
   margin-top: 6px;
 }
 
+.main {
+  /* .main은 이제 .contentArea 내부에 있으므로 자체적인 max-width, margin, padding은 필요 없음 */
+  width: 100%; /* 부모 (contentArea) 너비를 따름 */
+  padding: 0; /* contentArea가 패딩을 담당하므로 제거 */
+  margin: 0; /* contentArea가 마진을 담당하므로 제거 */
+}
+
+/* ⭐ 그래프 컨테이너 스타일 개선 */
 .chartContainer {
-  width: 100%;
-  background: var(--card-bg);
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow);
-  padding: 24px;
-  margin-bottom: 32px;
+  background: var(--card-bg); /* 카드와 동일한 배경 */
+  border-radius: var(--border-radius); /* 카드와 동일한 테두리 곡률 */
+  box-shadow: var(--shadow); /* 카드와 동일한 그림자 */
+  padding: 24px; /* 내부 패딩 */
+  margin-bottom: 32px; /* 하단 여백 */
 }
 
-.chartHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
+/* ⭐ 그래프 제목 스타일 개선 */
 .chartTitle {
   font-size: 1.2rem;
   font-weight: 700;
-  color: var(--main-blue);
-  margin: 0;
+  color: var(--main-blue); /* ⭐ 메인 다크 컬러 사용 */
+  margin: 0 0 15px 0; /* 하단 마진 추가 */
+  text-align: center; /* 그래프 제목 중앙 정렬 */
 }
 
-.chartFilters {
+/* ⭐ 그래프 탭 전환 버튼 컨테이너 */
+.main > div:first-child {
   display: flex;
   gap: 12px;
+  margin-bottom: 20px; /* 버튼과 첫번째 차트 사이 간격 */
+  padding-left: 0;
 }
 
-.filterBtn {
+/* ⭐ 탭 전환 버튼 기본 스타일 개선 */
+.dashboardTabBtn {
   background: #f5f5f5;
   border: none;
   padding: 6px 12px;
@@ -118,295 +113,46 @@
   font-size: 0.9rem;
   cursor: pointer;
   transition: background 0.2s;
+  color: var(--main-dark); /* ⭐ 메인 다크 컬러 사용 */
 }
 
-.filterBtn:hover,
-.filterBtn.active {
+.dashboardTabBtn:hover {
+  background: #e0e0e0;
+}
+
+/* ⭐ 활성화된 탭 버튼 스타일 */
+.dashboardTabBtn.active {
   background: var(--main-blue);
   color: #fff;
-}
-
-.chart {
-  height: 300px;
-  position: relative;
-}
-
-.tableContainer {
-  background: var(--card-bg);
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow);
-  padding: 24px;
-  margin-bottom: 32px;
-  overflow-x: auto;
-}
-
-.table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.table th,
-.table td {
-  padding: 12px;
-  text-align: left;
-  border-bottom: 1px solid #eee;
-}
-
-.table th {
-  font-weight: 700;
-  color: var(--main-blue);
-}
-
-.table tr:hover {
-  background: #f8f9fa;
-}
-
-.actionBtn {
-  background: var(--main-blue);
-  color: #fff;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.actionBtn:hover {
-  background: #3d7ab0;
-}
-
-.resetBtn {
-  background: var(--main-dark);
-}
-
-.bulkBtn {
-  background: var(--main-accent);
-}
-
-.exportBtn {
-  background: var(--main-accent);
-}
-
-.searchBar {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.searchInput {
-  flex: 1;
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 0.9rem;
-}
-
-.searchGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-}
-
-.filterButtons {
-  margin-top: 16px;
-  display: flex;
-  gap: 8px;
-  justify-content: flex-end;
-}
-
-.bulkActions {
-  display: flex;
-  gap: 8px;
-  flex: 1;
-}
-
-.searchInfo {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.modalContent {
-  background: #fff;
-  width: 90%;
-  max-width: 600px;
-  padding: 24px;
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow);
-}
-
-.modalHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.modalTitle {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: var(--main-blue);
-  margin: 0;
-}
-
-.closeBtn {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: #666;
-}
-
-.formGroup {
-  margin-bottom: 16px;
-}
-
-.formLabel {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 700;
-}
-
-.formInput {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 0.9rem;
-}
-
-.formSelect {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 0.9rem;
-}
-
-.toast {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.8);
-  color: white;
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  z-index: 1000;
-}
-
-.badge {
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  font-weight: 700;
-}
-
-.badge.info {
-  background: #e3f2fd;
-  color: #1976d2;
-}
-
-.badge.warning {
-  background: #fff3e0;
-  color: #f57c00;
-}
-
-.badge.error {
-  background: #ffebee;
-  color: #d32f2f;
-}
-
-.pagination {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  justify-content: center;
-  margin-top: 16px;
-}
-
-.pageBtn {
-  border: none;
-  background: #f5f5f5;
-  padding: 8px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.pageBtn:hover {
-  background: var(--main-blue);
-  color: white;
-}
-
-.pageBtn.active {
-  background: var(--main-blue);
-  color: white;
-}
-
-.stackTrace {
-  background: #f5f5f5;
-  padding: 12px;
-  border-radius: 6px;
-  overflow-x: auto;
-  font-family: monospace;
-  font-size: 0.9rem;
-  white-space: pre-wrap;
-}
-
-/* 섹션별 스타일 */
-.dashboardSection,
-.usersSection,
-.contentsSection,
-.logsSection {
-  /* 섹션별 추가 스타일이 필요한 경우 여기에 추가 */
 }
 
 /* 반응형 디자인 */
 @media (max-width: 768px) {
-  .headerInner {
-    flex-direction: column;
-    gap: 16px;
+  .contentArea {
+    padding: 20px 15px; /* 모바일에서 좌우 패딩 조절 */
   }
 
-  .adminNav {
-    flex-wrap: wrap;
-    justify-content: center;
+  .pageTitle {
+    font-size: 1.5rem;
+    padding-left: 15px; /* 모바일에서 좌측 패딩 조절 */
   }
 
   .statsGrid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr; /* 모바일에서 카드 한 줄에 하나씩 */
+    gap: 15px;
   }
 
-  .searchGrid {
-    grid-template-columns: 1fr;
+  .statValue {
+    font-size: 2.5rem; /* 모바일에서 글자 크기 조절 */
   }
 
-  .searchBar {
-    flex-direction: column;
+  .chartContainer {
+    padding: 18px; /* 모바일에서 차트 컨테이너 패딩 조절 */
   }
 
-  .tableContainer {
-    overflow-x: auto;
-  }
-
-  .modalContent {
-    width: 95%;
-    margin: 20px;
+  /* 모바일에서 버튼 그룹의 flex-wrap */
+  .main > div:first-child {
+    flex-wrap: wrap;
+    justify-content: center;
   }
 }

@@ -1,4 +1,3 @@
-// src/pages/admin/AdminDashboard.js  : 관리자 대시보드 페이지
 import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./AdminDashboard.module.css";
@@ -16,7 +15,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-// 몇월 몇주차인지 계산해주는 함수
+// 몇월 몇주차인지 계산해주는 함수 (기존 코드와 동일)
 function getStartDateOfIsoWeek(year, week) {
   const simple = new Date(year, 0, 1 + (week - 1) * 7);
   const dow = simple.getDay(); // 0 (일) ~ 6 (토)
@@ -33,7 +32,7 @@ function getWeekOfMonth(date) {
   return Math.ceil(offsetDate / 7);
 }
 
-//지난주 대비 증감률 계산 함수
+//지난주 대비 증감률 계산 함수 (기존 코드와 동일)
 function calculateChangeRate(stats) {
   if (!stats || stats.length < 2) return null;
 
@@ -50,7 +49,7 @@ function calculateChangeRate(stats) {
   return rate;
 }
 
-//어제 대비 증감률 함수 (방문자수)
+//어제 대비 증감률 함수 (방문자수) (기존 코드와 동일)
 function calculateDailyChangeRate(todayCount, yesterdayCount) {
   if (yesterdayCount === 0) {
     return todayCount === 0 ? 0 : 100;
@@ -75,7 +74,7 @@ function AdminDashboard() {
   const { role, secureApiRequest } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  // 백엔드 API 호출
+  // 백엔드 API 호출 (기존 코드와 동일)
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -147,42 +146,44 @@ function AdminDashboard() {
     fetchData();
   }, []);
 
-  // 오늘 날짜 구하기 (형식 맞춰야 함: 'YYYY-MM-DD')
+  // 오늘 날짜 구하기 (형식 맞춰야 함: 'YYYY-MM-DD') (기존 코드와 동일)
   const today = new Date().toISOString().split("T")[0]; // '2025-07-28' 형태
 
-  // 오늘 방문자 수 찾기
+  // 오늘 방문자 수 찾기 (기존 코드와 동일)
   const todayVisitorData = visitorSummary.dailyVisitorStats?.find(
     (item) => item.period === today
   );
   const todayVisitorCount = todayVisitorData?.visitorCount ?? 0;
 
-  // 어제 날짜 찾기
+  // 어제 날짜 찾기 (기존 코드와 동일)
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
   const yesterdayStr = yesterday.toISOString().split("T")[0];
-  //어제 방문자 수 찾기
+  //어제 방문자 수 찾기 (기존 코드와 동일)
   const yesterdayVisitorData = visitorSummary.dailyVisitorStats?.find(
     (item) => item.period === yesterdayStr
   );
   const yesterdayVisitorCount = yesterdayVisitorData?.visitorCount ?? 0;
 
-  // 어제 대비 방문자 수 증감률 계산
+  // 어제 대비 방문자 수 증감률 계산 (기존 코드와 동일)
   const visitorRate = calculateDailyChangeRate(
     todayVisitorCount,
     yesterdayVisitorCount
   );
 
-  // 그래프 탭 전환
+  // 그래프 탭 전환 (기존 코드와 동일, 그러나 필터링 로직 개선)
   const handleStatsTypeChange = (type) => {
     setUserStatsType(type);
 
     let newStats = [];
+    let newVisitorStats = [];
 
     if (type === "weekly") {
       const now = new Date();
       const fourWeeksAgo = new Date(now);
-      fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 7 * 4);
+      fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 7 * 4); // 4주 전 날짜 계산
 
+      // 사용자 주간 통계 데이터
       newStats =
         userSummary.weeklyJoinStats
           ?.map((item) => {
@@ -191,7 +192,8 @@ function AdminDashboard() {
             const week = parseInt(weekStr, 10);
             const startDate = getStartDateOfIsoWeek(year, week);
 
-            if (startDate < fourWeeksAgo) return null; // 🔥 4주 이내만
+            // 🔥 4주 이내 데이터만 필터링합니다.
+            if (startDate < fourWeeksAgo) return null;
 
             const month = startDate.getMonth() + 1;
             const weekOfMonth = getWeekOfMonth(startDate);
@@ -201,18 +203,40 @@ function AdminDashboard() {
               count: item.count,
             };
           })
+          .filter(Boolean) || []; // null 값 제거
+
+      // 방문자 주간 통계 데이터
+      newVisitorStats =
+        visitorSummary.weeklyVisitorStats
+          ?.map((item) => {
+            const [yearStr, weekStr] = item.period.split("-");
+            const year = parseInt(yearStr, 10);
+            const week = parseInt(weekStr, 10);
+            const startDate = getStartDateOfIsoWeek(year, week);
+
+            if (startDate < fourWeeksAgo) return null;
+
+            const month = startDate.getMonth() + 1;
+            const weekOfMonth = getWeekOfMonth(startDate);
+
+            return {
+              period: `${month}월 ${weekOfMonth}주차`,
+              count: item.visitorCount,
+            };
+          })
           .filter(Boolean) || [];
     } else if (type === "monthly") {
       const now = new Date();
       const twelveMonthsAgo = new Date(now);
-      twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+      twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12); // 12개월 전 날짜 계산
 
       newStats =
         userSummary.monthlyJoinStats
           ?.map((item) => {
             const [year, month] = item.date.split("-");
-            const statDate = new Date(parseInt(year), parseInt(month) - 1); // 0-based month
+            const statDate = new Date(parseInt(year), parseInt(month) - 1); // 월은 0-based
 
+            // 🔥 12개월 이내 데이터만 필터링합니다.
             if (statDate < twelveMonthsAgo) return null;
 
             return {
@@ -220,10 +244,27 @@ function AdminDashboard() {
               count: item.count,
             };
           })
+          .filter(Boolean) || []; // null 값 제거
+
+      // 방문자 월간 통계 데이터
+      newVisitorStats =
+        visitorSummary.monthlyVisitorStats // 방문자 월간 통계 데이터는 `monthlyVisitorStats`라고 가정
+          ?.map((item) => {
+            const [year, month] = item.period.split("-"); // 방문자 월간 통계 필드명도 `period`라고 가정
+            const statDate = new Date(parseInt(year), parseInt(month) - 1);
+
+            if (statDate < twelveMonthsAgo) return null;
+
+            return {
+              period: `${year}년 ${parseInt(month, 10)}월`,
+              count: item.visitorCount, // 방문자 수 필드명은 `visitorCount`라고 가정
+            };
+          })
           .filter(Boolean) || [];
     }
 
     setUserStats(newStats);
+    setVisitorStats(newVisitorStats);
   };
 
   const renderChart = (data, title, color) => (
@@ -241,78 +282,88 @@ function AdminDashboard() {
       </ResponsiveContainer>
     </div>
   );
+
   return (
     <div className={styles.adminDashboard}>
       <AdminHeader />
       <h1 className={styles.pageTitle}>관리자 대시보드</h1>
-      <div className={styles.statsGrid}>
-        <div className={styles.statCard}>
-          <div className={styles.statTitle}>총 사용자 수</div>
-          <div className={styles.statValue}>
-            {userSummary.totalUsers?.toLocaleString() ?? "-"}
+      {/* ⭐ 새로 추가된 div: contentArea. 카드와 그래프를 모두 감싸서 공통 패딩 적용 */}
+      <div className={styles.contentArea}>
+        <div className={styles.statsGrid}>
+          <div className={styles.statCard}>
+            <div className={styles.statTitle}>총 사용자 수</div>
+            <div className={styles.statValue}>
+              {userSummary.totalUsers?.toLocaleString() ?? "-"}
+            </div>
+            <div className={styles.statSub}>
+              총 탈퇴자 수:{" "}
+              {userSummary.totalWithdraws?.toLocaleString() ?? "-"}
+            </div>
           </div>
-          <div className={styles.statSub}>
-            총 탈퇴자 수: {userSummary.totalWithdraws?.toLocaleString() ?? "-"}
-          </div>
-        </div>
 
-        <div className={styles.statCard}>
-          <div className={styles.statTitle}>오늘 방문자 수</div>
-          <div className={styles.statValue}>
-            {todayVisitorCount.toLocaleString()}
+          <div className={styles.statCard}>
+            <div className={styles.statTitle}>오늘 방문자 수</div>
+            <div className={styles.statValue}>
+              {todayVisitorCount.toLocaleString()}
+            </div>
+            <div className={styles.statSub}>
+              {visitorRate === 0
+                ? "어제 대비 : 변화 없음"
+                : `어제 대비 ${visitorRate > 0 ? "+" : ""}${visitorRate}%`}
+            </div>
           </div>
-          <div className={styles.statSub}>
-            {visitorRate === 0
-              ? "어제 대비 : 변화 없음"
-              : `어제 대비 ${visitorRate > 0 ? "+" : ""}${visitorRate}%`}
-          </div>
-        </div>
 
-        <div className={styles.statCard}>
-          <div className={styles.statTitle}>전체 감정기록 수</div>
-          <div className={styles.statValue}>
-            {emotionSummary?.totalEmotionLogs?.toLocaleString() ?? "-"}
-          </div>
-          <div className={styles.statSub}>
-            {emotionRate == null
-              ? "지난주 대비 : 변화 없음"
-              : emotionRate === 0
+          <div className={styles.statCard}>
+            <div className={styles.statTitle}>전체 감정기록 수</div>
+            <div className={styles.statValue}>
+              {emotionSummary?.totalEmotionLogs?.toLocaleString() ?? "-"}
+            </div>
+            <div className={styles.statSub}>
+              {emotionRate == null
                 ? "지난주 대비 : 변화 없음"
-                : `지난주 대비 ${emotionRate > 0 ? "+" : ""}${emotionRate}%`}
+                : emotionRate === 0
+                  ? "지난주 대비 : 변화 없음"
+                  : `지난주 대비 ${emotionRate > 0 ? "+" : ""}${emotionRate}%`}
+            </div>
           </div>
-        </div>
 
-        <div className={styles.statCard}>
-          <div className={styles.statTitle}>전체 상담기록 수</div>
-          <div className={styles.statValue}>
-            {counselingSummary?.totalCounselingLogs?.toLocaleString() ?? "-"}
-          </div>
-          <div className={styles.statSub}>
-            {counselingRate == null
-              ? "지난주 대비 : 변화 없음"
-              : counselingRate === 0
+          <div className={styles.statCard}>
+            <div className={styles.statTitle}>전체 상담기록 수</div>
+            <div className={styles.statValue}>
+              {counselingSummary?.totalCounselingLogs?.toLocaleString() ?? "-"}
+            </div>
+            <div className={styles.statSub}>
+              {counselingRate == null
                 ? "지난주 대비 : 변화 없음"
-                : `지난주 대비 ${counselingRate > 0 ? "+" : ""}${counselingRate}%`}
+                : counselingRate === 0
+                  ? "지난주 대비 : 변화 없음"
+                  : `지난주 대비 ${counselingRate > 0 ? "+" : ""}${counselingRate}%`}
+            </div>
           </div>
         </div>
-      </div>
 
-      <main className={styles.main}>
-        {/* 대시보드 섹션 */}
-        <div style={{ padding: "20px" }}>
+        <main className={styles.main}>
+          {/* ⭐ 기존 인라인 패딩 (style={{ padding: "20px" }}) 제거! */}
           <div style={{ margin: "10px 0" }}>
-            <button onClick={() => handleStatsTypeChange("weekly")}>
+            <button
+              className={userStatsType === "weekly" ? styles.activeButton : ""}
+              onClick={() => handleStatsTypeChange("weekly")}
+            >
               주별
             </button>
-            <button onClick={() => handleStatsTypeChange("monthly")}>
+            <button
+              className={userStatsType === "monthly" ? styles.activeButton : ""}
+              onClick={() => handleStatsTypeChange("monthly")}
+            >
               월별
             </button>
           </div>
 
           {renderChart(userStats, "가입자 수", "#8884d8")}
           {renderChart(visitorStats, "방문자 수", "#82ca9d")}
-        </div>
-      </main>
+        </main>
+      </div>{" "}
+      {/* ⭐ contentArea 닫는 태그 */}
     </div>
   );
 }

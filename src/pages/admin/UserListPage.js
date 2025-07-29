@@ -274,7 +274,7 @@ function UserListPage({ searchResults }) {
               <th>이름</th>
               <th>전화번호</th>
               <th>가입일</th>
-              <th>최근 로그인</th>
+              <th>최근 정보 수정일</th>
               <th>상태</th>
             </tr>
           </thead>
