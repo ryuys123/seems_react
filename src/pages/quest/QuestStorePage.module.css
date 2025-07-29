@@ -357,6 +357,12 @@
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 24px;
+  min-height: 400px; /* 최소 높이 설정 (뱃지 아이템 수에 따라 조절) */
+}
+
+/* 스크롤바 항상 표시 (전역 CSS 파일에 추가하는 것이 더 좋음) */
+html {
+  overflow-y: scroll;
 }
 
 /* 카드 */
@@ -412,14 +418,14 @@
   animation: rarity-shine 3.5s infinite;
 }
 @keyframes rarity-shine {
-  0% { left: -60%; }
-  60% { left: 120%; }
-  100% { left: 120%; }
+  0% { transform: translateX(-100%) skewX(-20deg); }
+  60% { transform: translateX(200%) skewX(-20deg); }
+  100% { transform: translateX(200%) skewX(-20deg); }
 }
 .rarityRare.itemRarity::after { animation-duration: 3.5s; }
 .rarityEpic.itemRarity::after { animation-duration: 2.5s; }
 .rarityUnique.itemRarity::after { animation-duration: 1.5s; }
-.rarityLegendary.itemRarity::after { animation-duration: 0.8s; }
+.rarityLegendary.itemRarity::after { animation-duration: 1.5s; } /* 속도 조정 */
 .rarityPlatinum.itemRarity::after {
   animation-duration: 0.5s;
 }
@@ -542,8 +548,8 @@
 
 /* 획득 완료 카드 스타일 */
 .storeItem.owned {
-  opacity: 0.6;
-  filter: grayscale(0.2);
+  /* opacity: 0.6; */ /* 제거 */
+  /* filter: grayscale(0.2); */ /* 제거 */
   position: relative;
 }
 .storeItem.owned::after {
@@ -569,7 +575,7 @@
   cursor: default;
   font-weight: 900;
   border: none;
-  opacity: 1;
+  /* opacity: 1; */ /* 제거 */
 }
 .purchaseBtn.owned:hover {
   background: #4caf50;
@@ -680,18 +686,26 @@
   }
 }
 
+/* 장착 버튼 스타일 (기존 .equipBtn) */
 .equipBtn {
   margin-top: 8px;
-  background: #2196f3;
+  background: #2196f3; /* 기본 장착하기 색상 */
   color: #fff;
   border: none;
   border-radius: 8px;
   padding: 8px 16px;
   font-weight: 700;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.2s, color 0.2s; /* 색상 전환 추가 */
   font-size: 1rem;
 }
+
+/* 장착 해제 버튼 스타일 */
+.equipBtn.equipped {
+  background: #f44336; /* 장착 해제 색상 (빨간색 계열) */
+  color: #fff;
+}
+
 .equipBtn:disabled {
   background: #aaa;
   cursor: default;

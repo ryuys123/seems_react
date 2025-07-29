@@ -159,8 +159,8 @@ export const createQuest = async (questData) => {
     const { userId, questName, questPoints, isCompleted, date } = questData;
     // 쿼리 파라미터 문자열 생성
     const params = new URLSearchParams({
-      userId,
-      questName,
+      userId, // encodeURIComponent 제거
+      questName, // encodeURIComponent 제거
       questPoints: String(questPoints),
       isCompleted: String(isCompleted),
       date

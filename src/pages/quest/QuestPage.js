@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react'; // useContext 추가
 import { Link } from 'react-router-dom';
 import styles from './QuestPage.module.css';
 import UserHeader from '../../components/common/UserHeader';
@@ -16,53 +16,20 @@ import {
   getRecommendedQuests,
   getTodayEmotion // 추가
 } from '../../services/QuestService';
+import { AuthContext } from '../../AuthProvider'; // AuthContext 추가
 
 const QuestPage = () => {
-  // 사용자 정보 (실제로는 로그인된 사용자 정보를 사용)
-  const [userId] = useState(() => {
-    // 1. userInfo에서 사용자 ID 가져오기
-    const userInfo = localStorage.getItem('userInfo');
-    if (userInfo) {
-      try {
-        const parsed = JSON.parse(userInfo);
-        if (parsed.userId) {
-          console.log('userInfo에서 userId 추출:', parsed.userId);
-          return parsed.userId;
-        }
-      } catch (error) {
-        console.error('userInfo 파싱 에러:', error);
-      }
+  const [userId, setUserId] = useState(null); // userId 상태와 setUserId 함수를 올바르게 선언
+
+  // AuthContext에서 userId를 가져옵니다.
+  const { userid: authUserId } = useContext(AuthContext);
+
+  // userId 상태를 authUserId와 동기화합니다.
+  useEffect(() => {
+    if (authUserId) {
+      setUserId(authUserId);
     }
-    
-    // 2. JWT 토큰에서 사용자 ID 추출 시도
-    const accessToken = localStorage.getItem('accessToken');
-    if (accessToken) {
-      try {
-        const payload = JSON.parse(atob(accessToken.split('.')[1]));
-        console.log('JWT 토큰 페이로드:', payload);
-        
-        // 다양한 필드명으로 userId 찾기
-        const extractedUserId = payload.userId || payload.sub || payload.user_id || payload.userid;
-        if (extractedUserId) {
-          console.log('JWT에서 userId 추출:', extractedUserId);
-          return extractedUserId;
-        }
-      } catch (error) {
-        console.error('JWT 토큰 파싱 에러:', error);
-      }
-    }
-    
-    // 3. localStorage에서 직접 userId 확인
-    const loggedInUserId = localStorage.getItem('loggedInUserId');
-    if (loggedInUserId) {
-      console.log('localStorage에서 userId 추출:', loggedInUserId);
-      return loggedInUserId;
-    }
-    
-    // 4. 기본값 반환
-    console.log('기본 userId 사용:', 'user001');
-    return 'user001';
-  });
+  }, [authUserId]);
   
   const [ongoingActivities, setOngoingActivities] = useState([]);
   const [recommendations, setRecommendations] = useState([]);

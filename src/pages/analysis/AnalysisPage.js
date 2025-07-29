@@ -1,27 +1,28 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react"; // useContext 추가
 import axios from "axios";
 import styles from "./AnalysisPage.module.css";
 import UserHeader from "../../components/common/UserHeader";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { Doughnut } from "react-chartjs-2";
 import UserTaskStatusService from "../../services/UserTaskStatusService"; // 새로 추가
+import { AuthContext } from "../../AuthProvider"; // AuthContext 추가
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 export default function AnalysisPage() {
-  // ⭐️ 임시 userId 설정. 실제 앱에서는 로그인 세션에서 가져와야 합니다.
-  const [userId, setUserId] = useState(null); // 초기값 null로 설정
+  const { userid: userId } = useContext(AuthContext); // AuthContext에서 userId 가져오기
 
-  useEffect(() => {
-    const storedUserId = localStorage.getItem("loggedInUserId");
-    if (storedUserId) {
-      setUserId(storedUserId);
-    } else {
-      // 로그인되지 않은 경우 처리 (예: 로그인 페이지로 리다이렉트)
-      console.warn("로그인된 사용자 ID를 찾을 수 없습니다.");
-      // navigate("/login"); // 필요하다면 로그인 페이지로 이동
-    }
-  }, []); // 컴포넌트 마운트 시 한 번만 실행
+  // userId 상태는 더 이상 필요 없으므로 제거합니다.
+  // const [userId, setUserId] = useState(null); // 초기값 null로 설정
+
+  // useEffect(() => {
+  //   const storedUserId = localStorage.getItem("loggedInUserId");
+  //   if (storedUserId) {
+  //     setUserId(storedUserId);
+  //   } else {
+  //     console.warn("로그인된 사용자 ID를 찾을 수 없습니다.");
+  //   }
+  // }, []); // 컴포넌트 마운트 시 한 번만 실행
 
   const [latestResult, setLatestResult] = useState(null);
   const [loading, setLoading] = useState(true);
