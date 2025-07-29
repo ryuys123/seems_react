@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import styles from './SignupPage.module.css';
 import logoSeems from '../../assets/images/logo_seems.png';
 import naverIcon from '../../assets/images/naver.png';
 import kakaoIcon from '../../assets/images/kakao.png';
 import apiClient from '../../utils/axios';
 import FaceModal from '../../components/modal/FaceModal';
-import AdditionInfo from '../../components/modal/AdditionInfo';
+// import AdditionInfo from '../../components/modal/AdditionInfo'; // 소셜 연동 페이지로 대체
 import { AuthContext } from '../../AuthProvider';
 
 
@@ -29,16 +29,15 @@ import { AuthContext } from '../../AuthProvider';
   const [previewUrl, setPreviewUrl] = useState(null);
   const [showFaceModal, setShowFaceModal] = useState(false);
   const [pendingFormData, setPendingFormData] = useState(null);
-  const [showAdditionInfoModal, setShowAdditionInfoModal] = useState(false);
+  // const [showAdditionInfoModal, setShowAdditionInfoModal] = useState(false); // 소셜 연동 페이지로 대체
   const [socialUserInfo, setSocialUserInfo] = useState(null);
   
 
   
-  // 디버깅용: 모달 상태 변화 추적
+  // 디버깅용: 소셜 데이터 상태 변화 추적
   React.useEffect(() => {
-    console.log('🚨 showAdditionInfoModal 상태 변경:', showAdditionInfoModal);
     console.log('🚨 socialUserInfo 상태 변경:', socialUserInfo);
-  }, [showAdditionInfoModal, socialUserInfo]);
+  }, [socialUserInfo]);
   
   // 비밀번호 조건 검증 상태
   const [passwordValidation, setPasswordValidation] = useState({
@@ -50,6 +49,7 @@ import { AuthContext } from '../../AuthProvider';
   });
 
   const navigate = useNavigate();
+  const location = useLocation();
   const { updateTokens } = useContext(AuthContext);
 
   // 비밀번호 조건 검증 함수
@@ -80,6 +80,33 @@ import { AuthContext } from '../../AuthProvider';
   useEffect(() => {
     setIsIdAvailable(null);
   }, [formData.userId]);
+
+  // 3. 소셜 데이터 확인 (URL 파라미터 또는 location.state)
+  useEffect(() => {
+    const checkSocialData = () => {
+      // URL 파라미터에서 소셜 데이터 확인
+      const params = new URLSearchParams(location.search);
+      const socialProvider = params.get('provider');
+      const socialId = params.get('socialId');
+      const socialEmail = params.get('email');
+      const socialName = params.get('name');
+
+      if (socialProvider && socialId) {
+        setSocialUserInfo({
+          provider: socialProvider,
+          socialId: socialId,
+          email: socialEmail,
+          name: socialName
+        });
+        console.log('URL 파라미터에서 소셜 데이터 확인:', { socialProvider, socialId, socialEmail, socialName });
+      } else if (location.state?.socialData) {
+        setSocialUserInfo(location.state.socialData);
+        console.log('location.state에서 소셜 데이터 확인:', location.state.socialData);
+      }
+    };
+
+    checkSocialData();
+  }, [location]);
 
   // input 의 값이 입력하면 입력된 값으로 formData 의 property 값으로 반영되게 하기 위해
   // 타이핑한 글자가 input 에 보여지게 하는 부분이기도 함
@@ -205,24 +232,46 @@ import { AuthContext } from '../../AuthProvider';
   const handleSkipFace = async () => {
     setShowFaceModal(false);
     try {
-      // Base64 데이터를 JSON으로 전송
-      const requestData = {
-        ...formData,
-        profileImage: formData.profileImage || ''
-      };
+      // FormData로 전송
+      const formDataToSend = new FormData();
+      formDataToSend.append('userId', formData.userId);
+      formDataToSend.append('userPwd', formData.userPwd);
+      formDataToSend.append('userName', formData.userName);
+      formDataToSend.append('phone', formData.phone);
+      // formDataToSend.append('email', formData.email || '');
+      
+      // 프로필 사진이 있으면 추가
+      if (formData.profileImage) {
+        formDataToSend.append('profileImage', formData.profileImage);
+      }
+
+      console.log('일반 회원가입 요청 데이터:', {
+        userId: formData.userId,
+        userPwd: formData.userPwd,
+        userName: formData.userName,
+        phone: formData.phone,
+        // email: formData.email,
+        profileImage: formData.profileImage
+      });
+
+      // FormData 내용 확인
+      console.log('FormData 내용:');
+      for (let [key, value] of formDataToSend.entries()) {
+        console.log(`${key}:`, value);
+      }
       
       const response = await apiClient.post(
         '/user/signup',
-        requestData,
-        {
-          headers: { 'Content-Type': 'application/json' },
-        }
+        formDataToSend
+        // Content-Type 헤더 제거 - axios가 자동으로 설정
       );
       if (response.status === 200) {
-        alert('회원가입이 완료되었습니다.');
+        alert('회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.');
         navigate('/');
       }
     } catch (error) {
+      console.error('회원가입 실패:', error);
+      console.error('에러 응답:', error.response?.data);
       alert('회원 가입에 실패했습니다. 다시 시도해 주세요');
     }
   };
@@ -300,26 +349,24 @@ import { AuthContext } from '../../AuthProvider';
           alert("소셜 회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.");
           navigate("/login");
         } else {
-          // 신규 사용자인 경우 - 추가 정보 입력 모달 열기
-          console.log('🚨 신규 사용자 - AdditionInfo 모달 열기');
-          console.log('🚨 socialUserInfo 설정:', {
-            socialId: event.data.socialId,
+          // 신규 사용자인 경우 - 계정 연동 확인 페이지로 이동
+          console.log('🚨 신규 사용자 - 계정 연동 확인 페이지로 이동');
+          const socialData = {
             provider: event.data.provider,
-            email: event.data.email || event.data.socialEmail,
-            userName: event.data.userName,
-            profileImage: event.data.profileImage,
-            sessionId: event.data.sessionId || event.data.tempToken // 둘 다 지원
-          });
-          setSocialUserInfo({
             socialId: event.data.socialId,
-            provider: event.data.provider,
             email: event.data.email || event.data.socialEmail,
-            userName: event.data.userName,
-            profileImage: event.data.profileImage,
-            sessionId: event.data.sessionId || event.data.tempToken // 둘 다 지원
+            name: event.data.userName
+          };
+          
+          // URL 파라미터로 소셜 데이터 전달
+          const params = new URLSearchParams({
+            provider: socialData.provider,
+            socialId: socialData.socialId,
+            email: socialData.email,
+            name: socialData.name
           });
-          console.log('🚨 setShowAdditionInfoModal(true) 호출');
-          setShowAdditionInfoModal(true);
+          
+          navigate(`/social-link?${params.toString()}`);
         }
       }
     } catch (error) {
@@ -341,15 +388,23 @@ import { AuthContext } from '../../AuthProvider';
         console.log('URL에서 소셜 데이터 받음:', parsedData);
         
         if (parsedData.isExistingUser === false) {
-          setSocialUserInfo({
-            socialId: parsedData.socialId,
+          // 계정 연동 확인 페이지로 이동
+          const socialData = {
             provider: parsedData.provider,
+            socialId: parsedData.socialId,
             email: parsedData.email || parsedData.socialEmail,
-            userName: parsedData.userName,
-            profileImage: parsedData.profileImage,
-            sessionId: parsedData.sessionId
+            name: parsedData.userName
+          };
+          
+          // URL 파라미터로 소셜 데이터 전달
+          const params = new URLSearchParams({
+            provider: socialData.provider,
+            socialId: socialData.socialId,
+            email: socialData.email,
+            name: socialData.name
           });
-          setShowAdditionInfoModal(true);
+          
+          navigate(`/social-link?${params.toString()}`);
           
           // URL 정리
           window.history.replaceState({}, document.title, window.location.pathname);
@@ -383,22 +438,24 @@ import { AuthContext } from '../../AuthProvider';
           console.log('파싱된 소셜 데이터:', socialData);
           
           if (socialData.isExistingUser === false) {
-            console.log('신규 사용자 - AdditionInfo 모달 열기');
-            // 신규 사용자 - AdditionInfo 모달 열기
-            setSocialUserInfo({
-              socialId: socialData.socialId,
+            console.log('신규 사용자 - 계정 연동 확인 페이지로 이동');
+            // 신규 사용자 - 계정 연동 확인 페이지로 이동
+            const socialDataForLink = {
               provider: socialData.provider,
+              socialId: socialData.socialId,
               email: socialData.email || socialData.socialEmail,
-              userName: socialData.userName,
-              profileImage: socialData.profileImage,
-              sessionId: socialData.sessionId
-            });
-            setShowAdditionInfoModal(true);
+              name: socialData.userName
+            };
             
-            // 원래 페이지 내용을 숨기고 SignupPage UI 표시
-            document.body.innerHTML = '';
-            // React 컴포넌트가 다시 렌더링되도록 강제
-            window.location.href = '/signup';
+            // URL 파라미터로 소셜 데이터 전달
+            const params = new URLSearchParams({
+              provider: socialDataForLink.provider,
+              socialId: socialDataForLink.socialId,
+              email: socialDataForLink.email,
+              name: socialDataForLink.name
+            });
+            
+            navigate(`/social-link?${params.toString()}`);
             return;
           } else if (socialData.isExistingUser === true) {
             // 기존 사용자 - 토큰 저장 후 대시보드로
@@ -652,23 +709,6 @@ import { AuthContext } from '../../AuthProvider';
         onRegister={handleFaceRegister}
         onSkip={handleSkipFace}
         onClose={() => setShowFaceModal(false)}
-      />
-      
-      <AdditionInfo
-        open={showAdditionInfoModal}
-        socialUserInfo={socialUserInfo}
-        onSubmit={(userData) => {
-          // 추가 정보 저장 성공 시 토큰 저장 및 로그인 페이지로 이동
-          localStorage.setItem("accessToken", userData.accessToken);
-          localStorage.setItem("userName", userData.userName);
-          localStorage.setItem("userId", userData.userId);
-          localStorage.setItem("email", userData.email || userData.socialEmail);
-          localStorage.setItem("role", userData.role);
-          // 로그인 페이지로 이동 (대시보드 대신)
-          alert("소셜 회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.");
-          navigate("/login");
-        }}
-        onClose={() => setShowAdditionInfoModal(false)}
       />
       
       <div className={styles.loginLink}>

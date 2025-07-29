@@ -2,12 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useContext } from 'react';
 import UserHeader from '../../components/common/UserHeader';
+import FortuneCookie from '../../components/dashboard/FortuneCookie';
 import { AuthContext } from '../../AuthProvider';
 import apiClient from '../../utils/axios';
 import { getLatestNotice } from '../../services/noticeService';
 import { getDashboardFaqs } from '../../services/faqService';
-// import { drawFortuneCard, checkTodayCardDrawn } from "../../services/cardService";
-// import { logFortuneCardActivity } from '../../utils/activityLogger';
 import bannerImage from '../../assets/images/banner_1 (1).png';
 import graphImage from '../../assets/images/graph_1.png';
 import styles from './UserDashboard.module.css';
@@ -19,9 +18,6 @@ const UserDashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [latestNotice, setLatestNotice] = useState(null);
   const [dashboardFaqs, setDashboardFaqs] = useState([]);
-  const [fortuneCards, setFortuneCards] = useState([]);
-  const [cardLoading, setCardLoading] = useState(false);
-  const [todayCardDrawn, setTodayCardDrawn] = useState(false);
 
   // ✅ 오늘의 감정 데이터 가져오기 (전역 상태 사용)
   useEffect(() => {
@@ -65,10 +61,9 @@ const UserDashboard = () => {
       
       try {
         const faqData = await getDashboardFaqs(userid);
-        console.log('대시보드 FAQ 데이터:', faqData);
         setDashboardFaqs(faqData.list || []);
       } catch (error) {
-        console.log('대시보드 FAQ 조회 실패:', error);
+        // console.log('대시보드 FAQ 조회 실패:', error);
         setDashboardFaqs([]);
       }
     };
@@ -76,37 +71,7 @@ const UserDashboard = () => {
     loadDashboardFaqs();
   }, [userid]);
 
-  // 포춘카드 데이터 로딩 - 주석처리
-  /*
-  useEffect(() => {
-    const loadFortuneCards = async () => {
-      if (!userid) return;
-      try {
-        setCardLoading(true);
-        
-        // Spring Boot API로 오늘 카드 뽑기 여부 확인
-        const todayCard = await checkTodayCardDrawn(userid);
-        setTodayCardDrawn(todayCard.drawn);
-        
-        if (todayCard.drawn && todayCard.card) {
-          // 오늘 이미 카드를 뽑았다면 결과 표시 (첫 번째 카드에만 표시)
-          setFortuneCards([todayCard.card, null, null]);
-        } else {
-          // 카드를 뽑지 않았다면 빈 카드 3개 표시
-          setFortuneCards([null, null, null]);
-        }
-      } catch (error) {
-        console.error('포춘카드 로딩 실패:', error);
-        // 에러 시 빈 카드 3개 표시
-        setFortuneCards([null, null, null]);
-      } finally {
-        setCardLoading(false);
-      }
-    };
-    
-    loadFortuneCards();
-  }, [userid]);
-  */
+  
 
   // 디버깅: todayEmotion 상태 변화 감지
   useEffect(() => {
@@ -212,48 +177,7 @@ const UserDashboard = () => {
     }
   };
 
-  // 포춘카드 클릭 처리 - 주석처리
-  /*
-  const handleCardClick = async (cardIndex) => {
-    // 이미 카드를 뽑았거나 로딩 중이면 무시
-    if (todayCardDrawn || cardLoading) return;
-    
-    try {
-      setCardLoading(true);
-      
-      // Spring Boot API로 카드 뽑기
-      const response = await drawFortuneCard(userid);
-      
-      if (response.success && response.card) {
-        // 카드 결과를 해당 인덱스에 저장
-        const newCards = [null, null, null];
-        newCards[cardIndex] = response.card;
-        setFortuneCards(newCards);
-        
-        // 오늘 카드를 뽑았음으로 설정
-        setTodayCardDrawn(true);
-        
-        // 활동 기록 (선택사항)
-        try {
-          await logFortuneCardActivity(userid, response.card.keyword, response.card.message);
-          console.log('활동 기록 성공');
-        } catch (activityError) {
-          console.warn('활동 기록 실패 (무시됨):', activityError);
-          // 활동 기록 실패는 카드 뽑기에 영향을 주지 않음
-        }
-        
-        console.log('포춘카드 뽑기 완료:', response.card);
-      } else {
-        alert(response.message || '카드 뽑기에 실패했습니다.');
-      }
-    } catch (error) {
-      console.error('포춘카드 뽑기 실패:', error);
-      alert('카드 뽑기에 실패했습니다. 다시 시도해주세요.');
-    } finally {
-      setCardLoading(false);
-    }
-  };
-  */
+
 
   return (
     <>
@@ -328,7 +252,7 @@ const UserDashboard = () => {
           </Link>
         </section>
 
-        {/* 오늘의 감정과 공지사항 - 좌우 배치 */}
+        {/* 오늘의 감정과 포춘쿠키 - 좌우 배치 */}
         <section className={styles.middleSection}>
           <div className={styles.summaryCard}>
             <div className={styles.summaryTitle}>오늘의 감정</div>
@@ -381,142 +305,10 @@ const UserDashboard = () => {
             </button>
           </div>
           <div className={styles.summaryCard}>
-            {/* 포춘카드 뽑기 섹션 전체 주석처리
-            <div className={styles.summaryTitle}>포춘카드 뽑기</div>
-            <div className={styles.fortuneContent}>
-              {cardLoading ? (
-                <div style={{textAlign: 'center', padding: '20px'}}>
-                  <div>카드 뽑는 중...</div>
-                </div>
-              ) : (
-                <>
-                  <div className={styles.fortuneCards}>
-                    {[0, 1, 2].map((cardIndex) => (
-                      <div 
-                        key={cardIndex}
-                        onClick={() => handleCardClick(cardIndex)}
-                        style={{ 
-                          cursor: todayCardDrawn ? 'default' : 'pointer',
-                          width: '120px',
-                          height: '160px',
-                          margin: '0 8px',
-                          borderRadius: '12px',
-                          overflow: 'hidden',
-                          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                          transition: 'transform 0.3s ease',
-                          backgroundColor: '#f8f9fa',
-                          border: '2px solid #e9ecef'
-                        }}
-                        onMouseEnter={(e) => {
-                          if (!todayCardDrawn) {
-                            e.target.style.transform = 'scale(1.05)';
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          e.target.style.transform = 'scale(1)';
-                        }}
-                      >
-                        {fortuneCards[cardIndex] ? (
-                          <div style={{
-                            width: '100%',
-                            height: '100%',
-                            position: 'relative',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            padding: '12px'
-                          }}>
-                            {fortuneCards[cardIndex].imagePath ? (
-                              <img 
-                                src={fortuneCards[cardIndex].imagePath} 
-                                alt="포춘카드"
-                                style={{
-                                  width: '100%',
-                                  height: '100%',
-                                  objectFit: 'cover',
-                                  borderRadius: '8px'
-                                }}
-                                onLoad={(e) => {
-                                  console.log('이미지 로딩 성공:', fortuneCards[cardIndex].imagePath);
-                                }}
-                                onError={(e) => {
-                                  console.error('이미지 로딩 실패:', fortuneCards[cardIndex].imagePath);
-                                  e.target.style.display = 'none';
-                                }}
-                              />
-                            ) : (
-                              <div style={{
-                                width: '100%',
-                                height: '100%',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                backgroundColor: '#6c757d',
-                                borderRadius: '8px',
-                                color: 'white'
-                              }}>
-                                <div style={{fontSize: '2rem', marginBottom: '8px'}}>🔮</div>
-                                <div style={{fontSize: '0.8rem', textAlign: 'center'}}>
-                                  {fortuneCards[cardIndex].message || '운세 메시지'}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        ) : (
-                          <div style={{
-                            width: '100%',
-                            height: '100%',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            backgroundColor: '#f8f9fa',
-                            color: '#6c757d',
-                            fontSize: '0.8rem',
-                            textAlign: 'center',
-                            padding: '12px'
-                          }}>
-                            <div style={{fontSize: '1.5rem', marginBottom: '8px'}}>🎴</div>
-                            <div>카드 {cardIndex + 1}</div>
-                            <div style={{fontSize: '0.7rem', marginTop: '4px'}}>선택하세요</div>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                  <div style={{color: '#888', fontSize: '0.8rem', marginTop: '12px', textAlign: 'center'}}>
-                    {todayCardDrawn ? (
-                      <div>
-                        <div style={{color: '#ef770c', fontWeight: '600', marginBottom: '8px'}}>
-                          🎉 오늘의 운세를 확인했습니다
-                        </div>
-                        {fortuneCards.find(card => card) && (
-                          <div style={{
-                            color: '#333',
-                            fontSize: '0.9rem',
-                            lineHeight: '1.4',
-                            padding: '12px',
-                            backgroundColor: '#f8f9fa',
-                            borderRadius: '8px',
-                            border: '1px solid #e9ecef'
-                          }}>
-                            "{fortuneCards.find(card => card)?.message}"
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      '카드를 선택하여 운세를 확인하세요'
-                    )}
-                  </div>
-                </>
-              )}
-            </div>
-            */}
+            <FortuneCookie />
           </div>
         </section>
-
+        
         {/* 공지사항과 문의사항 - 좌우 배치 */}
         <section className={styles.middleSection}>
           <div className={styles.summaryCard}>
@@ -586,10 +378,20 @@ const UserDashboard = () => {
                           color: '#333',
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap'
+                          whiteSpace: 'nowrap',
+                          marginBottom: '4px'
                         }}>
                           {faq.title}
                         </div>
+                        {faq.createdAt && (
+                          <div style={{
+                            color: '#888',
+                            fontSize: '0.7rem',
+                            marginBottom: '4px'
+                          }}>
+                            {formatDate(faq.createdAt)}
+                          </div>
+                        )}
                       </div>
                       <div className={styles.faqStatus} style={{
                         fontSize: '0.75rem',

@@ -15,6 +15,27 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 // 소셜 로그인 SDK 초기화
 import { initializeSocialSDK } from './services/authService';
 
+// 세션 관리
+import { SessionProvider, useSession } from './contexts/SessionContext';
+import SessionExpiredModal from './components/common/SessionExpiredModal';
+import { setSessionExpiredHandler } from './utils/axios';
+
+// 세션 만료 모달 래퍼 컴포넌트
+const SessionExpiredModalWrapper = () => {
+  const { showSessionExpiredModal, showSessionExpired, handleSessionExpiredConfirm } = useSession();
+  
+  React.useEffect(() => {
+    setSessionExpiredHandler(showSessionExpired);
+  }, [showSessionExpired]);
+  
+  return (
+    <SessionExpiredModal 
+      isOpen={showSessionExpiredModal} 
+      onConfirm={handleSessionExpiredConfirm}
+    />
+  );
+};
+
 function App() {
   useEffect(() => {
     // 소셜 로그인 SDK 초기화를 안전하게 처리
@@ -46,19 +67,21 @@ function App() {
   const isValidGoogleClientId = googleClientId && googleClientId !== 'your_google_client_id';
 
   return (
-    <>
+    <SessionProvider>
       {isValidGoogleClientId ? (
         <GoogleOAuthProvider clientId={googleClientId}>
           <AppRouter />
           <Footer />
+          <SessionExpiredModalWrapper />
         </GoogleOAuthProvider>
       ) : (
         <>
           <AppRouter />
           <Footer />
+          <SessionExpiredModalWrapper />
         </>
       )}
-    </>
+    </SessionProvider>
   );
 }
 
