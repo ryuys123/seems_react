@@ -803,5 +803,4 @@ const PasswordInput = ({ onSubmit }) => {
   );
 };
 
-export default SocialAccountModal; 
-// 모달 끝
+export default SocialAccountModal;
