@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import UserHeader from "../../components/common/UserHeader";
 import styles from "./StressTestPage.module.css"; // StressTestPage용 CSS
+import { AuthContext } from "../../AuthProvider";
 
 // 스트레스 검사용 답변 선택지 (0~4점 척도)
 const answerOptions = [
@@ -15,6 +16,7 @@ const answerOptions = [
 
 function StressTestPage() {
   const navigate = useNavigate();
+  const { userid, isLoggedIn, logoutAndRedirect } = useContext(AuthContext);
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
   const [currentPage, setCurrentPage] = useState(0);
@@ -25,6 +27,13 @@ function StressTestPage() {
   const testCategory = "STRESS_SCALE";
 
   useEffect(() => {
+    // 로그인 상태 확인
+    if (!isLoggedIn || !userid) {
+      alert("로그인이 필요합니다.");
+      navigate("/login");
+      return;
+    }
+
     const fetchQuestions = async () => {
       setIsLoading(true);
       try {
@@ -34,13 +43,18 @@ function StressTestPage() {
         setQuestions(response.data);
       } catch (error) {
         console.error("스트레스 검사 문항을 불러오는 데 실패했습니다.", error);
+        if (error.response?.status === 401) {
+          alert("로그인이 만료되었습니다. 다시 로그인해주세요.");
+          logoutAndRedirect();
+          return;
+        }
         setError("문항을 불러오는 데 실패했습니다.");
       } finally {
         setIsLoading(false);
       }
     };
     fetchQuestions();
-  }, [testCategory]);
+  }, [testCategory, isLoggedIn, userid, navigate, logoutAndRedirect]);
 
   useEffect(() => {
     if (topOfPageRef.current) {
@@ -85,14 +99,15 @@ function StressTestPage() {
   };
 
   const handleSubmitTest = async () => {
-    const currentUserId = localStorage.getItem("loggedInUserId");
-    if (!currentUserId) {
-      alert("로그인 정보가 없습니다.");
+    // 로그인 상태 재확인
+    if (!isLoggedIn || !userid) {
+      alert("로그인이 만료되었습니다. 다시 로그인해주세요.");
+      logoutAndRedirect();
       return;
     }
 
     const submissionData = {
-      userId: currentUserId,
+      userId: userid, // AuthContext에서 가져온 userid 사용
       testCategory: testCategory,
       answers: Object.keys(answers).map((questionId) => ({
         questionId: parseInt(questionId, 10),
@@ -114,6 +129,11 @@ function StressTestPage() {
       navigate(`/psychological-test/result/${resultId}?type=${testCategory}`);
     } catch (err) {
       console.error("검사 제출 실패:", err);
+      if (err.response?.status === 401) {
+        alert("로그인이 만료되었습니다. 다시 로그인해주세요.");
+        logoutAndRedirect();
+        return;
+      }
       setError("검사 제출 중 오류가 발생했습니다.");
     }
   };

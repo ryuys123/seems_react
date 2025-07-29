@@ -1,0 +1,134 @@
+.keywordSettings {
+  /* 다른 칸과 어울리도록 배경과 패딩 제거 */
+  background: transparent;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+  margin-bottom: 0;
+}
+
+.header {
+  margin-bottom: 20px;
+}
+
+.header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 8px 0;
+}
+
+.header p {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.keywordGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+  /* 스크롤바 제거하고 모든 키워드가 보이도록 */
+  max-height: none;
+  overflow: visible;
+}
+
+.keywordButton {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #495057;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 40px;
+  width: 100%;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 1;
+}
+
+.keywordButton:hover {
+  border-color: var(--main-blue);
+  background: #f8f9fa;
+}
+
+.keywordButton.selected {
+  background: var(--main-blue);
+  border-color: var(--main-blue);
+  color: white;
+}
+
+.keywordButton.selected:hover {
+  background: #3d7ab0;
+  border-color: #3d7ab0;
+}
+
+.checkmark {
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 16px;
+  border-top: 1px solid #e9ecef;
+}
+
+.selectedCount {
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+}
+
+.saveButton {
+  padding: 12px 24px;
+  background: var(--main-blue);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.saveButton:hover:not(:disabled) {
+  background: #3d7ab0;
+}
+
+.saveButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .keywordGrid {
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 8px;
+  }
+  
+  .keywordButton {
+    padding: 8px 10px;
+    font-size: 12px;
+    min-height: 36px;
+  }
+  
+  .header h3 {
+    font-size: 16px;
+  }
+  
+  .header p {
+    font-size: 13px;
+  }
+} 

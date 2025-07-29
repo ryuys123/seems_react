@@ -18,6 +18,7 @@ import EmotionRecordPage from "../pages/emotion/EmotionRecordPage"; // 감정 �
 import CounselingRoutes from "./counselingRoutes"; // 상담 라우터 추가
 import analysisRoutes from "./analysisRoutes"; // ⭐️ analysisRoutes 임포트
 import simulationRoutes from "./simulationRoutes"; // 시뮬레이션 라우트 추가
+import SocialAccountLinkPage from "../pages/user/SocialAccountLinkPage"; // 소셜 계정 연동 페이지
 const AppRouter = () => {
   return (
     <Routes>
@@ -61,6 +62,9 @@ const AppRouter = () => {
       {simulationRoutes.map((route) => (
         <Route key={route.path} path={route.path} element={route.element} />
       ))}
+      
+      {/* 소셜 계정 연동 페이지 */}
+      <Route path="/social-link" element={<SocialAccountLinkPage />} />
     </Routes>
   );
 };

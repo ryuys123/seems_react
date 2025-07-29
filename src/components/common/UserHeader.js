@@ -122,9 +122,45 @@ function UserHeader() {
     if (!isLoggedIn) return;
 
     const accessToken = localStorage.getItem('accessToken');
-    if (!accessToken) return;
+    if (!accessToken) {
+      console.log('UserHeader: accessToken 없음');
+      return;
+    }
 
+    // 초기 세션 시간 설정
+    const initialRemainingTime = calculateTokenExpiry();
+    setSessionTime(initialRemainingTime);
+    console.log('세션 타이머 초기화 - 남은 시간:', initialRemainingTime, '초');
 
+    // 세션 타이머가 0이면 강제로 재계산
+    if (initialRemainingTime <= 0) {
+      console.log('세션 타이머가 0이므로 재계산 시도');
+      const recalculatedTime = calculateTokenExpiry();
+      setSessionTime(recalculatedTime);
+      console.log('재계산된 세션 시간:', recalculatedTime, '초');
+    }
+
+    // 소셜 로그인 후 즉시 세션 타이머 표시를 위한 강제 업데이트
+    const forceUpdateSession = () => {
+      const remainingTime = calculateTokenExpiry();
+      setSessionTime(remainingTime);
+      console.log('강제 업데이트된 세션 시간:', remainingTime, '초');
+    };
+
+    // 컴포넌트 마운트 후 약간의 지연을 두고 강제 업데이트
+    const timeoutId = setTimeout(forceUpdateSession, 500);
+
+    // 세션 업데이트 이벤트 리스너 (소셜 로그인 후 강제 업데이트용)
+    const handleSessionUpdate = (event) => {
+      if (event.detail?.forceUpdate) {
+        console.log('세션 타이머 강제 업데이트 실행');
+        const remainingTime = calculateTokenExpiry();
+        setSessionTime(remainingTime);
+        console.log('강제 업데이트된 세션 시간:', remainingTime, '초');
+      }
+    };
+
+    window.addEventListener('sessionUpdate', handleSessionUpdate);
 
     // 1초마다 세션 타이머 업데이트 (실제 토큰 만료 시간 기반)
     const timerInterval = setInterval(() => {
@@ -176,10 +212,12 @@ function UserHeader() {
     return () => {
       clearInterval(timerInterval);
       clearInterval(warningInterval);
+      clearTimeout(timeoutId);
       window.removeEventListener('mousemove', handleUserActivity);
       window.removeEventListener('keydown', handleUserActivity);
       window.removeEventListener('click', handleUserActivity);
       window.removeEventListener('touchstart', handleUserActivity);
+      window.removeEventListener('sessionUpdate', handleSessionUpdate);
     };
   }, [isLoggedIn]);
 
@@ -443,7 +481,7 @@ function UserHeader() {
             style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 8 }}
           >
             {/* 첫 번째 줄: 세션 타이머 */}
-            {isLoggedIn && (
+            {isLoggedIn && sessionTime > 0 && (
               <div style={{ 
                 display: "flex", 
                 alignItems: "center", 

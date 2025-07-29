@@ -1,0 +1,488 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: white;
+  border-radius: 12px;
+  padding: 0;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e0e0e0;
+  background: #f8f9fa;
+  border-radius: 12px 12px 0 0;
+}
+
+.title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.closeButton:hover {
+  background-color: #e0e0e0;
+  color: #333;
+}
+
+.modalContent {
+  padding: 24px;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  font-size: 16px;
+  color: #666;
+}
+
+/* 선택 섹션 */
+.selectSection {
+  text-align: center;
+}
+
+.socialInfo {
+  margin-bottom: 24px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.socialInfo h3 {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.socialInfo p {
+  margin: 4px 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.choiceSection {
+  margin-top: 24px;
+}
+
+.choiceSection h3 {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  color: #333;
+}
+
+.choiceSection p {
+  margin: 0 0 20px 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.choiceButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.linkButton, .createButton {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.linkButton {
+  background: #007bff;
+  color: white;
+}
+
+.linkButton:hover {
+  background: #0056b3;
+}
+
+.createButton {
+  background: #28a745;
+  color: white;
+}
+
+.createButton:hover {
+  background: #1e7e34;
+}
+
+/* 계정 연동 섹션 */
+.linkSection, .confirmSection, .createSection {
+  text-align: center;
+}
+
+.accountInfo {
+  margin-bottom: 24px;
+}
+
+.accountInfo h3 {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  color: #333;
+}
+
+.accountInfo p {
+  margin: 0 0 16px 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.accountDetails {
+  background: #f8f9fa;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  margin: 16px 0;
+}
+
+.accountDetails p {
+  margin: 8px 0;
+  font-size: 14px;
+  color: #333;
+}
+
+/* 폼 스타일 */
+.passwordForm, .signupForm {
+  text-align: left;
+}
+
+.inputGroup {
+  margin-bottom: 16px;
+}
+
+.inputGroup label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.inputGroup input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.inputGroup input:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.passwordInput {
+  position: relative;
+}
+
+.togglePassword {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: #666;
+}
+
+/* 버튼 스타일 */
+.confirmButtons, .formButtons {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.confirmButton, .signupButton {
+  flex: 1;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.confirmButton {
+  background: #007bff;
+  color: white;
+}
+
+.confirmButton:hover {
+  background: #0056b3;
+}
+
+.signupButton {
+  background: #28a745;
+  color: white;
+}
+
+.signupButton:hover {
+  background: #1e7e34;
+}
+
+.cancelButton {
+  flex: 1;
+  padding: 12px 24px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  background: white;
+  color: #666;
+  transition: all 0.2s;
+}
+
+.cancelButton:hover {
+  background: #f8f9fa;
+  border-color: #ccc;
+}
+
+.backButton {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.backBtn {
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.backBtn:hover {
+  background: #f8f9fa;
+  color: #333;
+}
+
+/* 반응형 */
+@media (max-width: 480px) {
+  .modal {
+    width: 95%;
+    margin: 10px;
+  }
+  
+  .modalContent {
+    padding: 16px;
+  }
+  
+  .choiceButtons {
+    gap: 8px;
+  }
+  
+  .linkButton, .createButton, .confirmButton, .signupButton, .cancelButton {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+}
+
+/* 아이디 중복 체크 스타일 */
+.idInputContainer {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.idInputContainer input {
+  flex: 1;
+}
+
+.checkButton {
+  padding: 12px 16px;
+  background: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+  min-width: 80px;
+}
+
+.checkButton:hover:not(:disabled) {
+  background: #5a6268;
+}
+
+.checkButton:disabled {
+  background: #e9ecef;
+  color: #6c757d;
+  cursor: not-allowed;
+}
+
+.loadingIndicator {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: #007bff;
+}
+
+.availableIndicator {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: #28a745;
+  font-weight: 500;
+}
+
+.unavailableIndicator {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: #dc3545;
+  font-weight: 500;
+}
+
+/* 비밀번호 조건 검증 스타일 */
+.passwordValidation {
+  margin-top: 8px;
+  padding: 8px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  border: 1px solid #e9ecef;
+}
+
+.validationItem {
+  margin: 2px 0;
+  font-size: 12px;
+}
+
+.valid {
+  color: #28a745;
+  font-weight: 500;
+}
+
+.invalid {
+  color: #dc3545;
+  font-weight: 500;
+}
+
+/* 비밀번호 확인 메시지 */
+.inputGroup .availableIndicator,
+.inputGroup .unavailableIndicator {
+  font-size: 12px;
+  margin-top: 4px;
+  display: block;
+}
+
+/* 프로필 사진 업로드 스타일 */
+.photoUploadContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.photoPreview {
+  width: 100px;
+  height: 100px;
+  border: 2px dashed #ddd;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  overflow: hidden;
+}
+
+.photoPreview:hover {
+  border-color: #007bff;
+  background-color: #f8f9fa;
+}
+
+.photoPreview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.photoPlaceholder {
+  text-align: center;
+  color: #666;
+}
+
+.photoPlaceholder span {
+  font-size: 24px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.photoPlaceholder p {
+  font-size: 12px;
+  margin: 0;
+}
+
+.removePhotoButton {
+  padding: 6px 12px;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.removePhotoButton:hover {
+  background: #c82333;
+}
+
+.photoHelpText {
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+  margin-bottom: 0;
+} 
