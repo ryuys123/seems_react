@@ -6,8 +6,8 @@ import { AuthContext } from '../../AuthProvider'; // 실제 AuthProvider 경로�
 import UserHeader from '../../components/common/UserHeader';
 
 const QuestStorePage = () => {
-  const { authInfo } = useContext(AuthContext);
-  const userId = authInfo?.userid || 'user002'; // 백엔드에서 확인된 user002 사용
+  const { userid } = useContext(AuthContext);
+  const userId = userid;
 
   const [currentPoints, setCurrentPoints] = useState(0);
   const [ownedItems, setOwnedItems] = useState([]);
@@ -29,16 +29,11 @@ const QuestStorePage = () => {
 
   // API 연동 함수 - Spring 백엔드 경로에 맞게 수정
   const fetchRewards = async () => {
+    console.log('API 호출 시작: /api/quest-rewards');
     const res = await apiClient.get('/api/quest-rewards');
-    console.log('API 응답 데이터:', res.data); // 디버깅용 로그 추가
-    console.log('첫 번째 아이템의 모든 키:', res.data[0] ? Object.keys(res.data[0]) : '데이터 없음'); // 모든 필드명 확인
-    console.log('첫 번째 아이템 전체:', res.data[0]); // 첫 번째 아이템 전체 데이터 확인
+    console.log('API 응답 데이터: /api/quest-rewards', res.data);
     
-    // DB 컬럼명과 프론트엔드 필드명 매핑
     const mappedData = res.data.map(item => {
-      console.log('매핑 전 아이템:', item); // 각 아이템의 원본 데이터 확인
-      console.log('아이템의 모든 키:', Object.keys(item)); // 각 아이템의 모든 키 확인
-      
       const mapped = {
         rewardId: item.rewardId ?? item.REWARD_ID ?? item.reward_id,
         questName: item.questName ?? item.QUEST_NAME ?? item.quest_name,
@@ -48,45 +43,80 @@ const QuestStorePage = () => {
         description: item.description ?? item.DESCRIPTION,
         imagePath: item.imagePath ?? item.IMAGE_PATH ?? item.image_path
       };
-      console.log('매핑된 아이템:', mapped); // 디버깅용 로그 추가
       return mapped;
     });
     
-    console.log('최종 매핑된 데이터:', mappedData); // 디버깅용 로그 추가
+    console.log('최종 매핑된 데이터: /api/quest-rewards', mappedData);
     return mappedData;
   };
   const fetchPoints = async () => {
+    console.log('API 호출 시작: /api/user/points');
     const res = await apiClient.get(`/api/user/points?userId=${userId}`);
+    console.log('API 응답 데이터: /api/user/points', res.data);
     return res.data.points;
   };
   const fetchOwnedBadges = async () => {
+    console.log('API 호출 시작: /api/user/owned-titles');
     const res = await apiClient.get(`/api/user/owned-titles?userId=${userId}`);
+    console.log('API 응답 데이터: /api/user/owned-titles', res.data);
     return res.data;
   };
   const fetchUserStats = async () => {
+    console.log('API 호출 시작: /api/user/stats');
     const res = await apiClient.get(`/api/user/stats?userId=${userId}`);
+    console.log('API 응답 데이터: /api/user/stats', res.data);
     return res.data;
   };
   const purchaseBadge = async (rewardId) => {
+    console.log('API 호출 시작: /api/quest-rewards/purchase');
     const res = await apiClient.post(`/api/quest-rewards/purchase?userId=${userId}`, { rewardId });
+    console.log('API 응답 데이터: /api/quest-rewards/purchase', res.data);
     return res.data;
   };
-  const equipBadge = async (rewardId) => {
+  const equipBadge = async (rewardId, isCurrentlyEquipped) => {
     try {
-      const res = await apiClient.post(`/api/user/equip-badge?userId=${userId}`, { rewardId });
+      let res;
+      if (isCurrentlyEquipped) {
+        // 장착 해제 요청
+        console.log('API 호출 시작: /api/user/unequip-badge');
+        res = await apiClient.post(`/api/user/unequip-badge?userId=${userId}`, { rewardId });
+        showToastMessage('뱃지가 해제되었습니다!');
+      } else {
+        // 장착 요청
+        console.log('API 호출 시작: /api/user/equip-badge');
+        res = await apiClient.post(`/api/user/equip-badge?userId=${userId}`, { rewardId });
+        showToastMessage('뱃지가 장착되었습니다!');
+      }
+      console.log('API 응답 데이터 (장착/해제 후): ', res.data);
       setOwnedItems(res.data); // 최신 ownedItems 목록으로 갱신
-      showToastMessage('뱃지가 장착되었습니다!');
+      console.log('setOwnedItems 호출 완료.');
+      // UserHeader의 뱃지 업데이트를 트리거
+      if (window.triggerBadgeUpdate) {
+        window.triggerBadgeUpdate();
+      }
     } catch (e) {
-      showToastMessage('장착 실패: ' + (e.response?.data || '오류'));
+      console.error('장착/해제 실패: ' + (e.response?.data || '오류'), e);
+      showToastMessage('장착/해제 실패: ' + (e.response?.data?.error || e.response?.data || '오류'));
     }
   };
 
+  // ownedItems 상태 변화를 추적하는 useEffect
+  useEffect(() => {
+    console.log('ownedItems 상태 변경됨:', ownedItems);
+  }, [ownedItems]);
+
   // 데이터 로딩
   useEffect(() => {
-    if (!userId) return; // userId가 없으면 호출하지 않음
+    console.log('useEffect 실행 - 현재 userId:', userId); // useEffect 실행 시점 로그
+    if (!userId) {
+      console.log('userId가 없어 API 호출을 건너뜁니다.');
+      return;
+    }
     const loadData = async () => {
+      console.log('loadData 함수 실행 시작 (userId: ', userId, ')'); // loadData 함수 실행 확인 로그
       setLoading(true);
       try {
+        console.log('Promise.all로 API 호출 시작...'); // Promise.all 직전 로그
         const [rewards, points, owned, stats] = await Promise.all([
           fetchRewards(),
           fetchPoints(),
@@ -97,11 +127,27 @@ const QuestStorePage = () => {
         setCurrentPoints(points);
         setOwnedItems(owned);
         setUserStats(stats);
+        console.log('모든 API 호출 성공 및 데이터 설정 완료.');
       } catch (e) {
-        setToastMessage('데이터 로딩 실패');
+        console.error('데이터 로딩 중 오류 발생:', e); // 상세 오류 로깅
+        if (e.response) {
+          // 서버 응답이 있는 경우 (AxiosError)
+          console.error('응답 데이터:', e.response.data);
+          console.error('응답 상태:', e.response.status);
+          console.error('응답 헤더:', e.response.headers);
+          setToastMessage(`데이터 로딩 실패: ${e.response.status} - ${e.response.data?.message || e.response.statusText}`);
+        } else if (e.request) {
+          // 요청이 전송되었지만 응답을 받지 못한 경우
+          console.error('요청 데이터:', e.request);
+          setToastMessage('데이터 로딩 실패: 서버 응답 없음');
+        } else {
+          // 그 외 오류
+          setToastMessage('데이터 로딩 실패: ' + (e.message || '알 수 없는 오류'));
+        }
         setShowToast(true);
       } finally {
         setLoading(false);
+        console.log('로딩 상태 해제.');
       }
     };
     loadData();
@@ -144,8 +190,12 @@ const QuestStorePage = () => {
     
     try {
       const result = await purchaseBadge(selectedReward.rewardId);
-      setCurrentPoints(prev => prev - selectedReward.requiredPoints);
-      setOwnedItems(prev => [...prev, result]); // result: { rewardId, isEquipped: false }
+      
+      // 포인트 정보를 다시 불러와서 상태를 업데이트합니다.
+      const updatedPoints = await fetchPoints();
+      setCurrentPoints(updatedPoints);
+
+      setOwnedItems(prev => [...prev, result]);
       setUserStats(prev => ({
         ...prev,
         ownedTitles: prev.ownedTitles + 1
@@ -286,6 +336,7 @@ const QuestStorePage = () => {
                       src={reward.imagePath || `/images/badge/badge_${reward.rewardId}.png`}
                       alt="뱃지 아이콘"
                       style={{ width: 48, height: 48, objectFit: 'contain' }}
+                      loading="lazy"
                     />
                   </div>
                   <h3 className={styles.itemTitle}>{reward.titleReward || reward.questName}</h3>
@@ -302,12 +353,12 @@ const QuestStorePage = () => {
                   {/* 장착 버튼 */}
                   {isOwned && (
                     <button
-                      className={styles.equipBtn}
-                      disabled={isEquipped}
-                      onClick={() => equipBadge(reward.rewardId)}
+                      className={`${styles.equipBtn} ${isEquipped ? styles.equipped : ''}`}
+                      disabled={false} // 장착/해제 모두 가능하도록 disabled 제거
+                      onClick={() => equipBadge(reward.rewardId, isEquipped)}
                       style={{ marginTop: 8 }}
                     >
-                      {isEquipped ? '장착중' : '장착하기'}
+                      {isEquipped ? '장착 해제' : '장착하기'}
                     </button>
                   )}
                   {/* 포인트 부족 안내 */}
