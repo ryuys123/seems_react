@@ -241,7 +241,9 @@ function NoticeListPage({ searchResults }) {
               notices.map((notice) => (
                 <tr
                   key={notice.noticeNo}
-                  className={styles.noticeItem}
+                  className={`${styles.noticeItem} ${
+                    notice.importance === "Y" ? styles.importantRow : ""
+                  }`}
                   onClick={() => handleTitleClick(notice.noticeNo)}
                 >
                   <td className={styles.noticeNo}>{notice.noticeNo}</td>
@@ -249,6 +251,10 @@ function NoticeListPage({ searchResults }) {
                     {notice.importance === "Y" && (
                       <span className={styles.important}>[긴급] </span>
                     )}
+                    {/* 이제 행 전체에 볼드가 적용되므로, 이 span은 단순히 텍스트를 표시합니다. */}
+                    {/* 만약 [긴급]과 제목 텍스트 외에 다른 텍스트도 볼드 처리될 필요가 없다면, */}
+                    {/* 이 <span> 태그를 <strong>으로 바꾸거나, 텍스트만 남길 수 있습니다. */}
+                    {/* 하지만, 보통 전체 행 볼드를 할 때는 단순 텍스트로 두는 경우가 많습니다. */}
                     {notice.title}
                   </td>
                   <td className={styles.noticeDate}>{notice.noticeDate}</td>
