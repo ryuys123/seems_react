@@ -8,7 +8,6 @@ import faceioIcon from "../assets/images/faceio.png";
 import { AuthContext } from "../AuthProvider";
 import apiClient from "../utils/axios";
 
-
 function Login({ onLoginSuccess }) {
   const navigate = useNavigate(); // 페이지 이동을 위한 useNavigate 훅 사용
 
@@ -23,55 +22,59 @@ function Login({ onLoginSuccess }) {
   useEffect(() => {
     const accessToken = localStorage.getItem("accessToken");
     const refreshToken = localStorage.getItem("refreshToken");
-    
+
     // 이미 로그인된 상태라면 대시보드로 리다이렉트
     if (accessToken && refreshToken) {
       console.log("이미 로그인된 상태 - 대시보드로 리다이렉트");
       navigate("/userdashboard");
       return;
     }
-    
+
     // URL 파라미터에서 social 파라미터 확인
     const urlParams = new URLSearchParams(window.location.search);
-    const socialProvider = urlParams.get('social');
+    const socialProvider = urlParams.get("social");
     if (socialProvider) {
       // URL에서 파라미터 제거
       window.history.replaceState({}, document.title, window.location.pathname);
     }
-    
+
     // 토큰이 없는 상태에서 로그인 페이지에 머물기
-    console.log("로그인 페이지 로드 - 토큰 상태:", { 
-      hasAccessToken: !!accessToken, 
-      hasRefreshToken: !!refreshToken 
+    console.log("로그인 페이지 로드 - 토큰 상태:", {
+      hasAccessToken: !!accessToken,
+      hasRefreshToken: !!refreshToken,
     });
-    
+
     // localStorage 클리어 제거 - 로그아웃 시에만 클리어하도록 수정
   }, [navigate]);
 
   // OAuth2 로그인 성공 후 URL 파라미터에서 토큰 추출 처리
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    const accessToken = urlParams.get('accessToken');
-    const refreshToken = urlParams.get('refreshToken');
-    const userEmail = urlParams.get('userEmail');
-    const userRole = urlParams.get('userRole');
-    const userId = urlParams.get('userId');
+    const accessToken = urlParams.get("accessToken");
+    const refreshToken = urlParams.get("refreshToken");
+    const userEmail = urlParams.get("userEmail");
+    const userRole = urlParams.get("userRole");
+    const userId = urlParams.get("userId");
 
     if (accessToken && refreshToken) {
       console.log("OAuth2 로그인 성공, 토큰 저장 중...");
-      
+
       try {
         // 토큰을 localStorage에 저장
         updateTokens(accessToken, refreshToken);
         localStorage.setItem("loggedInUserId", userId);
         localStorage.setItem("userName", userEmail);
         localStorage.setItem("userRole", userRole);
-        
+
         console.log("OAuth2 로그인 토큰 저장 완료");
-        
+
         // URL 파라미터 제거
-        window.history.replaceState({}, document.title, window.location.pathname);
-        
+        window.history.replaceState(
+          {},
+          document.title,
+          window.location.pathname
+        );
+
         // 역할에 따른 페이지 이동
         setTimeout(() => {
           if (userRole === "ADMIN") {
@@ -82,7 +85,7 @@ function Login({ onLoginSuccess }) {
             navigate("/userdashboard");
           }
         }, 100);
-        
+
         if (onLoginSuccess) onLoginSuccess();
       } catch (error) {
         console.error("OAuth2 로그인 토큰 처리 실패:", error);
@@ -94,7 +97,11 @@ function Login({ onLoginSuccess }) {
   // 팝업 창에서 소셜 로그인/회원가입 성공 시 메인 창에서 처리
   useEffect(() => {
     const handleMessage = (event) => {
-      if (event.data && event.data.type === "social-login-success" && event.data.token) {
+      if (
+        event.data &&
+        event.data.type === "social-login-success" &&
+        event.data.token
+      ) {
         // 기존 사용자인 경우 - 바로 로그인 처리
         if (event.data.isExistingUser) {
           console.log("소셜 로그인 성공 - 기존 사용자");
@@ -106,18 +113,18 @@ function Login({ onLoginSuccess }) {
             email: event.data.email,
             role: event.data.role,
             provider: event.data.provider,
-            socialId: event.data.socialId
+            socialId: event.data.socialId,
           });
-          
+
           // 1. AuthProvider의 updateTokens 함수 호출하여 authInfo 업데이트 (토큰 저장도 함께 처리)
           updateTokens(event.data.token, event.data.refreshToken || "");
-          
+
           // 2. 사용자 정보 저장
           localStorage.setItem("userName", event.data.userName || "");
           localStorage.setItem("userId", event.data.userId || "");
           localStorage.setItem("email", event.data.email || "");
           localStorage.setItem("role", event.data.role || "");
-          
+
           // 소셜 로그인 정보 저장
           if (event.data.provider) {
             localStorage.setItem("social-provider", event.data.provider);
@@ -125,37 +132,43 @@ function Login({ onLoginSuccess }) {
           if (event.data.socialId) {
             localStorage.setItem("social-id", event.data.socialId);
           }
-          
-          console.log("localStorage에 저장된 accessToken:", localStorage.getItem("accessToken"));
-          console.log("localStorage에 저장된 refreshToken:", localStorage.getItem("refreshToken"));
+
+          console.log(
+            "localStorage에 저장된 accessToken:",
+            localStorage.getItem("accessToken")
+          );
+          console.log(
+            "localStorage에 저장된 refreshToken:",
+            localStorage.getItem("refreshToken")
+          );
           console.log("localStorage에 저장된 소셜 정보:", {
             provider: localStorage.getItem("social-provider"),
-            socialId: localStorage.getItem("social-id")
+            socialId: localStorage.getItem("social-id"),
           });
-          
+
           // 3. AuthContext 강제 업데이트 및 세션 타이머 초기화
           console.log("AuthContext 강제 업데이트 시작");
-          
+
           // AuthContext 상태 강제 업데이트
           if (updateTokens) {
             updateTokens(event.data.token, event.data.refreshToken || "");
           }
-          
+
           // 세션 타이머 초기화를 위한 지연 처리
           setTimeout(() => {
             console.log("대시보드로 이동 및 세션 타이머 초기화");
             navigate("/userdashboard");
-            
+
             // 페이지 로드 후 세션 타이머 강제 초기화
             setTimeout(() => {
               console.log("세션 타이머 강제 초기화 실행");
               // localStorage 변경 이벤트 발생시켜 AuthContext 업데이트
-              const currentToken = localStorage.getItem('accessToken');
-              localStorage.setItem('accessToken', currentToken);
-              
+              const currentToken = localStorage.getItem("accessToken");
+              localStorage.setItem("accessToken", currentToken);
+
               // UserHeader의 세션 타이머 강제 업데이트
-              const sessionEvent = new CustomEvent('sessionUpdate', {
-                detail: { forceUpdate: true }
+              const sessionEvent = new CustomEvent("sessionUpdate", {
+                detail: { forceUpdate: true },
               });
               window.dispatchEvent(sessionEvent);
             }, 500);
@@ -167,17 +180,17 @@ function Login({ onLoginSuccess }) {
             provider: event.data.provider,
             socialId: event.data.socialId,
             email: event.data.email,
-            name: event.data.userName
+            name: event.data.userName,
           };
-          
+
           // URL 파라미터로 소셜 데이터 전달
           const params = new URLSearchParams({
             provider: socialData.provider,
             socialId: socialData.socialId,
             email: socialData.email,
-            name: socialData.name
+            name: socialData.name,
           });
-          
+
           navigate(`/social-link?${params.toString()}`);
         }
       } else if (event.data && event.data.type === "social-signup-needed") {
@@ -187,17 +200,17 @@ function Login({ onLoginSuccess }) {
           provider: event.data.provider,
           socialId: event.data.socialId,
           email: event.data.email,
-          name: event.data.userName
+          name: event.data.userName,
         };
-        
+
         // URL 파라미터로 소셜 데이터 전달
         const params = new URLSearchParams({
           provider: socialData.provider,
           socialId: socialData.socialId,
           email: socialData.email,
-          name: socialData.name
+          name: socialData.name,
         });
-        
+
         navigate(`/social-link?${params.toString()}`);
       }
     };
@@ -365,7 +378,7 @@ function Login({ onLoginSuccess }) {
   const handlePwFindClick = () => {
     // 비밀번호 찾기 페이지 이동 (아이디로 찾기)
     console.log("비밀번호 찾기 페이지로 이동");
-    navigate("/pwfindid");
+    navigate("/pwfindphone");
   };
 
   return (
@@ -520,7 +533,7 @@ function Login({ onLoginSuccess }) {
 
       {/* API 연동 테스트 컴포넌트 */}
       {/* <ApiTest /> */}
-      
+
       {/* 통합 소셜 로그인 모달 */}
       {/* SocialLoginModal 컴포넌트는 이제 사용되지 않으므로 제거 */}
     </div>
