@@ -7,6 +7,13 @@
   box-shadow: 0 4px 24px rgba(0,0,0,0.07);
   text-align: center;
 }
+
+.videoContainer {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
+
 button {
   margin: 8px;
   padding: 8px 16px;
@@ -20,4 +27,13 @@ button {
 button:disabled {
   background: #aaa;
   cursor: not-allowed;
+}
+
+.backButton {
+  background: #6c757d !important;
+  margin-left: 8px;
+}
+
+.backButton:hover {
+  background: #5a6268 !important;
 }
