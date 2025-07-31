@@ -11,7 +11,13 @@ const FaceLoginPage = () => {
   const [step, setStep] = useState("idle"); // idle, camera, loading
   const [capturedImage, setCapturedImage] = useState(null);
   const [loginResult, setLoginResult] = useState(null);
+  const [isLoginFailed, setIsLoginFailed] = useState(false); // 로그인 실패 상태 추가
   const navigate = useNavigate(); // Added useNavigate hook
+
+  // 뒤로 가기 핸들러 추가
+  const handleGoBack = () => {
+    navigate(-1); // 이전 페이지로 이동
+  };
 
   // 버튼 클릭 핸들러
   const handleButtonClick = async () => {
@@ -20,12 +26,14 @@ const FaceLoginPage = () => {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
         videoRef.current.srcObject = stream;
         setStep("camera");
+        setIsLoginFailed(false); // 실패 상태 초기화
       } catch (err) {
         alert("웹캠 접근이 불가합니다.");
       }
     } else if (step === "camera") {
       setStep("loading");
       setLoginResult(null);
+      setIsLoginFailed(false); // 실패 상태 초기화
       const video = videoRef.current;
       const canvas = canvasRef.current;
       const context = canvas.getContext("2d");
@@ -58,9 +66,11 @@ const FaceLoginPage = () => {
           navigate("/userdashboard");
         } else {
           alert("페이스 로그인 실패: " + (response.data.message || "다시 시도하세요."));
+          setIsLoginFailed(true); // 로그인 실패 상태 설정
         }
       } catch (error) {
         console.error("페이스 로그인 오류:", error);
+        setIsLoginFailed(true); // 로그인 실패 상태 설정
         if (error.response) {
           // 서버에서 응답이 왔지만 오류인 경우
           console.error("서버 응답 오류:", error.response.data);
@@ -84,13 +94,15 @@ const FaceLoginPage = () => {
       <h2>페이스 로그인</h2>
       <p>등록된 얼굴로 로그인하세요.</p>
       
-      <video
-        ref={videoRef}
-        width={320}
-        height={240}
-        autoPlay
-        style={{ border: "1px solid #ccc", display: step !== "idle" ? "block" : "none" }}
-      />
+      <div className={styles.videoContainer}>
+        <video
+          ref={videoRef}
+          width={320}
+          height={240}
+          autoPlay
+          style={{ border: "1px solid #ccc", display: step !== "idle" ? "block" : "none" }}
+        />
+      </div>
       <canvas
         ref={canvasRef}
         width={320}
@@ -112,6 +124,17 @@ const FaceLoginPage = () => {
         {step === "camera" && "캡처 및 로그인"}
         {step === "loading" && "로그인 중..."}
       </button>
+      
+      {/* 뒤로 가기 버튼 - 로그인 실패 시에만 표시 */}
+      {isLoginFailed && (
+        <button
+          onClick={handleGoBack}
+          className={styles.backButton}
+        >
+          뒤로 가기
+        </button>
+      )}
+      
       {loginResult && (
         <div className={loginResult.success ? styles.successMessage : styles.errorMessage}>
           {loginResult.success ? (
