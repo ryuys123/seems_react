@@ -213,42 +213,42 @@ const UserDashboard = () => {
         <Link to="/counseling" className={styles.featureCard}>
             <div className={styles.featureIcon}>💬</div>
             <div className={styles.featureTitle}>AI 상담 챗봇</div>
-            <div className={styles.featureDesc}>GPT 기반 챗봇과 대화하며 고민을 나누고, 맞춤형 솔루션을 받아보세요.</div>
+            <div className={styles.featureDesc}>AI와 대화하며 고민을 나누고, 상황별 맞춤 조언을 받아보세요.</div>
           </Link>
           <Link to="/SelectTestPage" className={styles.featureCard}>
             <div className={styles.featureIcon}>📝</div>
             <div className={styles.featureTitle}>심리 검사</div>
-            <div className={styles.featureDesc}>MBTI, 성향 테스트를 통해 나의 성격을 분석하고 이해할 수 있습니다.</div>
+            <div className={styles.featureDesc}>다양한 심리 검사를 통해 나의 성격과 심리 상태를 파악해보세요.</div>
           </Link>
           <Link to="/analysis-dashboard" className={styles.featureCard}>
             <div className={styles.featureIcon}>📊</div>
             <div className={styles.featureTitle}>심리 분석</div>
-            <div className={styles.featureDesc}>감정 변화 그래프와 심리 분석 리포트로 나를 더 깊이 이해할 수 있습니다.</div>
+            <div className={styles.featureDesc}>심리/성격 검사 결과를 종합 분석하고 개선방안을 제안받아보세요.</div>
           </Link>
           <Link to="/simulation" className={styles.featureCard}>
             <div className={styles.featureIcon}>🤖</div>
             <div className={styles.featureTitle}>AI 시뮬레이션</div>
-            <div className={styles.featureDesc}>챗봇 성격 선택, 다양한 시나리오로 실전 대화 시뮬레이션을 경험해보세요.</div>
+            <div className={styles.featureDesc}>심리 검사 완료 후 당신만을 위한 맞춤형 극복 시뮬레이션을 경험해보세요.</div>
           </Link>
           <Link to="/quest" className={styles.featureCard}>
             <div className={styles.featureIcon}>📔</div>
             <div className={styles.featureTitle}>추천 퀘스트</div>
-            <div className={styles.featureDesc}>오늘의 추천 퀘스트 완료 후, 상점에 사용할 수 있는 포인트를 획득해보세요.</div>
+            <div className={styles.featureDesc}>매일 새로운 퀘스트를 완료하고 포인트를 모아보세요.</div>
           </Link>
           <Link to="/content" className={styles.featureCard}>
             <div className={styles.featureIcon}>📺</div>
             <div className={styles.featureTitle}>추천 콘텐츠</div>
-            <div className={styles.featureDesc}>현재 감정에 긍정적 영향을 줄 수 있는 콘텐츠를 추천받아보세요.</div>
+            <div className={styles.featureDesc}>나의 감정에 맞는 긍정적인 콘텐츠를 추천받아보세요.</div>
           </Link>
           <Link to="/emotionrecord" className={styles.featureCard}>
             <div className={styles.featureIcon}>😊</div>
             <div className={styles.featureTitle}>감정 기록</div>
-            <div className={styles.featureDesc}>이모지로 오늘의 감정을 빠르게 기록하고, 나만의 감정 일지를 만들어보세요.</div>
+            <div className={styles.featureDesc}>이모지로 간편하게 오늘의 감정을 기록하고 관리해보세요.</div>
           </Link>
           <Link to="/quest-store" className={styles.featureCard}>
             <div className={styles.featureIcon}>💰</div>
             <div className={styles.featureTitle}>뱃지 상점</div>
-            <div className={styles.featureDesc}>퀘스트를 동해 획득한 포인트를 뱃지로 교환하세요.</div>
+            <div className={styles.featureDesc}>퀘스트로 얻은 포인트로 특별한 뱃지를 구매해보세요.</div>
           </Link>
         </section>
 
