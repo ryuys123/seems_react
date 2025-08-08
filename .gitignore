@@ -1,43 +1,31 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Node.js dependencies
+node_modules/
 
-# dependencies
-/node_modules
-/.pnp
-.pnp.js
-.gitignore
+# Build output
+build/
 dist/
+out/
 
-# testing
-/coverage
+# Cache directories
+.cache/
+.tmp/
 
-# production
-/build
-
-# misc
-.DS_Store
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
+# Logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-### VS Code ###
+# IntelliJ IDEA
+.idea/
+*.iml
+
+# VS Code
 .vscode/
 
-### Cursor AI ###
-.cursor/
-.cursorrules
+# Spring Boot
+target/
 
-# Node modules
-node_modules/
-
-# ESLint cache
-.eslintcache
-
-# Cache packs
-*.pack
-
+# OS-specific
+.DS_Store
+Thumbs.db
