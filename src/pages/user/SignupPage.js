@@ -242,7 +242,7 @@ import { AuthContext } from '../../AuthProvider';
       
       // 프로필 사진이 있으면 추가
       if (formData.profileImage) {
-        formDataToSend.append('profileImage', formData.profileImage);
+        formDataToSend.append('profileImageBase64', formData.profileImage);
       }
 
       console.log('일반 회원가입 요청 데이터:', {
